@@ -1,0 +1,358 @@
+@import "tailwindcss";
+
+@source "../views";
+@source "../../app";
+
+@theme {
+    --color-brand-50: #eef4ff;
+    --color-brand-100: #d9e6ff;
+    --color-brand-200: #b5cdff;
+    --color-brand-300: #86adff;
+    --color-brand-400: #5489ff;
+    --color-brand-500: #2f6bf9;
+    --color-brand-600: #1e51e0;
+    --color-brand-700: #1c43b8;
+    --color-brand-800: #1d3a8f;
+    --color-brand-900: #1d3472;
+
+    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ====== Base ====== */
+[x-cloak] { display: none !important; }
+
+html, body {
+    height: 100%;
+}
+
+body {
+    @apply bg-slate-50 text-slate-800 font-sans antialiased;
+}
+
+/* ====== Component layer (utility classes) ====== */
+/* NOTE: In Tailwind v4, @apply can ONLY reference built-in Tailwind utilities,
+   not custom component classes. Each variant below inlines the base class's
+   utilities so the class works standalone (e.g. class="btn-primary" is enough). */
+@layer components {
+
+    /* ---------- App shell ---------- */
+    .app-shell {
+        @apply flex min-h-screen bg-slate-50;
+    }
+    .app-sidebar {
+        @apply fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 flex flex-col transition-transform -translate-x-full lg:translate-x-0;
+    }
+    .app-sidebar.open { @apply translate-x-0; }
+    .app-sidebar-overlay {
+        @apply fixed inset-0 z-30 bg-slate-900/50 backdrop-blur-sm lg:hidden;
+    }
+    .app-main {
+        @apply flex-1 flex flex-col min-w-0 lg:pl-64;
+    }
+    .app-topbar {
+        @apply sticky top-0 z-20 h-16 bg-white/80 backdrop-blur border-b border-slate-200 flex items-center justify-between px-4 sm:px-6;
+    }
+    .app-content {
+        @apply flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto;
+    }
+
+    /* ---------- Sidebar nav ---------- */
+    .sidebar-brand {
+        @apply flex items-center gap-2.5 h-16 px-5 border-b border-slate-200 shrink-0;
+    }
+    .sidebar-section {
+        @apply px-3 pt-5 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400;
+    }
+    .sidebar-link {
+        @apply flex items-center gap-3 px-3 py-2 mx-2 rounded-md text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition;
+    }
+    .sidebar-link i {
+        @apply text-lg text-slate-400;
+    }
+    .sidebar-link:hover i { @apply text-slate-600; }
+    .sidebar-link.active {
+        @apply bg-brand-50 text-brand-700 font-medium;
+    }
+    .sidebar-link.active:hover {
+        @apply bg-brand-50 text-brand-700;
+    }
+    .sidebar-link.active i { @apply text-brand-600; }
+
+    /* ---------- Page header ---------- */
+    .page-header {
+        @apply mb-6 sm:mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+    }
+    .page-title {
+        @apply text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight;
+    }
+    .page-subtitle {
+        @apply mt-1 text-sm text-slate-500;
+    }
+    .page-actions { @apply flex flex-wrap items-center gap-2; }
+
+    /* ---------- Breadcrumb ---------- */
+    .breadcrumb {
+        @apply flex items-center gap-1.5 text-sm text-slate-500;
+    }
+    .breadcrumb a { @apply hover:text-brand-600 transition; }
+    .breadcrumb .separator { @apply text-slate-300; }
+    .breadcrumb .current { @apply text-slate-700 font-medium; }
+
+    /* ---------- Base button ---------- */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    .btn-sm { @apply px-2.5 py-1.5 text-xs; }
+    .btn-lg { @apply px-4 py-2.5 text-base; }
+    .btn-icon { @apply p-2; }
+
+    /* ---------- Button variants (self-contained) ---------- */
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500 shadow-sm;
+    }
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-300;
+    }
+    .btn-success {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500 shadow-sm;
+    }
+    .btn-danger {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm;
+    }
+    .btn-warning {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-400 shadow-sm;
+    }
+    .btn-info {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-cyan-500 text-white hover:bg-cyan-600 focus:ring-cyan-400 shadow-sm;
+    }
+    .btn-dark {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-800 text-white hover:bg-slate-900 focus:ring-slate-700 shadow-sm;
+    }
+    .btn-light {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 focus:ring-slate-200;
+    }
+    .btn-ghost {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 hover:bg-slate-100 focus:ring-slate-200;
+    }
+    .btn-link {
+        @apply inline-flex items-center justify-center gap-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed text-brand-600 hover:underline focus:ring-brand-400 px-0 py-0;
+    }
+    .btn-grad {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed text-white border-0 hover:opacity-95 focus:ring-brand-500 shadow-sm;
+        background-image: linear-gradient(90deg, hsla(241, 40%, 37%, 1) 0%, hsla(210, 100%, 60%, 1) 100%);
+    }
+    .btn-outline-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed border border-brand-600 text-brand-600 hover:bg-brand-50 focus:ring-brand-400;
+    }
+
+    /* ---------- Card ---------- */
+    .card {
+        @apply bg-white rounded-xl shadow-sm border border-slate-200/70;
+    }
+    .card-body { @apply p-4 sm:p-6; }
+    .card-header { @apply px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3; }
+    .card-title { @apply text-base font-semibold text-slate-900; }
+    .card-subtitle { @apply text-sm text-slate-500 mt-0.5; }
+    .card-footer { @apply px-4 sm:px-6 py-4 border-t border-slate-100; }
+
+    /* ---------- Forms ---------- */
+    .form-group { @apply mb-4; }
+    .form-label { @apply block text-sm font-medium text-slate-700 mb-1.5; }
+    .form-control {
+        @apply block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none disabled:bg-slate-100 disabled:text-slate-500;
+    }
+    .form-control-sm { @apply px-2.5 py-1.5 text-xs; }
+    .form-select {
+        @apply block w-full rounded-md border border-slate-300 bg-white px-3 py-2 pr-9 text-sm text-slate-900 shadow-sm transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none disabled:bg-slate-100 disabled:text-slate-500 appearance-none bg-no-repeat bg-[right_0.65rem_center] bg-[length:1.1rem_1.1rem];
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9' /%3E%3C/svg%3E");
+    }
+    .form-check-input { @apply rounded border-slate-300 text-brand-600 shadow-sm focus:ring-brand-500; }
+    .form-check-label { @apply ml-2 text-sm text-slate-700; }
+    .form-hint { @apply mt-1 text-xs text-slate-500; }
+    .form-error { @apply mt-1 text-xs text-red-600; }
+
+    /* ---------- Input group ---------- */
+    .input-group { @apply flex; }
+    .input-group > .form-control { @apply rounded-l-md rounded-r-none border-r-0; }
+    .input-group > .form-control:last-child { @apply rounded-l-none rounded-r-md border-r border-l-0; }
+    .input-group > .input-group-text { @apply inline-flex items-center px-3 rounded-md border border-slate-300 bg-slate-50 text-slate-500 text-sm; }
+    .input-group > .input-group-text:first-child { @apply rounded-l-md rounded-r-none border-r-0; }
+    .input-group > .input-group-text + .form-control,
+    .input-group > .input-group-text + .form-select { @apply rounded-l-none; }
+
+    /* ---------- Tables ---------- */
+    .table-wrap {
+        @apply overflow-x-auto rounded-lg border border-slate-200/70 bg-white;
+    }
+    .table { @apply min-w-full divide-y divide-slate-200 text-sm; }
+    .table thead { @apply bg-slate-50/80; }
+    .table th { @apply px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap; }
+    .table td { @apply px-4 py-3 whitespace-nowrap text-slate-700; }
+    .table tbody tr { @apply border-b border-slate-100 last:border-0 transition; }
+    .table tbody tr:hover { @apply bg-slate-50/60; }
+    .table-bordered { @apply border border-slate-200; }
+    .table-bordered th, .table-bordered td { @apply border border-slate-200; }
+    .table-striped tbody tr:nth-child(odd) { @apply bg-slate-50/40; }
+    .table-borderless td, .table-borderless th { @apply border-0; }
+    .table-hover tbody tr:hover { @apply bg-slate-50; }
+    .table-light { @apply bg-slate-50; }
+
+    /* ---------- Alerts (self-contained variants) ---------- */
+    .alert {
+        @apply relative rounded-md border px-4 py-3 text-sm flex items-start justify-between gap-2;
+    }
+    .alert .btn-close {
+        @apply ms-3 -mt-1 -mr-1 inline-flex h-8 w-8 items-center justify-center rounded text-current/60 hover:text-current;
+    }
+    .alert-success { @apply relative rounded-md border px-4 py-3 text-sm flex items-start justify-between gap-2 bg-emerald-50 border-emerald-200 text-emerald-800; }
+    .alert-danger  { @apply relative rounded-md border px-4 py-3 text-sm flex items-start justify-between gap-2 bg-red-50 border-red-200 text-red-800; }
+    .alert-warning { @apply relative rounded-md border px-4 py-3 text-sm flex items-start justify-between gap-2 bg-amber-50 border-amber-200 text-amber-800; }
+    .alert-info    { @apply relative rounded-md border px-4 py-3 text-sm flex items-start justify-between gap-2 bg-sky-50 border-sky-200 text-sky-800; }
+
+    /* ---------- Badges (self-contained variants) ---------- */
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+    .badge-success { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700; }
+    .badge-warning { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700; }
+    .badge-danger  { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700; }
+    .badge-info    { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-700; }
+    .badge-primary { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-700; }
+    .badge-light   { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200; }
+
+    /* ---------- Progress ---------- */
+    .progress { @apply w-full bg-slate-200 rounded-full overflow-hidden h-2; }
+    .progress-bar { @apply h-2 bg-brand-600; }
+    .progress-bar.bg-success { @apply bg-emerald-600; }
+    .progress-bar.bg-danger  { @apply bg-red-600; }
+    .progress-bar.bg-warning { @apply bg-amber-500; }
+
+    /* ---------- Modal ---------- */
+    .modal-backdrop {
+        @apply fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm;
+    }
+    .modal-shell {
+        @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+    }
+    .modal-dialog {
+        @apply relative w-full max-w-lg mx-auto z-50;
+    }
+    .modal-dialog.modal-sm { @apply max-w-sm; }
+    .modal-dialog.modal-lg { @apply max-w-2xl; }
+    .modal-dialog.modal-xl { @apply max-w-4xl; }
+    .modal-content {
+        @apply relative bg-white rounded-xl shadow-2xl border border-slate-200;
+    }
+    .modal-header { @apply flex items-center justify-between px-5 py-4 border-b border-slate-100; }
+    .modal-title  { @apply text-base font-semibold text-slate-900; }
+    .modal-body   { @apply px-5 py-5 text-sm text-slate-700; }
+    .modal-footer { @apply flex justify-end gap-2 px-5 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-xl; }
+
+    /* ---------- Offcanvas ---------- */
+    .offcanvas-backdrop { @apply fixed inset-0 z-40 bg-slate-900/50; }
+    .offcanvas { @apply fixed top-0 right-0 z-50 h-full w-80 max-w-full bg-white shadow-xl border-l border-slate-200 flex flex-col; }
+    .offcanvas-header { @apply flex items-center justify-between px-4 py-3 border-b border-slate-200; }
+    .offcanvas-body { @apply flex-1 p-4 overflow-y-auto; }
+
+    /* ---------- Dropdown ---------- */
+    .dropdown { @apply relative inline-block; }
+    .dropdown-menu {
+        @apply absolute right-0 z-30 mt-1 min-w-[10rem] bg-white border border-slate-200 rounded-md shadow-lg py-1;
+    }
+    .dropdown-item { @apply block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100; }
+
+    /* ---------- Nav ---------- */
+    .nav-link { @apply text-slate-700 hover:text-brand-600 px-3 py-2 text-sm font-medium; }
+    .nav-link.active { @apply text-brand-600; }
+
+    /* ---------- Stat card ---------- */
+    .stat-card {
+        @apply bg-white border border-slate-200/70 rounded-xl p-5 transition hover:border-brand-300 hover:shadow-md cursor-pointer;
+    }
+    .stat-card:hover { transform: translateY(-2px); }
+
+    /* ---------- Toast ---------- */
+    .toast-container {
+        @apply fixed top-5 right-5 z-[60] flex flex-col gap-2;
+    }
+    .toast {
+        @apply min-w-[260px] max-w-sm rounded-md shadow-lg border px-4 py-3 text-sm bg-white flex items-start gap-2;
+    }
+    .toast-success { @apply border-emerald-200 bg-emerald-50 text-emerald-800; }
+    .toast-error   { @apply border-red-200 bg-red-50 text-red-800; }
+    .toast-info    { @apply border-sky-200 bg-sky-50 text-sky-800; }
+    .toast-warning { @apply border-amber-200 bg-amber-50 text-amber-800; }
+
+    /* ---------- Pagination ---------- */
+    nav[role="navigation"] svg { @apply w-4 h-4; }
+
+    /* ---------- Quantity control (POS) ---------- */
+    .quantity-control {
+        @apply inline-flex items-stretch border border-slate-300 rounded-md overflow-hidden;
+    }
+    .quantity-control button {
+        @apply px-3 bg-slate-100 hover:bg-slate-200 text-slate-700;
+    }
+    .quantity-control input {
+        @apply w-12 text-center border-0 focus:ring-0 text-sm;
+    }
+
+    /* New compact qty-btn (used inline in cart items) */
+    .qty-btn {
+        @apply inline-flex items-center justify-center h-7 w-7 rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:border-slate-300 active:scale-95 transition shrink-0;
+    }
+    .qty-input {
+        @apply h-7 w-9 text-center text-sm font-medium text-slate-900 border-0 bg-transparent focus:ring-0;
+    }
+
+    /* ---------- Item card (POS) ---------- */
+    .item-card {
+        @apply bg-white border border-slate-200 rounded-xl overflow-hidden cursor-pointer transition hover:border-brand-400 hover:shadow-md active:scale-[0.98];
+    }
+    .item-card > .product-img img {
+        @apply h-32 w-full object-cover;
+    }
+
+    /* ---------- Category card (POS) ---------- */
+    .category-card {
+        @apply flex flex-col items-center justify-center gap-1.5 bg-white border border-slate-200 rounded-xl px-4 py-3 text-center cursor-pointer transition select-none hover:border-brand-300 hover:shadow-sm min-w-[96px];
+    }
+    .category-card i { @apply text-2xl text-slate-500; }
+    .category-card .category-name { @apply text-xs font-medium text-slate-600 whitespace-nowrap; }
+    .category-card.active {
+        @apply bg-brand-600 border-brand-600 text-white shadow-md;
+    }
+    .category-card.active i,
+    .category-card.active .category-name { @apply text-white; }
+
+    /* ---------- Dining table card (POS) ---------- */
+    .dining-table-card {
+        @apply inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition cursor-pointer;
+    }
+    .dining-table-card-status {
+        @apply ml-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-white/60 text-current;
+    }
+
+    /* ---------- Empty state ---------- */
+    .empty-state {
+        @apply flex flex-col items-center justify-center py-12 px-6 text-center;
+    }
+    .empty-state i { @apply text-5xl text-slate-300 mb-3; }
+    .empty-state h3 { @apply text-base font-semibold text-slate-700; }
+    .empty-state p { @apply mt-1 text-sm text-slate-500 max-w-sm; }
+
+    /* ---------- Gradient background (used by .btn-grad) ---------- */
+    .bg-gradient-brand {
+        background-image: linear-gradient(90deg, hsla(241, 40%, 37%, 1) 0%, hsla(210, 100%, 60%, 1) 100%);
+    }
+
+    /* ---------- Misc utility-like helpers ---------- */
+    .text-muted { @apply text-slate-500; }
+    .text-primary { @apply text-brand-600; }
+    .bg-light { @apply bg-slate-50; }
+    .bg-white { @apply bg-white; }
+    .bg-light-primary { @apply bg-brand-50; }
+    .border-dashed { @apply border-dashed; }
+    .shadow-sm { @apply shadow-sm; }
+    .rounded-0 { @apply rounded-none; }
+}
