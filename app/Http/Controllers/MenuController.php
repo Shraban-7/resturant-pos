@@ -9,6 +9,8 @@ use App\Models\ProductCategory;
 use App\Models\Sale;
 use App\Services\StockService;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
+use RuntimeException;
 
 class MenuController extends Controller
 {
@@ -30,57 +32,78 @@ class MenuController extends Controller
 
     public function placeOrder(PlaceQrOrderRequest $request, DiningTable $table)
     {
-        return DB::transaction(function () use ($request, $table) {
-            $subtotal = 0;
-            $saleItems = [];
+        try {
+            return DB::transaction(function () use ($request, $table) {
+                $subtotal = 0;
+                $saleItems = [];
+                $deductions = [];
 
-            foreach ($request->items as $item) {
-                $product = Product::with('unit')->findOrFail($item['id']);
+                // Validate & lock all products before mutating stock or creating the sale.
+                foreach ($request->items as $item) {
+                    $product = Product::query()
+                        ->with('unit')
+                        ->whereKey($item['id'])
+                        ->lockForUpdate()
+                        ->firstOrFail();
 
-                if (!$this->stockService->hasAvailableStock($product, $item['quantity'])) {
-                    return errorResponse("Insufficient stock for item: {$product->name}");
+                    if (!$this->stockService->hasAvailableStock($product, $item['quantity'])) {
+                        throw new RuntimeException("Insufficient stock for item: {$product->name}");
+                    }
+
+                    $total = $product->selling_price * $item['quantity'];
+                    $subtotal += $total;
+
+                    $saleItems[] = [
+                        'seller_id' => $table->seller_id,
+                        'item_id' => $product->id,
+                        'item_name' => $product->name,
+                        'buying_price' => $product->buying_price,
+                        'unit_price' => $product->selling_price,
+                        'unit' => $product->unit ? $product->unit->short_name : 'pcs',
+                        'quantity' => $item['quantity'],
+                        'total_price' => $total,
+                    ];
+
+                    $deductions[] = [
+                        'product' => $product,
+                        'quantity' => $item['quantity'],
+                    ];
                 }
 
-                $total = $product->selling_price * $item['quantity'];
-                $subtotal += $total;
+                foreach ($deductions as $deduction) {
+                    $this->stockService->deductStock($deduction['product'], $deduction['quantity']);
+                }
 
-                $saleItems[] = [
+                $sale = Sale::create([
                     'seller_id' => $table->seller_id,
-                    'item_id' => $product->id,
-                    'item_name' => $product->name,
-                    'buying_price' => $product->buying_price,
-                    'unit_price' => $product->selling_price,
-                    'unit' => $product->unit ? $product->unit->short_name : 'pcs',
-                    'quantity' => $item['quantity'],
-                    'total_price' => $total,
-                ];
+                    'order_id' => generateOrderId(),
+                    'sale_date' => now(),
+                    'subtotal' => $subtotal,
+                    'payable' => $subtotal,
+                    'paid' => 0,
+                    'due' => $subtotal,
+                    'dining_table_id' => $table->id,
+                    'status' => 'pending',
+                ]);
 
-                $this->stockService->deductStock($product, $item['quantity']);
-            }
+                foreach ($saleItems as $saleItem) {
+                    $sale->items()->create($saleItem);
+                }
 
-            $sale = Sale::create([
-                'seller_id' => $table->seller_id,
-                'order_id' => generateOrderId(),
-                'sale_date' => now(),
-                'subtotal' => $subtotal,
-                'payable' => $subtotal,
-                'paid' => 0,
-                'due' => $subtotal,
-                'dining_table_id' => $table->id,
-                'status' => 'pending',
-            ]);
+                DiningTable::query()
+                    ->whereKey($table->id)
+                    ->lockForUpdate()
+                    ->firstOrFail()
+                    ->update(['status' => DiningTable::OCCUPIED]);
 
-            foreach ($saleItems as $saleItem) {
-                $sale->items()->create($saleItem);
-            }
-
-            $table->update(['status' => DiningTable::OCCUPIED]);
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Order placed successfully',
-                'order_id' => $sale->order_id
-            ]);
-        });
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Order placed successfully',
+                    'order_id' => $sale->order_id,
+                ]);
+            });
+        } catch (RuntimeException|InvalidArgumentException $e) {
+            return errorResponse($e->getMessage());
+        }
     }
 }

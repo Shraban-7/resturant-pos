@@ -9,7 +9,7 @@
 | **Form Requests** | Partial | `PosAddItemRequest` and `CheckoutPosRequest` cover POS add-item and checkout; other controllers still use inline `$request->validate([...])`. |
 | **Fat Controller Smell** | High | `PosController.php`, `SaleController.php`, `SupplyController.php` remain large; seller stock mutations now delegated to `StockService`. |
 | **Fat Model Smell** | Low | Models are lightweight, but missing domain methods and repository patterns. |
-| **Database Transactions** | Partial | Some POS/menu paths use `DB::transaction()`; remaining multi-query flows still need coverage (TASK-103/104). |
+| **Database Transactions** | Done for TASK-103/104 | `PosController@addItem` / `@checkout` and `MenuController@placeOrder` run inside `DB::transaction()` with lock + exception rollback on business failures. |
 | **Stock Service** | Done (TASK-102) | `App\Services\StockService` centralizes availability checks and stock_out deduct/restore for seller `Product` inventory. |
 | **Automated Tests** | Basic | Only default Laravel `ExampleTest` files present. `StockService` unit tests tracked as TASK-801. |
 
@@ -35,6 +35,6 @@
 
 1. **Extract Form Requests**: Done for POS add-item/checkout (`PosAddItemRequest`, `CheckoutPosRequest`). Remaining: hold-order, QR place-order, and other seller controllers.
 2. **Introduce Action Classes / Services**: `StockService` covers inventory checks and deductions (TASK-102). Remaining: checkout/order Action classes as needed.
-3. **Wrap in DB Transactions**: Guarantee atomicity for order creation, stock movement, cart cleanup, and table status updates using `DB::transaction()` (TASK-103/104).
+3. **Wrap in DB Transactions**: Done for POS add-item/checkout (TASK-103) and QR `placeOrder` (TASK-104). Remaining multi-step seller/sale flows can follow the same pattern.
 4. **Strict PHP Type Hinting**: Add scalar and object return type declarations for all controller methods, model relations, and helper functions.
 5. **Automated Tests**: Add unit coverage for `StockService` (TASK-801).

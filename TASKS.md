@@ -10,8 +10,8 @@
 ## Milestone 1: Technical Debt Remediation & Baseline Safety
 - [x] **TASK-101** [Est: 0.5 day]: Create `App\Http\Requests\Seller\PosAddItemRequest` and `CheckoutPosRequest` to replace inline validation in `PosController`.
 - [x] **TASK-102** [Est: 0.5 day]: Create `App\Services\StockService` class to centralize stock availability checks and stock deductions.
-- [ ] **TASK-103** [Est: 0.5 day]: Wrap `PosController@checkout` and `addItem` operations inside `DB::transaction()` blocks.
-- [ ] **TASK-104** [Est: 0.5 day]: Wrap `MenuController@placeOrder` operations inside `DB::transaction()` blocks.
+- [x] **TASK-103** [Est: 0.5 day]: Wrap `PosController@checkout` and `addItem` operations inside `DB::transaction()` blocks.
+- [x] **TASK-104** [Est: 0.5 day]: Wrap `MenuController@placeOrder` operations inside `DB::transaction()` blocks.
 - [ ] **TASK-105** [Est: 0.5 day]: Create database migration adding composite indexes to `sales`, `sale_items`, `products`, and `dining_tables`.
 - [ ] **TASK-106** [Est: 0.5 day]: Fix N+1 queries in `PosController@index`, `SaleController@index`, and `MenuController@index` using eager loading.
 

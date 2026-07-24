@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Seller\CheckoutPosRequest;
 use App\Http\Requests\Seller\PosAddItemRequest;
-use App\Models\BusinessSetting;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Customer;
@@ -18,6 +17,8 @@ use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
+use InvalidArgumentException;
+use RuntimeException;
 
 class PosController extends Controller
 {
@@ -61,42 +62,46 @@ class PosController extends Controller
 
     public function addItem(PosAddItemRequest $request)
     {
-        return DB::transaction(function () use ($request) {
-            $product = Product::findOrFail($request->product_id);
-            $cart = Cart::where('order_id', $request->order_id)->where('seller_id', auth()->id())->firstOrFail();
+        try {
+            return DB::transaction(function () use ($request) {
+                $product = Product::query()->whereKey($request->product_id)->lockForUpdate()->firstOrFail();
+                $cart = Cart::where('order_id', $request->order_id)
+                    ->where('seller_id', auth()->id())
+                    ->firstOrFail();
 
-            if (!$this->stockService->hasAvailableStock($product, $request->quantity)) {
-                return errorResponse('Insufficient stock!');
-            }
+                if (!$this->stockService->hasAvailableStock($product, $request->quantity)) {
+                    throw new RuntimeException('Insufficient stock!');
+                }
 
-            $cart_item = CartItem::create([
-                'cart_id' => $cart->id,
-                'item_id' => $product->id,
-                'unit_price' => $request->unit_price,
-                'discount' => $request->discount,
-                'quantity' => $request->quantity,
-                'total_price' => ($request->quantity * $request->unit_price) - $request->discount,
-            ]);
+                CartItem::create([
+                    'cart_id' => $cart->id,
+                    'item_id' => $product->id,
+                    'unit_price' => $request->unit_price,
+                    'discount' => $request->discount,
+                    'quantity' => $request->quantity,
+                    'total_price' => ($request->quantity * $request->unit_price) - $request->discount,
+                ]);
 
-            $this->stockService->deductStock($product, $request->quantity);
+                $this->stockService->deductStock($product, $request->quantity);
 
-            $cart_items = CartItem::where('cart_id', $cart->id)->with('item')->get();
-            $itemHtml = '';
+                $cart_items = CartItem::where('cart_id', $cart->id)->with('item')->get();
+                $itemHtml = '';
 
-            foreach ($cart_items as $item) {
-                $itemHtml .= View::make('components.pos.cart-item', ['item' => $item])->render();
-            }
+                foreach ($cart_items as $item) {
+                    $itemHtml .= View::make('components.pos.cart-item', ['item' => $item])->render();
+                }
 
-            $response = [
-                'item' => [
-                    'id' => $product->id,
-                    'stock' => $product->availableStock
-                ],
-                'cart_item_html' => $itemHtml
-            ];
-
-            return apiResponse($response, 'Item added successfully');
-        });
+                return apiResponse([
+                    'item' => [
+                        'id' => $product->id,
+                        'stock' => $this->stockService->availableQuantity($product),
+                    ],
+                    'cart_item_html' => $itemHtml,
+                ], 'Item added successfully');
+            });
+        } catch (RuntimeException|InvalidArgumentException $e) {
+            return errorResponse($e->getMessage());
+        }
     }
 
     public function removeItem(Request $request)
@@ -155,90 +160,99 @@ class PosController extends Controller
 
     public function checkout(CheckoutPosRequest $request)
     {
-        return DB::transaction(function () use ($request) {
-            $customer_id = $request->customer_id ?: null;
-            $customer_name = $request->customer_name ?? '';
-            $customer_phone = $request->customer_phone ?? '';
+        try {
+            return DB::transaction(function () use ($request) {
+                $customer_id = $request->customer_id ?: null;
+                $customer_name = $request->customer_name ?? '';
+                $customer_phone = $request->customer_phone ?? '';
 
-            if ($customer_name != '' && $customer_phone != '') {
-                $newCustomer = Customer::create([
-                    'seller_id' => auth()->id(),
-                    'name' => $customer_name,
-                    'phone' => $customer_phone,
-                ]);
-                $customer_id = $newCustomer->id;
-            }
-
-            $cart = Cart::where('order_id', $request->order_id)
-                ->where('seller_id', auth()->id())
-                ->with('items.item.unit')
-                ->first();
-
-            if (!$cart || count($cart->items) == 0) {
-                return errorResponse('No items added!');
-            }
-
-            $subTotal = 0;
-            $saleItems = [];
-
-            foreach ($cart->items as $item) {
-                $subTotal += $item->total_price;
-                $saleItems[] = [
-                    'seller_id' => $cart->seller_id,
-                    'item_id' => $item->item_id,
-                    'item_name' => $item->item->name,
-                    'buying_price' => $item->item->buying_price,
-                    'unit_price' => $item->unit_price,
-                    'unit' => $item->item->unit->short_name,
-                    'quantity' => $item->quantity,
-                    'total_price' => $item->total_price,
-                    'note' => $item->note,
-                ];
-            }
-
-            $discount = $request->discount_amount ?? 0;
-            $paid = $request->paid_amount ?? 0;
-            $payable = ($subTotal - $discount);
-
-            $saleData = [
-                'seller_id' => $cart->seller_id,
-                'customer_id' => $customer_id,
-                'order_id' => $cart->order_id,
-                'sale_date' => date('Y-m-d'),
-                'subtotal' => $subTotal,
-                'discount' => $discount,
-                'payable' => $payable,
-                'paid' => $paid,
-                'due' => ($payable - $paid),
-                'payment_type' => $request->payment_type ?? 'cash',
-                'note' => $request->note,
-            ];
-
-            if ($request->dining_table_id) {
-                $saleData['dining_table_id'] = $request->dining_table_id;
-            }
-            if ($request->seller_employee_id) {
-                $saleData['seller_employee_id'] = $request->seller_employee_id;
-            }
-
-            $sale = Sale::create($saleData);
-
-            foreach ($saleItems as $saleItem) {
-                $sale->items()->create($saleItem);
-            }
-
-            $cart->items()->delete();
-            $cart->delete();
-
-            if ($request->dining_table_id) {
-                $table = DiningTable::self()->where('id', $request->dining_table_id)->first();
-                if ($table) {
-                    $table->update(['status' => DiningTable::OCCUPIED]);
+                if ($customer_name != '' && $customer_phone != '') {
+                    $newCustomer = Customer::create([
+                        'seller_id' => auth()->id(),
+                        'name' => $customer_name,
+                        'phone' => $customer_phone,
+                    ]);
+                    $customer_id = $newCustomer->id;
                 }
-            }
 
-            return successResponse('Sale complete');
-        });
+                $cart = Cart::where('order_id', $request->order_id)
+                    ->where('seller_id', auth()->id())
+                    ->with('items.item.unit')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$cart || count($cart->items) == 0) {
+                    throw new RuntimeException('No items added!');
+                }
+
+                $subTotal = 0;
+                $saleItems = [];
+
+                foreach ($cart->items as $item) {
+                    $subTotal += $item->total_price;
+                    $saleItems[] = [
+                        'seller_id' => $cart->seller_id,
+                        'item_id' => $item->item_id,
+                        'item_name' => $item->item->name,
+                        'buying_price' => $item->item->buying_price,
+                        'unit_price' => $item->unit_price,
+                        'unit' => $item->item->unit->short_name,
+                        'quantity' => $item->quantity,
+                        'total_price' => $item->total_price,
+                        'note' => $item->note,
+                    ];
+                }
+
+                $discount = $request->discount_amount ?? 0;
+                $paid = $request->paid_amount ?? 0;
+                $payable = ($subTotal - $discount);
+
+                // Prefer request aliases used by POS UI (table_id / employee_id) with dining_* fallbacks.
+                $tableId = $request->dining_table_id ?? $request->table_id;
+                $employeeId = $request->seller_employee_id ?? $request->employee_id;
+
+                $saleData = [
+                    'seller_id' => $cart->seller_id,
+                    'customer_id' => $customer_id,
+                    'order_id' => $cart->order_id,
+                    'sale_date' => date('Y-m-d'),
+                    'subtotal' => $subTotal,
+                    'discount' => $discount,
+                    'payable' => $payable,
+                    'paid' => $paid,
+                    'due' => ($payable - $paid),
+                    'payment_type' => $request->payment_type ?? 'cash',
+                    'note' => $request->note,
+                ];
+
+                if ($tableId) {
+                    $saleData['dining_table_id'] = $tableId;
+                }
+                if ($employeeId) {
+                    $saleData['seller_employee_id'] = $employeeId;
+                }
+
+                $sale = Sale::create($saleData);
+
+                foreach ($saleItems as $saleItem) {
+                    $sale->items()->create($saleItem);
+                }
+
+                $cart->items()->delete();
+                $cart->delete();
+
+                if ($tableId) {
+                    $table = DiningTable::self()->where('id', $tableId)->lockForUpdate()->first();
+                    if ($table) {
+                        $table->update(['status' => DiningTable::OCCUPIED]);
+                    }
+                }
+
+                return successResponse('Sale complete');
+            });
+        } catch (RuntimeException|InvalidArgumentException $e) {
+            return errorResponse($e->getMessage());
+        }
     }
 
     public function holdOrder(Request $request)

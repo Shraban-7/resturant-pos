@@ -104,15 +104,15 @@ This audit report provides an in-depth code-level analysis of the existing Larav
 
 #### Issue 13: Non-Atomic POS Checkout Operation
 - **Severity**: CRITICAL
-- **File**: [`app/Http/Controllers/Seller/PosController.php`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Controllers/Seller/PosController.php#L160-L220)
-- **Description**: POS checkout creates a `Sale`, iterates over cart items to insert `SaleItem` rows, deletes `CartItem` rows, and updates table status across multiple standalone SQL statements outside a transaction block.
-- **Recommended Fix**: Wrap the entire operation inside `DB::transaction(function () use (...) { ... });`.
+- **Status**: RESOLVED (TASK-103)
+- **File**: [`app/Http/Controllers/Seller/PosController.php`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Controllers/Seller/PosController.php)
+- **Fix Applied**: `addItem` and `checkout` wrapped in `DB::transaction()` with `lockForUpdate()` on contended rows; business failures throw to force rollback instead of early `return` commits.
 
 #### Issue 14: Non-Atomic Digital Menu Order Placement
 - **Severity**: CRITICAL
-- **File**: [`app/Http/Controllers/MenuController.php`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Controllers/MenuController.php#L22-L74)
-- **Description**: `placeOrder` decrements stock, creates a `Sale`, inserts `SaleItem` rows, and updates table status to `OCCUPIED` without database transaction safety.
-- **Recommended Fix**: Wrap the order placement logic inside `DB::transaction()`.
+- **Status**: RESOLVED (TASK-104)
+- **File**: [`app/Http/Controllers/MenuController.php`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Controllers/MenuController.php)
+- **Fix Applied**: `placeOrder` validates/locks all products first, then deducts stock and creates sale/items/table update inside one `DB::transaction()`; insufficient stock rolls back fully.
 
 ---
 
