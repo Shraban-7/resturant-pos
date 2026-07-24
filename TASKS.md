@@ -12,18 +12,18 @@
 - [x] **TASK-102** [Est: 0.5 day]: Create `App\Services\StockService` class to centralize stock availability checks and stock deductions.
 - [x] **TASK-103** [Est: 0.5 day]: Wrap `PosController@checkout` and `addItem` operations inside `DB::transaction()` blocks.
 - [x] **TASK-104** [Est: 0.5 day]: Wrap `MenuController@placeOrder` operations inside `DB::transaction()` blocks.
-- [ ] **TASK-105** [Est: 0.5 day]: Create database migration adding composite indexes to `sales`, `sale_items`, `products`, and `dining_tables`.
+- [x] **TASK-105** [Est: 0.5 day]: Create database migration adding composite indexes to `sales`, `sale_items`, `products`, and `dining_tables`.
 - [x] **TASK-106** [Est: 0.5 day]: Fix N+1 queries in `PosController@index`, `SaleController@index`, and `MenuController@index` using eager loading.
 
 ---
 
 ## Milestone 2: Restaurant Database Schema Extensions
-- [ ] **TASK-201** [Est: 0.5 day]: Create migration `create_floors_table.php` and `Floor` model with seller relationship.
-- [ ] **TASK-202** [Est: 0.5 day]: Create migration adding `floor_id`, `qr_code_token`, `x_position`, and `y_position` to `dining_tables`.
-- [ ] **TASK-203** [Est: 0.5 day]: Create migration `create_reservations_table.php` and `Reservation` model.
-- [ ] **TASK-204** [Est: 0.5 day]: Create migration `create_recipes_and_ingredients_tables.php` and `Recipe` / `RecipeIngredient` models.
-- [ ] **TASK-205** [Est: 0.5 day]: Create migration `create_modifiers_and_product_modifiers_tables.php` and `Modifier` model.
-- [ ] **TASK-206** [Est: 0.5 day]: Create migration `create_kitchen_tickets_and_items_tables.php` and `KitchenTicket` models.
+- [x] **TASK-201** [Est: 0.5 day]: Create migration `create_floors_table.php` and `Floor` model with seller relationship.
+- [x] **TASK-202** [Est: 0.5 day]: Create migration adding `floor_id`, `qr_code_token`, `x_position`, and `y_position` to `dining_tables`.
+- [x] **TASK-203** [Est: 0.5 day]: Create migration `create_reservations_table.php` and `Reservation` model.
+- [x] **TASK-204** [Est: 0.5 day]: Create migration `create_recipes_and_ingredients_tables.php` and `Recipe` / `RecipeIngredient` models.
+- [x] **TASK-205** [Est: 0.5 day]: Create migration `create_modifiers_and_product_modifiers_tables.php` and `Modifier` model.
+- [x] **TASK-206** [Est: 0.5 day]: Create migration `create_kitchen_tickets_and_items_tables.php` and `KitchenTicket` models.
 
 ---
 

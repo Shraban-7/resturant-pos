@@ -19,11 +19,13 @@ Each milestone is **independently deployable**, ensuring zero disruption to exis
 ---
 
 ## Milestone 2: Restaurant Schema Extensions & Domain Models
-- **Goal**: Introduce restaurant-specific database tables and Eloquent models without altering existing tables.
+- **Goal**: Introduce restaurant-specific database tables and Eloquent models without altering existing commercial tables.
+- **Status**: COMPLETE (TASK-201–206)
 - **Deployable Value**: Establishes schema support for floors, tables, reservations, recipes (BOM), modifiers, and KOT tickets.
 - **Key Deliverables**:
   - Migrations for `floors`, `reservations`, `recipes`, `recipe_ingredients`, `modifiers`, `product_modifiers`, `kitchen_tickets`, `kitchen_ticket_items`.
-  - Eloquent models with proper relationships and scope helpers.
+  - Extended `dining_tables` with `floor_id`, QR token, and layout coordinates.
+  - Eloquent models with relationships and `scopeSelf()` tenant helpers.
 
 ---
 
