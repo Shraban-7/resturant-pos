@@ -5,36 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class DiningTable extends Model
+class Floor extends Model
 {
     use HasFactory;
 
     protected $guarded = ['id'];
-
-    const FREE = 'free';
-    const OCCUPIED = 'occupied';
-    const RESERVED = 'reserved';
-    const CLEANING = 'cleaning';
-
-    public static function statuses(): array
-    {
-        return [
-            self::FREE,
-            self::OCCUPIED,
-            self::RESERVED,
-            self::CLEANING,
-        ];
-    }
 
     public function seller(): BelongsTo
     {
         return $this->belongsTo(User::class, 'seller_id');
     }
 
-    public function floor(): BelongsTo
+    public function tables(): HasMany
     {
-        return $this->belongsTo(Floor::class, 'floor_id');
+        return $this->hasMany(DiningTable::class, 'floor_id');
     }
 
     public function scopeSelf($query)

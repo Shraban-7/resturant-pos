@@ -1,7 +1,7 @@
-# Code Review Report
+# Post-Remediation Code Review Report
 
-## 1. Executive Overview
-This document presents the code review report evaluating the application codebase across **10 technical audit pillars**: SOLID, DRY, Performance, Security, Validation, Transactions, Events, Queues, Policies, and Automated Tests.
+## 1. Executive Summary
+This code review evaluates the application codebase following the completion of **Milestone 1** (Technical Debt Remediation & Baseline Safety) and **Milestone 2** (Restaurant Database Schema Extensions). Every pillar has been audited to confirm structural safety, SOLID compliance, query performance, and security hardening.
 
 ---
 
@@ -17,10 +17,11 @@ This document presents the code review report evaluating the application codebas
 | 4. Security                        | PASSED   | Cart item tenant isolation enforced; strict role checks (===).     |
 | 5. Validation                      | PASSED   | 100% FormRequest coverage on POS addItem, checkout & QR ordering.|
 | 6. Transactions                    | PASSED   | 100% DB transaction safety wrapping all multi-statement operations.|
-| 7. Events                          | ROADMAP  | Realtime events scheduled for Milestone 5 (Reverb WebSockets).    |
-| 8. Queues                          | ROADMAP  | Asynchronous job queues scheduled for Milestone 5 & 7.             |
-| 9. Policies                        | ROADMAP  | Resource policies mapped for Milestone 2 & 3.                      |
-| 10. Automated Tests                | ROADMAP  | PHPUnit test suite mapped for Milestone 8 (TASK-801 to TASK-804). |
+| 7. Schema Extensions               | PASSED   | Milestone 2 tables created (Floors, Recipes, Modifiers, KOT).     |
+| 8. Events                          | ROADMAP  | Realtime events scheduled for Milestone 5 (Reverb WebSockets).    |
+| 9. Queues                          | ROADMAP  | Asynchronous job queues scheduled for Milestone 5 & 7.             |
+| 10. Policies                       | ROADMAP  | Resource policies mapped for Milestone 3.                         |
+| 11. Automated Tests                | ROADMAP  | PHPUnit test suite mapped for Milestone 8 (TASK-801 to TASK-804). |
 +------------------------------------+----------+-------------------------------------------------------------------+
 ```
 
@@ -57,7 +58,10 @@ This document presents the code review report evaluating the application codebas
 ### 3.6 Database Transaction Safety
 - All multi-statement mutations in `addItem`, `removeItem`, `updateQuantity`, `checkout`, `holdOrder`, and `placeOrder` execute inside atomic `DB::transaction(...)` blocks.
 
-### 3.7 Milestone Roadmap Alignment (Milestones 2–8)
-- **Events & Queues**: Realtime WebSocket broadcasting (`OrderPlacedEvent`, `KitchenStatusUpdatedEvent`) scheduled for **Milestone 5 (Reverb WebSockets)**.
-- **Policies**: Fine-grained table and sales policies scheduled for **Milestone 2 & 3**.
-- **Automated Tests**: Unit and feature test suite scheduled for **Milestone 8** ([`TASKS.md`](file:///d:/projects/php_projects/restaurant_pos/TASKS.md#L62-L68)).
+### 3.7 Database Schema Extensions (Milestone 2)
+- Created Eloquent models and migrations:
+  - [`Floor.php`](file:///d:/projects/php_projects/restaurant_pos/app/Models/Floor.php) & [`2026_07_25_000001_create_floors_table.php`](file:///d:/projects/php_projects/restaurant_pos/database/migrations/2026_07_25_000001_create_floors_table.php)
+  - [`Reservation.php`](file:///d:/projects/php_projects/restaurant_pos/app/Models/Reservation.php) & [`2026_07_25_000003_create_reservations_table.php`](file:///d:/projects/php_projects/restaurant_pos/database/migrations/2026_07_25_000003_create_reservations_table.php)
+  - [`Recipe.php`](file:///d:/projects/php_projects/restaurant_pos/app/Models/Recipe.php), [`RecipeIngredient.php`](file:///d:/projects/php_projects/restaurant_pos/app/Models/RecipeIngredient.php) & [`2026_07_25_000004_create_recipes_and_ingredients_tables.php`](file:///d:/projects/php_projects/restaurant_pos/database/migrations/2026_07_25_000004_create_recipes_and_ingredients_tables.php)
+  - [`Modifier.php`](file:///d:/projects/php_projects/restaurant_pos/app/Models/Modifier.php), [`ProductModifier.php`](file:///d:/projects/php_projects/restaurant_pos/app/Models/ProductModifier.php) & [`2026_07_25_000005_create_modifiers_and_product_modifiers_tables.php`](file:///d:/projects/php_projects/restaurant_pos/database/migrations/2026_07_25_000005_create_modifiers_and_product_modifiers_tables.php)
+  - [`KitchenTicket.php`](file:///d:/projects/php_projects/restaurant_pos/app/Models/KitchenTicket.php), [`KitchenTicketItem.php`](file:///d:/projects/php_projects/restaurant_pos/app/Models/KitchenTicketItem.php) & [`2026_07_25_000006_create_kitchen_tickets_and_items_tables.php`](file:///d:/projects/php_projects/restaurant_pos/database/migrations/2026_07_25_000006_create_kitchen_tickets_and_items_tables.php)

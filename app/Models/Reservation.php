@@ -6,35 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DiningTable extends Model
+class Reservation extends Model
 {
     use HasFactory;
 
     protected $guarded = ['id'];
 
-    const FREE = 'free';
-    const OCCUPIED = 'occupied';
-    const RESERVED = 'reserved';
-    const CLEANING = 'cleaning';
-
-    public static function statuses(): array
-    {
-        return [
-            self::FREE,
-            self::OCCUPIED,
-            self::RESERVED,
-            self::CLEANING,
-        ];
-    }
+    protected $casts = [
+        'reservation_time' => 'datetime',
+    ];
 
     public function seller(): BelongsTo
     {
         return $this->belongsTo(User::class, 'seller_id');
     }
 
-    public function floor(): BelongsTo
+    public function table(): BelongsTo
     {
-        return $this->belongsTo(Floor::class, 'floor_id');
+        return $this->belongsTo(DiningTable::class, 'table_id');
     }
 
     public function scopeSelf($query)
