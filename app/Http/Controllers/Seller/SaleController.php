@@ -10,10 +10,18 @@ use App\Models\DiningTable;
 use Illuminate\Http\Request;
 use App\Models\BusinessSetting;
 use App\Http\Controllers\Controller;
+use App\Services\StockService;
 use Illuminate\Support\Facades\View;
 
 class SaleController extends Controller
 {
+    protected StockService $stockService;
+
+    public function __construct(StockService $stockService)
+    {
+        $this->stockService = $stockService;
+    }
+
     public function index(Request $request)
     {
         $sales = Sale::self()->with(['customer', 'items.product', 'table', 'waiter'])->latest('id')->paginate(20)->withQueryString();
@@ -48,14 +56,13 @@ class SaleController extends Controller
     {
         $product = Product::find($product_id);
 
-        if ($product->stock_in - $product->stock_out == 0) {
+        if (!$this->stockService->hasAvailableStock($product, 1)) {
             return redirect()->back()->with('error', 'Stock not available!');
         }
 
         $sale = Sale::whereNull('paid_amount')->first();
 
-        $product->increment('stock_out');
-        $product->save();
+        $this->stockService->deductStock($product, 1);
 
         if ($sale) {
 
@@ -110,8 +117,7 @@ class SaleController extends Controller
 
         $saleItem->delete();
 
-        $product->decrement('stock_out');
-        $product->save();
+        $this->stockService->restoreStock($product, 1);
 
         return redirect()->back()->with('success', 'Removed from cart successfully');
     }
@@ -126,7 +132,7 @@ class SaleController extends Controller
 
         if ($type == 'increment') {
 
-            if ($saleItem->product->stock_in - $saleItem->product->stock_out == 0) {
+            if (!$this->stockService->hasAvailableStock($saleItem->product, 1)) {
                 return redirect()->back()->with('error', 'Stock not available!');
             }
 
@@ -137,8 +143,7 @@ class SaleController extends Controller
             $sale->subtotal += $saleItem->price;
             $sale->save();
 
-            $saleItem->product->increment('stock_out');
-            $saleItem->product->save();
+            $this->stockService->deductStock($saleItem->product, 1);
 
             return redirect()->back()->with('success', 'Increment successful');
         }
@@ -163,8 +168,7 @@ class SaleController extends Controller
                 $sale->save();
             }
 
-            $saleItem->product->decrement('stock_out');
-            $saleItem->product->save();
+            $this->stockService->restoreStock($saleItem->product, 1);
         }
 
         return redirect()->back()->with('success', 'Removed from cart successfully');
@@ -199,10 +203,7 @@ class SaleController extends Controller
 
         $sale = Sale::where('order_id', $request->order_id)->first();
 
-        $currentStock = $product->availableStock;
-        $newStock = $currentStock - $request->quantity;
-
-        if ($newStock < 0) {
+        if (!$this->stockService->hasAvailableStock($product, $request->quantity)) {
             return errorResponse('Insufficient stock!');
         }
 
@@ -219,8 +220,7 @@ class SaleController extends Controller
             'total_price' => ($request->quantity * $request->unit_price) - $request->discount,
         ]);
 
-        $product->stock_out += $request->quantity;
-        $product->save();
+        $this->stockService->deductStock($product, $request->quantity);
 
         $sale->due += $sale_item->total_price;
         $sale->subtotal += $sale_item->total_price;
@@ -237,7 +237,7 @@ class SaleController extends Controller
         $response = [
             'item' => [
                 'id' => $product->id,
-                'stock' => $newStock
+                'stock' => $this->stockService->availableQuantity($product)
             ],
             'cart_item_html' => $itemHtml
         ];
@@ -251,13 +251,12 @@ class SaleController extends Controller
 
         $item = $sale_item->product;
 
-        $item->stock_out -= $sale_item->quantity;
-        $item->save();
+        $this->stockService->restoreStock($item, $sale_item->quantity);
 
         $response = [
             'item' => [
                 'id' => $item->id,
-                'stock' => $item->availableStock
+                'stock' => $this->stockService->availableQuantity($item)
             ]
         ];
 
@@ -282,7 +281,12 @@ class SaleController extends Controller
 
         if ($quantity > $sale_item->quantity) {
             $updatedQuantity = ($quantity - $sale_item->quantity);
-            $item->stock_out += $updatedQuantity;
+
+            if (!$this->stockService->hasAvailableStock($item, $updatedQuantity)) {
+                return errorResponse('Insufficient stock!');
+            }
+
+            $this->stockService->deductStock($item, $updatedQuantity);
             $totalPriceQuantity = $sale_item->unit_price * $updatedQuantity;
             $sale->due += $totalPriceQuantity;
             $sale->subtotal += $totalPriceQuantity;
@@ -292,7 +296,7 @@ class SaleController extends Controller
 
         if ($quantity < $sale_item->quantity) {
             $updatedQuantity = ($sale_item->quantity - $quantity);
-            $item->stock_out -= $updatedQuantity;
+            $this->stockService->restoreStock($item, $updatedQuantity);
             $totalPriceQuantity = $sale_item->unit_price * $updatedQuantity;
             $sale->due -= $totalPriceQuantity;
             $sale->subtotal -= $totalPriceQuantity;
@@ -304,10 +308,8 @@ class SaleController extends Controller
         $sale_item->total_price = ($sale_item->unit_price * $quantity);
         $sale_item->save();
 
-        $item->save();
-
         $response = [
-            'item' => ['id' => $item->id, 'stock' => $item->availableStock],
+            'item' => ['id' => $item->id, 'stock' => $this->stockService->availableQuantity($item)],
             'sale_item' => ['total_price' => $sale_item->total_price],
         ];
 

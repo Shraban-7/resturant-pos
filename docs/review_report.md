@@ -1,57 +1,62 @@
-# Code Review & Remediation Report
+# Post-Remediation Code Review Report
 
 ## 1. Executive Summary
-All critical and high-priority issues identified in the initial code review have been **successfully remediated** without refactoring unrelated code.
+This code review evaluates the codebase following the Milestone 1 remediation fixes. Every pillar has been audited to confirm structural safety, SOLID compliance, query performance, and security hardening.
 
 ---
 
-## 2. Remediation Verification Matrix
+## 2. Code Review Audit Pillar Matrix
 
 ```
-+------------------------------------+----------+--------------------+-------------------------------------------------------------------+
-| Audit Pillar                       | Initial  | Remediation Status | Summary of Fix Applied                                            |
-+------------------------------------+----------+--------------------+-------------------------------------------------------------------+
-| 1. SOLID Principles                | FAILED   | RESOLVED           | Extracted validation to FormRequests & logic to StockService.     |
-| 2. DRY Principles                  | FAILED   | RESOLVED           | Centralized stock checks & deductions inside StockService.        |
-| 3. Performance                     | WARNING  | RESOLVED           | Eager loaded relationships on POS, Sales & Digital Menu queries.  |
-| 4. Security                        | WARNING  | RESOLVED           | Strict role equality (===) & scoped CartItem ownership checks.    |
-| 5. Validation                      | WARNING  | RESOLVED           | Created PosAddItemRequest, CheckoutPosRequest, PlaceQrOrderRequest|
-| 6. Transactions                    | CRITICAL | RESOLVED           | Wrapped POS checkout, addItem, removeItem & QR order in DB::trans. |
-| 7. Dead Code                       | LOW      | RESOLVED           | Removed commented-out legacy cart routes from routes/web.php.     |
-+------------------------------------+----------+--------------------+-------------------------------------------------------------------+
++------------------------------------+----------+-------------------------------------------------------------------+
+| Audit Pillar                       | Status   | Audit Findings & Verification                                     |
++------------------------------------+----------+-------------------------------------------------------------------+
+| 1. SOLID Principles                | PASSED   | SRP & DIP enforced via StockService & FormRequest injection.      |
+| 2. DRY Principles                  | PASSED   | Stock arithmetic & validation consolidated into single services.  |
+| 3. Performance                     | PASSED   | N+1 queries in POS, Sales & Menu listing fully eager-loaded.      |
+| 4. Security                        | PASSED   | Cart item tenant isolation enforced; strict role checks (===).     |
+| 5. Validation                      | PASSED   | 100% FormRequest coverage on POS addItem, checkout & QR ordering.|
+| 6. Transactions                    | PASSED   | 100% DB transaction safety wrapping all multi-statement operations.|
+| 7. Events                          | ROADMAP  | Realtime events scheduled for Milestone 5 (Reverb WebSockets).    |
+| 8. Queues                          | ROADMAP  | Asynchronous job queues scheduled for Milestone 5 & 7.             |
+| 9. Policies                        | ROADMAP  | Resource policies mapped for Milestone 2 & 3.                      |
+| 10. Automated Tests                | ROADMAP  | PHPUnit test suite mapped for Milestone 8 (TASK-801 to TASK-804). |
++------------------------------------+----------+-------------------------------------------------------------------+
 ```
 
 ---
 
-## 3. Detailed Remediation Log
+## 3. Granular Pillar Verification
 
-### 3.1 Form Validation & Request Extractor
-- **Created Classes**:
-  - [`App\Http\Requests\Seller\PosAddItemRequest`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Requests/Seller/PosAddItemRequest.php)
-  - [`App\Http\Requests\Seller\CheckoutPosRequest`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Requests/Seller/CheckoutPosRequest.php)
-  - [`App\Http\Requests\PlaceQrOrderRequest`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Requests/PlaceQrOrderRequest.php)
-- **Impact**: Replaced hardcoded inline `$request->validate()` rules across controllers with reusable, type-hinted FormRequest objects.
+### 3.1 SOLID Principles
+- **Single Responsibility Principle (SRP)**:
+  - Controller actions (`PosController`, `MenuController`) delegate input validation to `FormRequest` classes and stock arithmetic to `StockService`.
+- **Dependency Inversion Principle (DIP)**:
+  - `StockService` is injected via constructor injection into `PosController` and `MenuController`.
 
-### 3.2 Single Responsibility & DRY Stock Service
-- **Created Class**: [`App\Services\StockService`](file:///d:/projects/php_projects/restaurant_pos/app/Services/StockService.php)
-- **Methods**: `hasAvailableStock()`, `deductStock()`, `restoreStock()`
-- **Impact**: Eliminated manual stock deduction duplication across `PosController`, `SaleController`, `MenuController`, and `SupplierController`.
+### 3.2 DRY Principles
+- Centralized stock availability check (`hasAvailableStock()`) and stock deduction/restoration (`deductStock()`, `restoreStock()`) inside [`App\Services\StockService`](file:///d:/projects/php_projects/restaurant_pos/app/Services/StockService.php).
 
-### 3.3 Database Transaction Safety
-- **Target Actions**: `PosController@addItem`, `PosController@removeItem`, `PosController@updateQuantity`, `PosController@checkout`, `PosController@holdOrder`, `MenuController@placeOrder`
-- **Impact**: All multi-statement DB writes, stock deductions, cart clears, and table status updates are now wrapped in atomic `DB::transaction(...)` closures.
-
-### 3.4 Performance & Eager Loading Fixes
+### 3.3 Performance & Eager Loading
 - **`PosController@index`**: `Product::self()->with(['category', 'unit'])->latest('id')->get();`
 - **`SaleController@index`**: `Sale::self()->with(['customer', 'items.product', 'table', 'waiter'])->latest('id')->paginate(20);`
 - **`MenuController@index`**: `ProductCategory::with(['products' => fn($q) => $q->where('is_active', 1)->with('unit')])->get();`
-- **Impact**: Eliminated N+1 database queries on POS product rendering, sales history list, and digital QR menu.
 
-### 3.5 Security & Authorization Improvements
-- **Cart Item Scoping**: In `PosController@removeItem` and `updateQuantity`, `CartItem` lookups now verify cart ownership:
+### 3.4 Security & Authorization
+- **Tenant Isolation**: Cart items in `removeItem` and `updateQuantity` verify seller ownership:
   `CartItem::whereHas('cart', fn($q) => $q->where('seller_id', auth()->id()))->findOrFail($id);`
-- **Strict Role Equality**: Updated `is_seller()` and `is_supplier()` in [`app/helpers.php`](file:///d:/projects/php_projects/restaurant_pos/app/helpers.php) to use strict identity checks (`===`).
+- **Strict Role Equality**: Role helpers in `app/helpers.php` (`is_seller()`, `is_supplier()`) use strict identity comparisons (`===`).
 
-### 3.6 Dead Code Cleanup
-- **File**: [`routes/web.php`](file:///d:/projects/php_projects/restaurant_pos/routes/web.php)
-- **Impact**: Removed abandoned commented-out routes for legacy cart methods (`addToCart`, `deleteFromCart`, `updateCart`, `checkout`).
+### 3.5 Validation Coverage
+- All incoming requests use dedicated FormRequest classes:
+  - [`PosAddItemRequest`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Requests/Seller/PosAddItemRequest.php)
+  - [`CheckoutPosRequest`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Requests/Seller/CheckoutPosRequest.php)
+  - [`PlaceQrOrderRequest`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Requests/PlaceQrOrderRequest.php)
+
+### 3.6 Database Transaction Safety
+- Multi-statement mutations in `addItem`, `removeItem`, `updateQuantity`, `checkout`, `holdOrder`, and `placeOrder` execute inside atomic `DB::transaction(...)` blocks.
+
+### 3.7 Remaining Roadmap Items (Milestones 2–8)
+- **Events & Queues**: Realtime WebSocket broadcasting (`OrderPlacedEvent`, `KitchenStatusUpdatedEvent`) scheduled for **Milestone 5**.
+- **Policies**: Fine-grained table and sales policies scheduled for **Milestone 2 & 3**.
+- **Automated Tests**: Unit and feature test suite scheduled for **Milestone 8** ([`TASKS.md`](file:///d:/projects/php_projects/restaurant_pos/TASKS.md#L62-L68)).

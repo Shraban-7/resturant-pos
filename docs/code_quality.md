@@ -7,10 +7,11 @@
 | **PSR Compliance** | Moderate (PSR-12 mostly followed) | Manual spacing issues, inconsistent brace formatting in `MenuController.php`. |
 | **Type Declarations** | Low | Missing PHP 8 return types and parameter typehints across controllers and model methods. |
 | **Form Requests** | Partial | `PosAddItemRequest` and `CheckoutPosRequest` cover POS add-item and checkout; other controllers still use inline `$request->validate([...])`. |
-| **Fat Controller Smell** | High | `PosController.php` (388 lines), `SaleController.php` (399 lines), `SupplyController.php` (270 lines). |
+| **Fat Controller Smell** | High | `PosController.php`, `SaleController.php`, `SupplyController.php` remain large; seller stock mutations now delegated to `StockService`. |
 | **Fat Model Smell** | Low | Models are lightweight, but missing domain methods and repository patterns. |
-| **Database Transactions** | Missing | Multi-query operations (e.g. stock decrement + sale item creation + cart deletion) lack `DB::transaction()`. |
-| **Automated Tests** | Basic | Only default Laravel `ExampleTest` files present. Zero test coverage for POS or Sales. |
+| **Database Transactions** | Partial | Some POS/menu paths use `DB::transaction()`; remaining multi-query flows still need coverage (TASK-103/104). |
+| **Stock Service** | Done (TASK-102) | `App\Services\StockService` centralizes availability checks and stock_out deduct/restore for seller `Product` inventory. |
+| **Automated Tests** | Basic | Only default Laravel `ExampleTest` files present. `StockService` unit tests tracked as TASK-801. |
 
 ---
 
@@ -33,6 +34,7 @@
 ## 3. Targeted Refactoring Guidelines
 
 1. **Extract Form Requests**: Done for POS add-item/checkout (`PosAddItemRequest`, `CheckoutPosRequest`). Remaining: hold-order, QR place-order, and other seller controllers.
-2. **Introduce Action Classes**: Extract business logic out of controllers into single-purpose Action classes (`CheckoutPosOrderAction`, `PlaceQrOrderAction`, `UpdateStockAction`).
-3. **Wrap in DB Transactions**: Guarantee atomicity for order creation, stock movement, cart cleanup, and table status updates using `DB::transaction()`.
+2. **Introduce Action Classes / Services**: `StockService` covers inventory checks and deductions (TASK-102). Remaining: checkout/order Action classes as needed.
+3. **Wrap in DB Transactions**: Guarantee atomicity for order creation, stock movement, cart cleanup, and table status updates using `DB::transaction()` (TASK-103/104).
 4. **Strict PHP Type Hinting**: Add scalar and object return type declarations for all controller methods, model relations, and helper functions.
+5. **Automated Tests**: Add unit coverage for `StockService` (TASK-801).

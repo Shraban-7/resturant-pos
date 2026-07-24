@@ -11,9 +11,10 @@ This audit report provides an in-depth code-level analysis of the existing Larav
 
 #### Issue 1: Stock Calculation and Manual Stock-Out Increment Duplication
 - **Severity**: HIGH
-- **File**: [`app/Http/Controllers/Seller/PosController.php`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Controllers/Seller/PosController.php#L67-L84), [`app/Http/Controllers/Seller/SaleController.php`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Controllers/Seller/SaleController.php#L57-L113), [`app/Http/Controllers/MenuController.php`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Controllers/MenuController.php#L50-L51), [`app/Http/Controllers/Supplier/SupplyController.php`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Controllers/Supplier/SupplyController.php#L80-L120)
-- **Description**: The stock availability check (`stock_in - stock_out`) and manual stock deduction (`$product->stock_out += $qty`) are duplicated across multiple controller methods.
-- **Recommended Fix**: Create a single `App\Services\StockService` class with a unified `deductStock(Product $product, float $quantity)` method.
+- **Status**: RESOLVED (TASK-102)
+- **File**: [`app/Services/StockService.php`](file:///d:/projects/php_projects/restaurant_pos/app/Services/StockService.php)
+- **Description**: Stock availability and `stock_out` mutations were duplicated across seller POS/sale/menu flows.
+- **Fix Applied**: Centralized in `StockService` (`availableQuantity`, `hasAvailableStock`, `deductStock`, `restoreStock`) and wired into `PosController`, `MenuController`, and `SaleController`. Supplier catalog still uses `SupplierProduct` counters separately.
 
 #### Issue 2: Price and Subtotal Calculation Duplication
 - **Severity**: MEDIUM
