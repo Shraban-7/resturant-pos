@@ -54,11 +54,18 @@ Route::middleware(['auth', 'seller'])->prefix('seller')->as('seller.')->group(fu
     Route::prefix('pos')->as('pos.')->group(function () {
         Route::get('/', [PosController::class, 'index'])->name('index');
         Route::get('/cds', [PosController::class, 'cds'])->name('cds');
-        Route::post('/add-item', [PosController::class, 'addItem'])->name('add_item');
-        Route::post('/remove-item', [PosController::class, 'removeItem'])->name('remove_item');
-        Route::post('/update-quantity', [PosController::class, 'updateQuantity'])->name('update_quantity');
+        Route::post('/add-item', [PosController::class, 'addItem'])->name('addItem');
+        Route::post('/remove-item', [PosController::class, 'removeItem'])->name('removeItem');
+        Route::post('/update-quantity', [PosController::class, 'updateQuantity'])->name('updateQuantity');
         Route::post('/checkout', [PosController::class, 'checkout'])->name('checkout');
-        Route::post('/hold-order', [PosController::class, 'holdOrder'])->name('hold_order');
+        Route::post('/hold-order', [PosController::class, 'holdOrder'])->name('hold');
+        Route::post('/update-sale', [SaleController::class, 'saleUpdate'])->name('updateSale');
+
+        Route::prefix('sale-items')->as('saleItem.')->group(function () {
+            Route::post('/add', [SaleController::class, 'addItemToSale'])->name('add');
+            Route::post('/remove', [SaleController::class, 'removeSaleItem'])->name('remove');
+            Route::post('/update-quantity', [SaleController::class, 'updateSaleItemQuantity'])->name('updateQuantity');
+        });
     });
 
     Route::get('/kds', [KdsController::class, 'index'])->name('kds.index');
