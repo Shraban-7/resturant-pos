@@ -14,8 +14,10 @@ yarn-error.log
 /.idea
 /.vscode
 /restaurant-pos-agent-docs
-
-# Ignore all markdown files except root README.md
-*.md
-!/README.md
-!/readme.md
+/docs
+/docs/*.md
+/realtime_architecture.md
+/reuse_report.md
+/review_report.md
+/ROADMAP.md
+/TASKS.md
