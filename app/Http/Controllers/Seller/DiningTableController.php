@@ -93,11 +93,17 @@ class DiningTableController extends Controller
     public function floorMap(Request $request)
     {
         $floors = Floor::self()->orderBy('priority')->orderBy('name')->get();
-        $floorId = $request->integer('floor_id') ?: $floors->first()?->id;
+
+        // Explicit floor_id=0 (or empty) means Unassigned; missing param defaults to first floor.
+        if ($request->has('floor_id')) {
+            $floorId = $request->integer('floor_id') ?: null;
+        } else {
+            $floorId = $floors->first()?->id;
+        }
 
         $tables = DiningTable::self()
-            ->when($floorId, fn ($q) => $q->where('floor_id', $floorId))
-            ->when(! $floorId, fn ($q) => $q->whereNull('floor_id'))
+            ->when($floorId !== null, fn ($q) => $q->where('floor_id', $floorId))
+            ->when($floorId === null, fn ($q) => $q->whereNull('floor_id'))
             ->orderBy('name')
             ->get();
 

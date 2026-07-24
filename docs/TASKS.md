@@ -39,6 +39,7 @@
 - [x] **TASK-402** [Est: 0.5 day]: Update POS item checkout modal (`item-modal.blade.php`) to select modifiers and special notes.
 - [x] **TASK-403** [Est: 1.0 day]: Create `App\Actions\DeductRecipeStockAction` for automatic raw ingredient inventory deduction.
 - [x] **TASK-404** [Est: 0.5 day]: Build Recipe BOM management UI under `/seller/products/{product}/recipe` and wire held-sale stock path.
+
 ---
 
 ## Milestone 5: Real-Time Kitchen Display System (KDS) & WebSockets
@@ -69,3 +70,25 @@
 - [x] **TASK-802** [Est: 0.5 day]: Write PHPUnit feature tests for POS checkout transaction safety & KDS ticket creation.
 - [x] **TASK-803** [Est: 0.5 day]: Write feature tests for QR code order submission & table status locking.
 - [x] **TASK-804** [Est: 0.5 day]: Finalize Docker container configuration and production deployment script.
+
+---
+
+## Milestone 9: Phase 2 Post-MVP Advanced Modules
+- [x] **TASK-901** [Est: 0.5 day]: Table Reservations booking calendar, status tracking, and table locking.
+- [x] **TASK-902** [Est: 0.5 day]: Guest QR Table ordering, modifier selection, and instant KDS ticket creation.
+- [x] **TASK-903** [Est: 0.5 day]: Customer Display Screen (CDS) 2nd screen with live `BroadcastChannel` cart sync.
+- [x] **TASK-904** [Est: 0.5 day]: Customer Loyalty Program points balance, reward tiers, and manual point adjustments.
+- [x] **TASK-905** [Est: 0.5 day]: Digital Gift Cards issuance, unique code verification, and POS redemption.
+- [x] **TASK-906** [Est: 0.5 day]: Delivery Orders management, driver/courier assignment, and dispatch status tracking.
+- [x] **TASK-907** [Est: 0.5 day]: Online Ordering Storefront portal for pickup/delivery and guest checkout.
+
+---
+
+## Milestone 10: Phase 3 Future Expansion & Multi-Branch Enterprise Scaling
+- [ ] **TASK-1001** [Est: 1.0 day]: Multi-Branch Management Architecture & branch-level data scoping.
+- [ ] **TASK-1002** [Est: 1.0 day]: SaaS / Multi-Tenant Isolation & Subscription Plan Billing Engine.
+- [ ] **TASK-1003** [Est: 1.0 day]: Centralized Executive Reporting & Multi-Branch Analytics Dashboard.
+- [ ] **TASK-1004** [Est: 1.0 day]: Franchise System Support, Fee Tracking, and Royalty Calculation.
+- [ ] **TASK-1005** [Est: 1.0 day]: Cross-Branch Inventory Transfer & Inter-Branch Stock Balancing.
+- [ ] **TASK-1006** [Est: 1.0 day]: Centralized Purchasing Engine & Bulk Vendor Procurement Dispatch.
+- [ ] **TASK-1007** [Est: 1.0 day]: Public Webhook & REST API Integrations (Aggregators, Accounting, Payments).

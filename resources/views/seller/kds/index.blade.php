@@ -246,7 +246,7 @@ function kdsApp(initialTickets, sellerId) {
         async setStatus(ticket, status) {
             this.busyId = ticket.ticket_id;
             try {
-                const res = await window.axios.post(`/seller/kds/${ticket.ticket_id}/status`, { status });
+                const res = await window.axios.post(`/seller/kds/tickets/${ticket.ticket_id}/status`, { status });
                 if (res.data?.ticket) {
                     if (status === 'served') {
                         this.tickets = this.tickets.filter(t => t.ticket_id !== ticket.ticket_id);

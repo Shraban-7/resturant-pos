@@ -33,8 +33,8 @@
     @empty
         <p class="text-slate-500 text-sm">Create a floor first, then assign tables to it.</p>
     @endforelse
-    <a href="{{ route('seller.diningTables.floorMap') }}"
-       class="btn btn-sm {{ ! $floorId ? 'btn-primary' : 'btn-secondary' }}">Unassigned</a>
+    <a href="{{ route('seller.diningTables.floorMap', ['floor_id' => 0]) }}"
+       class="btn btn-sm {{ $floorId === null ? 'btn-primary' : 'btn-secondary' }}">Unassigned</a>
 </div>
 
 <div class="card overflow-hidden">

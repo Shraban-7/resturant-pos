@@ -78,7 +78,7 @@ class ProductModifierController extends Controller
             'group_name' => $data['group_name'],
             'name' => $data['name'],
             'price' => $data['price'] ?? 0,
-            'is_active' => $request->has('is_active') ? true : true,
+            'is_active' => array_key_exists('is_active', $data) ? (bool) $data['is_active'] : true,
             'sort_order' => 0,
         ]);
 

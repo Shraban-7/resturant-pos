@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Seller;
 
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
+use App\Actions\ResolveProductModifiersAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Seller\CheckoutPosRequest;
 use App\Http\Requests\Seller\PosAddItemRequest;
@@ -27,7 +28,8 @@ class PosController extends Controller
     public function __construct(
         protected StockService $stockService,
         protected DeductRecipeStockAction $deductRecipeStock,
-        protected CreateKitchenTicketAction $createKitchenTicket
+        protected CreateKitchenTicketAction $createKitchenTicket,
+        protected ResolveProductModifiersAction $resolveModifiers,
     ) {}
 
     public function index(Request $request)
@@ -172,23 +174,11 @@ class PosController extends Controller
                     ->firstOrFail();
 
                 $modifiers = collect($request->input('modifiers', []));
-                $requestedIds = $modifiers->pluck('id')->filter()->map(fn ($id) => (int) $id)->unique()->values();
-                $allowed = $product->relationLoaded('modifiers')
-                    ? $product->modifiers
-                    : $product->modifiers()->where('modifiers.is_active', true)->get();
+                [$modifiers, $lineUnit] = $this->resolveModifiers->execute(
+                    $product,
+                    $modifiers->all()
+                );
 
-                $allowed = $allowed->where('is_active', true)->whereIn('id', $requestedIds);
-
-                $modifiers = $allowed->map(fn ($m) => [
-                    'id' => (int) $m->id,
-                    'name' => $m->name,
-                    'group_name' => $m->group_name,
-                    'price' => (float) $m->price,
-                ])->values()->all();
-
-                $modifierTotal = collect($modifiers)->sum('price');
-                $unitPrice = (float) $product->selling_price;
-                $lineUnit = $unitPrice + $modifierTotal;
                 $qty = (float) $request->quantity;
                 $discount = (float) $request->discount;
                 $totalPrice = ($qty * $lineUnit) - $discount;
@@ -414,64 +404,99 @@ class PosController extends Controller
 
     public function holdOrder(Request $request)
     {
-        return DB::transaction(function () use ($request) {
-            $cart = Cart::where('order_id', $request->order_id)
-                ->where('seller_id', auth()->id())
-                ->with('items.item.unit')
-                ->first();
+        try {
+            return DB::transaction(function () use ($request) {
+                $cart = Cart::where('order_id', $request->order_id)
+                    ->where('seller_id', auth()->id())
+                    ->with('items.item.unit')
+                    ->lockForUpdate()
+                    ->first();
 
-            if (! $cart || count($cart->items) == 0) {
-                return errorResponse('No items added!');
-            }
+                if (! $cart || count($cart->items) == 0) {
+                    throw new RuntimeException('No items added!');
+                }
 
-            $subTotal = 0;
-            $saleItems = [];
+                $customer_id = $request->customer_id ?: null;
+                $customer_name = $request->customer_name ?? '';
+                $customer_phone = $request->customer_phone ?? '';
 
-            foreach ($cart->items as $item) {
-                $subTotal += $item->total_price;
-                $saleItems[] = [
+                if ($customer_name != '' && $customer_phone != '') {
+                    $newCustomer = Customer::create([
+                        'seller_id' => auth()->id(),
+                        'name' => $customer_name,
+                        'phone' => $customer_phone,
+                    ]);
+                    $customer_id = $newCustomer->id;
+                }
+
+                $subTotal = 0;
+                $saleItems = [];
+
+                foreach ($cart->items as $item) {
+                    $subTotal += $item->total_price;
+                    $saleItems[] = [
+                        'seller_id' => $cart->seller_id,
+                        'item_id' => $item->item_id,
+                        'item_name' => $item->item->name,
+                        'buying_price' => $item->item->buying_price,
+                        'unit_price' => $item->unit_price,
+                        'unit' => $item->item->unit->short_name,
+                        'quantity' => $item->quantity,
+                        'total_price' => $item->total_price,
+                        'note' => $item->note,
+                        'modifiers_json' => $item->modifiers_json,
+                    ];
+                }
+
+                $tableId = $request->dining_table_id ?? $request->table_id;
+                $employeeId = $request->seller_employee_id ?? $request->employee_id;
+                $payable = $subTotal;
+
+                $saleData = [
                     'seller_id' => $cart->seller_id,
-                    'item_id' => $item->item_id,
-                    'item_name' => $item->item->name,
-                    'buying_price' => $item->item->buying_price,
-                    'unit_price' => $item->unit_price,
-                    'unit' => $item->item->unit->short_name,
-                    'quantity' => $item->quantity,
-                    'total_price' => $item->total_price,
-                    'note' => $item->note,
-                    'modifiers_json' => $item->modifiers_json,
+                    'customer_id' => $customer_id,
+                    'is_hold' => 1,
+                    'order_id' => $cart->order_id,
+                    'sale_date' => date('Y-m-d'),
+                    'subtotal' => $subTotal,
+                    'discount' => 0,
+                    'payable' => $payable,
+                    'paid' => 0,
+                    'due' => $payable,
+                    'note' => $request->note,
                 ];
-            }
 
-            $payable = $subTotal;
+                if ($tableId) {
+                    $saleData['dining_table_id'] = $tableId;
+                }
+                if ($employeeId) {
+                    $saleData['seller_employee_id'] = $employeeId;
+                }
 
-            $saleData = [
-                'seller_id' => $cart->seller_id,
-                'is_hold' => 1,
-                'order_id' => $cart->order_id,
-                'sale_date' => date('Y-m-d'),
-                'subtotal' => $subTotal,
-                'discount' => 0,
-                'payable' => $payable,
-                'paid' => 0,
-                'due' => $payable,
-                'note' => $request->note,
-            ];
+                $sale = Sale::create($saleData);
 
-            $sale = Sale::create($saleData);
+                foreach ($saleItems as $saleItem) {
+                    $sale->items()->create($saleItem);
+                }
 
-            foreach ($saleItems as $saleItem) {
-                $sale->items()->create($saleItem);
-            }
+                $cart->items()->delete();
+                $cart->delete();
 
-            $cart->items()->delete();
-            $cart->delete();
+                if ($tableId) {
+                    $table = DiningTable::self()->where('id', $tableId)->lockForUpdate()->first();
+                    if ($table) {
+                        $table->update(['status' => DiningTable::OCCUPIED]);
+                    }
+                }
 
-            $sale->load(['items', 'table']);
-            $this->createKitchenTicket->execute($sale);
+                $sale->load(['items', 'table']);
+                $this->createKitchenTicket->execute($sale);
 
-            return successResponse('Sale held successfully');
-        });
+                return successResponse('Sale held successfully');
+            });
+        } catch (RuntimeException|InvalidArgumentException $e) {
+            return errorResponse($e->getMessage());
+        }
     }
 
     public function cds()

@@ -23,6 +23,7 @@ class StockService
 
     /**
      * Increase stock_out (deduct available inventory).
+     * Locks the product row so concurrent sales cannot oversell.
      *
      * @throws InvalidArgumentException when requested quantity exceeds available stock
      */
@@ -32,12 +33,18 @@ class StockService
             throw new InvalidArgumentException('Deduction quantity must be greater than zero.');
         }
 
-        if (!$this->hasAvailableStock($product, $quantity)) {
-            throw new InvalidArgumentException("Insufficient stock available for product: {$product->name}");
+        $locked = Product::query()
+            ->whereKey($product->getKey())
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        if (! $this->hasAvailableStock($locked, $quantity)) {
+            throw new InvalidArgumentException("Insufficient stock available for product: {$locked->name}");
         }
 
-        $product->increment('stock_out', $quantity);
-        $product->refresh();
+        $locked->increment('stock_out', $quantity);
+        $locked->refresh();
+        $product->setRawAttributes($locked->getAttributes(), true);
 
         return $product;
     }
@@ -51,13 +58,19 @@ class StockService
             return $product;
         }
 
-        $restorable = min($quantity, (float) $product->stock_out);
+        $locked = Product::query()
+            ->whereKey($product->getKey())
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        $restorable = min($quantity, (float) $locked->stock_out);
         if ($restorable <= 0) {
             return $product;
         }
 
-        $product->decrement('stock_out', $restorable);
-        $product->refresh();
+        $locked->decrement('stock_out', $restorable);
+        $locked->refresh();
+        $product->setRawAttributes($locked->getAttributes(), true);
 
         return $product;
     }

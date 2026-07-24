@@ -217,8 +217,8 @@
                 },
                 init() {
                     if (!window.Echo || !this.token) return;
-                    window.Echo.channel(`table.${this.token}`)
-                        .listen('.OrderPlaced', (e) => {
+                    const channel = window.Echo.channel(`table.${this.token}`);
+                    channel.listen('.OrderPlaced', (e) => {
                             if (this.orderId && e.order_id && e.order_id !== this.orderId) return;
                             this.status = e.status || 'pending';
                             this.connected = true;
@@ -229,7 +229,16 @@
                             this.status = e.status;
                             this.connected = true;
                         });
-                    this.connected = true;
+                    if (window.Echo.connector?.pusher?.connection) {
+                        const conn = window.Echo.connector.pusher.connection;
+                        this.connected = conn.state === 'connected';
+                        conn.bind('connected', () => { this.connected = true; });
+                        conn.bind('disconnected', () => { this.connected = false; });
+                        conn.bind('unavailable', () => { this.connected = false; });
+                        conn.bind('failed', () => { this.connected = false; });
+                    } else {
+                        this.connected = true;
+                    }
                 },
             };
         }

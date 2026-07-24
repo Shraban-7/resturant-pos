@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
+use App\Actions\ResolveProductModifiersAction;
 use App\Http\Requests\PlaceQrOrderRequest;
 use App\Models\DiningTable;
 use App\Models\KitchenTicket;
-use App\Models\Modifier;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Sale;
@@ -22,7 +22,8 @@ class MenuController extends Controller
     public function __construct(
         protected StockService $stockService,
         protected DeductRecipeStockAction $deductRecipeStock,
-        protected CreateKitchenTicketAction $createKitchenTicket
+        protected CreateKitchenTicketAction $createKitchenTicket,
+        protected ResolveProductModifiersAction $resolveModifiers,
     ) {
     }
 
@@ -84,19 +85,9 @@ class MenuController extends Controller
                         throw new RuntimeException("Insufficient stock for item: {$product->name}");
                     }
 
-                    $requestedIds = collect($item['modifiers'] ?? [])->pluck('id')->filter()->map(fn ($id) => (int) $id)->unique()->values();
-                    $allowed = $product->modifiers
-                        ->where('is_active', true)
-                        ->whereIn('id', $requestedIds);
+                    $requestedIds = collect($item['modifiers'] ?? [])->all();
+                    [$modifiersJson, $unitPrice] = $this->resolveModifiers->execute($product, $requestedIds);
 
-                    $modifiersJson = $allowed->map(fn (Modifier $m) => [
-                        'id' => $m->id,
-                        'name' => $m->name,
-                        'group_name' => $m->group_name,
-                        'price' => (float) $m->price,
-                    ])->values()->all();
-
-                    $unitPrice = (float) $product->selling_price + collect($modifiersJson)->sum('price');
                     $total = $unitPrice * $item['quantity'];
                     $subtotal += $total;
 

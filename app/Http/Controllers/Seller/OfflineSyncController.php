@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Seller;
 
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
+use App\Actions\ResolveProductModifiersAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Seller\OfflineSyncRequest;
 use App\Models\Cart;
@@ -24,6 +25,7 @@ class OfflineSyncController extends Controller
     public function __construct(
         private DeductRecipeStockAction $deductRecipeStock,
         private CreateKitchenTicketAction $createKitchenTicket,
+        private ResolveProductModifiersAction $resolveModifiers,
     ) {}
 
     public function store(OfflineSyncRequest $request)
@@ -142,24 +144,11 @@ class OfflineSyncController extends Controller
                     $this->deductRecipeStock->restore($product, $alreadyDeducted - $quantity);
                 }
 
-                $allowedModifierIds = $product->modifiers->pluck('id')->map(fn ($id) => (int) $id);
-                $modifiers = collect($line['modifiers'] ?? [])
-                    ->filter(fn (array $modifier) => $allowedModifierIds->contains((int) $modifier['id']))
-                    ->map(function (array $modifier) use ($product) {
-                        $serverModifier = $product->modifiers->firstWhere('id', (int) $modifier['id']);
+                [$modifiers, $unitPrice] = $this->resolveModifiers->execute(
+                    $product,
+                    $line['modifiers'] ?? []
+                );
 
-                        return [
-                            'id' => (int) $serverModifier->id,
-                            'name' => $modifier['name'] ?? $serverModifier->name,
-                            'group_name' => $modifier['group_name'] ?? $serverModifier->group_name,
-                            // Keep the captured price for an order already accepted at the till.
-                            'price' => (float) ($modifier['price'] ?? $serverModifier->price),
-                        ];
-                    })
-                    ->values()
-                    ->all();
-
-                $unitPrice = (float) $line['unit_price_snapshot'];
                 $discount = (float) ($line['discount'] ?? 0);
                 $total = max(0, ($unitPrice * $quantity) - $discount);
                 $subtotal += $total;

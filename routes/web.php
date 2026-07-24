@@ -34,8 +34,9 @@ Route::get('/', function () {
 })->name('home');
 
 // Digital QR Code Menu & Public Tracking
-Route::get('/menu/{table}', [MenuController::class, 'index'])->name('digital-menu');
-Route::post('/menu/{table}/order', [MenuController::class, 'placeOrder'])->name('digital-menu.order');
+Route::get('/menu/tracker/{token}', [MenuController::class, 'tracker'])->name('menu.tracker');
+Route::get('/menu/{table}', [MenuController::class, 'index'])->name('menu.index');
+Route::post('/menu/{table}/order', [MenuController::class, 'placeOrder'])->name('menu.placeOrder');
 Route::get('/order-status/{order}', [OrderStatusController::class, 'show'])->name('order-status.show');
 
 // Storefront Online Ordering
@@ -66,7 +67,7 @@ Route::middleware(['auth', 'seller'])->prefix('seller')->as('seller.')->group(fu
     });
 
     Route::get('/kds', [KdsController::class, 'index'])->name('kds.index');
-    Route::post('/kds/tickets/{ticket}/status', [KdsController::class, 'updateStatus'])->name('kds.update-status');
+    Route::post('/kds/tickets/{ticket}/status', [KdsController::class, 'updateStatus'])->name('kds.updateStatus');
 
     Route::prefix('sales')->as('sales.')->group(function () {
         Route::get('/', [SaleController::class, 'index'])->name('index');

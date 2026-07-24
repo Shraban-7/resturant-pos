@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Seller;
 
+use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
+use App\Actions\ResolveProductModifiersAction;
 use App\Events\TableStatusChangedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\BusinessSetting;
@@ -24,6 +26,8 @@ class SaleController extends Controller
     public function __construct(
         protected StockService $stockService,
         protected DeductRecipeStockAction $deductRecipeStock,
+        protected CreateKitchenTicketAction $createKitchenTicket,
+        protected ResolveProductModifiersAction $resolveModifiers,
     ) {
     }
 
@@ -80,7 +84,9 @@ class SaleController extends Controller
                     'product_id' => 'required|exists:products,id',
                     'quantity' => 'required|numeric|min:0.01',
                     'discount' => 'required|numeric|min:0',
-                    'unit_price' => 'required|numeric|min:0',
+                    'note' => 'nullable|string|max:500',
+                    'modifiers' => 'nullable|array',
+                    'modifiers.*.id' => 'required_with:modifiers|integer',
                 ]);
 
                 $sale = Sale::self()
@@ -89,17 +95,23 @@ class SaleController extends Controller
                     ->firstOrFail();
 
                 $product = Product::self()
-                    ->with(['unit', 'recipe.ingredients.ingredientProduct'])
+                    ->with(['unit', 'modifiers', 'recipe.ingredients.ingredientProduct'])
                     ->whereKey($request->product_id)
                     ->lockForUpdate()
                     ->firstOrFail();
 
                 $qty = (float) $request->quantity;
+                $discount = (float) $request->discount;
 
                 if (! $this->deductRecipeStock->usesRecipe($product)
                     && ! $this->stockService->hasAvailableStock($product, $qty)) {
                     throw new RuntimeException('Insufficient stock!');
                 }
+
+                [$modifiers, $lineUnit] = $this->resolveModifiers->execute(
+                    $product,
+                    $request->input('modifiers', [])
+                );
 
                 $saleItem = SaleItem::create([
                     'sale_id' => $sale->id,
@@ -107,11 +119,12 @@ class SaleController extends Controller
                     'item_id' => $product->id,
                     'item_name' => $product->name,
                     'buying_price' => $product->buying_price,
-                    'unit_price' => $request->unit_price,
+                    'unit_price' => $lineUnit,
                     'unit' => $product->unit?->short_name ?? 'pcs',
-                    'discount' => $request->discount,
                     'quantity' => $qty,
-                    'total_price' => ($qty * $request->unit_price) - $request->discount,
+                    'total_price' => ($qty * $lineUnit) - $discount,
+                    'note' => $request->input('note'),
+                    'modifiers_json' => $modifiers ?: null,
                 ]);
 
                 $this->deductRecipeStock->execute($product, $qty);
@@ -120,6 +133,8 @@ class SaleController extends Controller
                 $sale->subtotal += $saleItem->total_price;
                 $sale->payable += $saleItem->total_price;
                 $sale->save();
+
+                $this->createKitchenTicket->fireAdditionalItems($sale, [$saleItem]);
 
                 $saleItems = SaleItem::where('sale_id', $sale->id)->with('product')->get();
                 $itemHtml = '';
