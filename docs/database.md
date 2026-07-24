@@ -84,8 +84,10 @@ The database schema manages inventory, sales, carts, customers, dining tables, s
 ---
 
 ## 4. Indexing & Constraint Gaps
-1. `sales`: Missing composite index on `(seller_id, status, is_hold, created_at)`.
-2. `sale_items`: Missing foreign key index on `product_id` and composite index `(sale_id, product_id)`.
-3. `products`: Missing composite index `(seller_id, is_active, category_id)`.
-4. `dining_tables`: Missing composite index `(seller_id, status)`.
+1. `sales`: **Resolved (TASK-105)** — indexes `(seller_id, is_hold, created_at)`, `(seller_id, dining_table_id)`, `(seller_id, sale_date)`. (`status` is not a live column; omitted.)
+2. `sale_items`: **Resolved (TASK-105)** — indexes `(sale_id, item_id)`, `(item_id)`, `(seller_id, sale_id)`. (Product FK column is `item_id`.)
+3. `products`: **Resolved (TASK-105)** — index `(seller_id, is_active, category_id)`.
+4. `dining_tables`: **Resolved (TASK-105)** — index `(seller_id, status)`.
 5. Missing `softDeletes` columns on `products`, `sales`, `customers`, and `dining_tables`.
+
+Migration: `database/migrations/2026_07_24_232500_add_composite_indexes_to_pos_core_tables.php`.

@@ -34,15 +34,29 @@ class PosController extends Controller
         $products = Product::self()->with(['category', 'unit'])->latest('id')->get();
         $customers = Customer::self()->get();
 
-        $recentSales = Sale::self()->where('is_hold', 0)->latest('id')->limit(5)->get();
-        $runningSales = Sale::self()->where('is_hold', 1)->latest('id')->limit(5)->get();
+        $recentSales = Sale::self()
+            ->with(['customer', 'table', 'waiter'])
+            ->where('is_hold', 0)
+            ->latest('id')
+            ->limit(5)
+            ->get();
+        $runningSales = Sale::self()
+            ->with(['customer', 'table', 'waiter'])
+            ->where('is_hold', 1)
+            ->latest('id')
+            ->limit(5)
+            ->get();
 
         $cart = Cart::query()->firstOrCreate(
             ['seller_id' => auth()->id()],
             ['order_id' => generateOrderId()]
         );
+        $cart->load(['items.item.unit']);
 
-        $categories = ProductCategory::withCount('products')->get();
+        $categories = ProductCategory::query()
+            ->where('seller_id', auth()->id())
+            ->withCount(['products' => fn ($q) => $q->where('seller_id', auth()->id())])
+            ->get();
         $diningTables = DiningTable::self()->get();
         $employees = SellerEmployee::self()->get();
         $cartItems = $cart->items;
@@ -50,7 +64,11 @@ class PosController extends Controller
         $sale = null;
 
         if ($request->has('sale')) {
-            $sale = Sale::where('order_id', request('sale'))->first();
+            $sale = Sale::query()
+                ->where('order_id', request('sale'))
+                ->where('seller_id', auth()->id())
+                ->with(['items.product.unit', 'customer', 'table', 'waiter'])
+                ->first();
             if ($sale) {
                 $saleItems = $sale->items;
                 $saleItems = $saleItems->merge($cartItems);

@@ -44,21 +44,18 @@ This audit report provides an in-depth code-level analysis of the existing Larav
 
 #### Issue 5: Missing Eager Loading on POS Product Catalog
 - **Severity**: HIGH
-- **File**: [`app/Http/Controllers/Seller/PosController.php`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Controllers/Seller/PosController.php#L24)
-- **Description**: `Product::self()->latest('id')->get();` fetches all products without eager loading `category` or `unit`. This causes N+1 queries when Blade renders `$product->unit->short_name` or category details.
-- **Recommended Fix**: Update query to `Product::self()->with(['category', 'unit'])->latest('id')->get();`.
+- **Status**: RESOLVED (TASK-106)
+- **Fix Applied**: `Product::self()->with(['category', 'unit'])`, plus cart/sale/recent-sale eager loads on `PosController@index`.
 
 #### Issue 6: Missing Eager Loading on Sales Listing
 - **Severity**: MEDIUM
-- **File**: [`app/Http/Controllers/Seller/SaleController.php`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Controllers/Seller/SaleController.php#L19)
-- **Description**: `Sale::self()->with('customer', 'items.product')->latest('id')->paginate(20);` does not eager load `table` (`dining_table_id`) or `waiter` (`seller_employee_id`).
-- **Recommended Fix**: Change eager loading to `with(['customer', 'items.product', 'table', 'waiter'])`.
+- **Status**: RESOLVED (TASK-106)
+- **Fix Applied**: `with(['customer', 'items.product', 'table', 'waiter'])` on `SaleController@index`.
 
 #### Issue 7: Missing Eager Loading on Digital Menu
 - **Severity**: MEDIUM
-- **File**: [`app/Http/Controllers/MenuController.php`](file:///d:/projects/php_projects/restaurant_pos/app/Http/Controllers/MenuController.php#L15)
-- **Description**: `ProductCategory::with(['products' => ...])` does not eager load `products.unit`.
-- **Recommended Fix**: Change relationship eager loading to `with(['products' => fn($q) => $q->where('is_active', 1)->with('unit')])`.
+- **Status**: RESOLVED (TASK-106)
+- **Fix Applied**: Menu categories scoped by seller with `products.unit` eager-loaded.
 
 ---
 
@@ -136,15 +133,13 @@ This audit report provides an in-depth code-level analysis of the existing Larav
 
 #### Issue 17: Missing Composite Index on `sales` Table
 - **Severity**: HIGH
-- **File**: [`database/migrations/2023_08_27_140651_create_sales_table.php`](file:///d:/projects/php_projects/restaurant_pos/database/migrations/2023_08_27_140651_create_sales_table.php)
-- **Description**: The `sales` table lacks composite indexes on `(seller_id, is_hold, created_at)` and `(dining_table_id, status)`, slowing down dashboard metrics and POS queries as rows grow.
-- **Recommended Fix**: Add migration adding `$table->index(['seller_id', 'is_hold', 'created_at']);` and `$table->index(['dining_table_id', 'status']);`.
+- **Status**: RESOLVED (TASK-105)
+- **Fix Applied**: Migration `2026_07_24_232500_add_composite_indexes_to_pos_core_tables` adds `(seller_id, is_hold, created_at)`, `(seller_id, dining_table_id)`, `(seller_id, sale_date)`.
 
 #### Issue 18: Missing Foreign Key Index on `sale_items` Table
 - **Severity**: MEDIUM
-- **File**: [`database/migrations/2023_08_27_140920_create_sale_items_table.php`](file:///d:/projects/php_projects/restaurant_pos/database/migrations/2023_08_27_140920_create_sale_items_table.php)
-- **Description**: `sale_items` lacks a composite index on `(sale_id, product_id)`.
-- **Recommended Fix**: Add `$table->index(['sale_id', 'product_id']);` in a new database migration.
+- **Status**: RESOLVED (TASK-105)
+- **Fix Applied**: Same migration indexes `(sale_id, item_id)`, `(item_id)`, `(seller_id, sale_id)` (live FK column is `item_id`).
 
 ---
 

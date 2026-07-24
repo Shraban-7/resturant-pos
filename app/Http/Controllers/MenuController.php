@@ -23,9 +23,14 @@ class MenuController extends Controller
 
     public function index(DiningTable $table)
     {
-        $categories = ProductCategory::with(['products' => function ($q) {
-            $q->where('is_active', 1)->with('unit');
-        }])->get();
+        $categories = ProductCategory::query()
+            ->where('seller_id', $table->seller_id)
+            ->with(['products' => function ($q) use ($table) {
+                $q->where('seller_id', $table->seller_id)
+                    ->where('is_active', 1)
+                    ->with('unit');
+            }])
+            ->get();
 
         return view('digital-menu', compact('table', 'categories'));
     }
