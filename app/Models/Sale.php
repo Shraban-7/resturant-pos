@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToBranch;
 use App\Traits\HasCommonScopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Sale extends Model
 {
-    use HasFactory, HasCommonScopes;
+    use BelongsToBranch, HasFactory, HasCommonScopes;
 
     protected $guarded = ['id'];
 

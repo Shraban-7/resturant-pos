@@ -109,14 +109,10 @@ Each milestone is **independently deployable**, ensuring zero disruption to exis
 
 ---
 
-## Milestone 10: Phase 3 Future Expansion & Multi-Branch Enterprise Scaling — 🔮 PLANNED
-- **Goal**: Expand architecture to support multi-branch restaurant chains, multi-tenant SaaS subscription billing, franchise management, and API integrations.
-- **Deployable Value**: Positions the POS software for enterprise franchise networks, SaaS commercialization, and third-party delivery aggregator integrations.
+## Milestone 10: Phase 3 Multi-Branch Expansion — 🟡 PARTIAL
+- **Goal**: Support multi-location restaurants under one seller account without SaaS/franchise complexity.
+- **Deployable Value**: Owners can run downtown + airport (etc.) branches with scoped POS operations and comparative reporting.
 - **Key Deliverables**:
-  - 🔮 **Multi-Branch Management**: Multi-location scoping (`branch_id`), location-based pricing & staff access control.
-  - 🔮 **SaaS / Multi-Tenant Isolation**: Tenant database routing, domain isolation, and automated Stripe/SSL SaaS subscription billing.
-  - 🔮 **Centralized Executive Reporting**: Multi-branch comparative analytics, chain sales heatmaps, and consolidated financial reports.
-  - 🔮 **Franchise System Support**: Franchise fee management, royalty calculations, and franchisee policy enforcement.
-  - 🔮 **Cross-Branch Inventory Transfer**: Inter-branch stock transfer requests, in-transit tracking, and inventory re-balancing.
-  - 🔮 **Central Purchasing Engine**: Master procurement hub, central warehouse ordering, and automated vendor RFQs.
-  - 🔮 **API Integrations**: Public Developer REST API & Webhook framework for food aggregators (UberEats, Foodpanda), accounting (Xero, QuickBooks), and payment gateways.
+  - ✅ **Multi-Branch Management**: `branches` CRUD, active-branch switcher, `branch_id` on floors/tables/employees/sales/reservations.
+  - ✅ **Multi-Branch Reporting**: Date + branch filters and per-branch sales/orders/profit comparison.
+  - ⏸️ **Deferred**: SaaS billing, franchise royalties, cross-branch stock transfers, central purchasing, aggregator APIs.

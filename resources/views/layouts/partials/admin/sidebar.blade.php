@@ -27,6 +27,7 @@
             <x-sidebar-list-item :title="'Sales'" :icon="'ri-file-paper-2-line'" :route="'seller.sales.index'" />
             <x-sidebar-list-item :title="'Kitchen Display'" :icon="'ri-tablet-line'" :route="'seller.kds.index'" />
             <x-sidebar-list-item :title="'Floors'" :icon="'ri-building-line'" :route="'seller.floors.index'" />
+            <x-sidebar-list-item :title="'Branches'" :icon="'ri-store-2-line'" :route="'seller.branches.index'" />
             <x-sidebar-list-item :title="'Dining Tables'" :icon="'ri-reserved-line'" :route="'seller.diningTables.index'" />
             <x-sidebar-list-item :title="'Reservations'" :icon="'ri-calendar-check-line'" :route="'seller.reservations.index'" />
 

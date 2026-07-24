@@ -16,6 +16,20 @@
 </div>
 
 <div class="flex items-center gap-2">
+    @if (is_seller() && seller_branches()->isNotEmpty())
+        <form action="{{ route('seller.branches.switch') }}" method="post" class="hidden sm:block">
+            @csrf
+            <select name="branch_id" class="form-control form-control-sm min-w-[10rem]" onchange="this.form.submit()">
+                <option value="" @selected(is_all_branches_mode())>All branches</option>
+                @foreach (seller_branches() as $branch)
+                    <option value="{{ $branch->id }}" @selected((int) active_branch_id() === (int) $branch->id && ! is_all_branches_mode())>
+                        {{ $branch->name }}
+                    </option>
+                @endforeach
+            </select>
+        </form>
+    @endif
+
     <div class="relative hidden sm:block" x-data="{ open: false }">
         <button type="button" class="btn btn-ghost btn-icon" aria-label="Notifications">
             <i class="ri-notification-3-line text-lg"></i>

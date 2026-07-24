@@ -181,7 +181,21 @@ if (! function_exists('active_branch_id')) {
             return null;
         }
 
+        $hasBranches = \App\Models\Branch::query()
+            ->where('seller_id', auth()->id())
+            ->where('is_active', true)
+            ->exists();
+
+        if (! $hasBranches) {
+            return null;
+        }
+
         $sessionId = session('active_branch_id');
+
+        if ($sessionId === 'all') {
+            return null;
+        }
+
         if ($sessionId) {
             $exists = \App\Models\Branch::query()
                 ->where('seller_id', auth()->id())
@@ -237,5 +251,12 @@ if (! function_exists('seller_branches')) {
             ->orderByDesc('is_default')
             ->orderBy('name')
             ->get();
+    }
+}
+
+if (! function_exists('is_all_branches_mode')) {
+    function is_all_branches_mode(): bool
+    {
+        return session('active_branch_id') === 'all';
     }
 }

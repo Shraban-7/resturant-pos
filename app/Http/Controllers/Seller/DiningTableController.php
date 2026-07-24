@@ -16,12 +16,13 @@ class DiningTableController extends Controller
 {
     public function index()
     {
-        $tables = DiningTable::self()->with('floor')->orderBy('name')->get();
+        $tables = DiningTable::self()->forActiveBranch()->with(['floor', 'branch'])->orderBy('name')->get();
         $tables->each(fn (DiningTable $table) => $table->ensureQrToken());
         $tableStatus = DiningTable::statuses();
-        $floors = Floor::self()->orderBy('priority')->orderBy('name')->get();
+        $floors = Floor::self()->forActiveBranch()->orderBy('priority')->orderBy('name')->get();
+        $branches = seller_branches();
 
-        return view('seller.dining-tables.index', compact('tables', 'tableStatus', 'floors'));
+        return view('seller.dining-tables.index', compact('tables', 'tableStatus', 'floors', 'branches'));
     }
 
     public function store(Request $request)
@@ -37,10 +38,15 @@ class DiningTableController extends Controller
                 'nullable',
                 Rule::exists('floors', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
             ],
+            'branch_id' => [
+                'nullable',
+                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+            ],
         ]);
 
         DiningTable::create([
             'seller_id' => Auth::id(),
+            'branch_id' => $data['branch_id'] ?? active_branch_id(),
             'name' => $data['name'],
             'floor_id' => $data['floor_id'] ?? null,
             'status' => DiningTable::FREE,
@@ -68,12 +74,17 @@ class DiningTableController extends Controller
                 'nullable',
                 Rule::exists('floors', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
             ],
+            'branch_id' => [
+                'nullable',
+                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+            ],
         ]);
 
         $table->update([
             'name' => $data['name'],
             'status' => $data['status'],
             'floor_id' => $data['floor_id'] ?? null,
+            'branch_id' => array_key_exists('branch_id', $data) ? $data['branch_id'] : $table->branch_id,
         ]);
 
         event(new TableStatusChangedEvent($table->fresh()));
@@ -92,7 +103,7 @@ class DiningTableController extends Controller
 
     public function floorMap(Request $request)
     {
-        $floors = Floor::self()->orderBy('priority')->orderBy('name')->get();
+        $floors = Floor::self()->forActiveBranch()->orderBy('priority')->orderBy('name')->get();
 
         // Explicit floor_id=0 (or empty) means Unassigned; missing param defaults to first floor.
         if ($request->has('floor_id')) {
@@ -102,6 +113,7 @@ class DiningTableController extends Controller
         }
 
         $tables = DiningTable::self()
+            ->forActiveBranch()
             ->when($floorId !== null, fn ($q) => $q->where('floor_id', $floorId))
             ->when($floorId === null, fn ($q) => $q->whereNull('floor_id'))
             ->orderBy('name')

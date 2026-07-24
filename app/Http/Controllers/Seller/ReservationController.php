@@ -16,15 +16,17 @@ class ReservationController extends Controller
     public function index()
     {
         $reservations = Reservation::self()
-            ->with('table')
+            ->forActiveBranch()
+            ->with(['table', 'branch'])
             ->orderByDesc('reservation_time')
             ->paginate(20)
             ->withQueryString();
 
-        $tables = DiningTable::self()->orderBy('name')->get();
+        $tables = DiningTable::self()->forActiveBranch()->orderBy('name')->get();
         $statuses = Reservation::statuses();
+        $branches = seller_branches();
 
-        return view('seller.reservations.index', compact('reservations', 'tables', 'statuses'));
+        return view('seller.reservations.index', compact('reservations', 'tables', 'statuses', 'branches'));
     }
 
     public function store(Request $request)
@@ -40,13 +42,20 @@ class ReservationController extends Controller
             'reservation_time' => 'required|date|after_or_equal:now',
             'notes' => 'nullable|string|max:1000',
             'status' => 'nullable|in:'.implode(',', Reservation::statuses()),
+            'branch_id' => [
+                'nullable',
+                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+            ],
         ]);
 
         $status = $data['status'] ?? Reservation::CONFIRMED;
 
         DB::transaction(function () use ($data, $status) {
+            $table = DiningTable::self()->whereKey($data['table_id'])->firstOrFail();
+
             $reservation = Reservation::create([
                 'seller_id' => Auth::id(),
+                'branch_id' => $data['branch_id'] ?? $table->branch_id ?? active_branch_id(),
                 'table_id' => $data['table_id'],
                 'customer_name' => $data['customer_name'],
                 'customer_phone' => $data['customer_phone'],

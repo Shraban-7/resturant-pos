@@ -52,6 +52,9 @@
                 @if($table->floor)
                     <p class="text-xs text-slate-400 mt-1">{{ $table->floor->name }}</p>
                 @endif
+                @if($table->branch)
+                    <p class="text-[10px] text-slate-400">{{ $table->branch->name }}</p>
+                @endif
                 <div class="mt-3 flex flex-col gap-2">
                     <a href="{{ route('seller.diningTables.qrCard', $table) }}" class="btn btn-secondary btn-sm w-full" target="_blank">
                         <i class="ri-qr-code-line"></i> QR Card
@@ -107,6 +110,19 @@
                                     @endforeach
                                 </select>
                             </div>
+                            @if(($branches ?? collect())->isNotEmpty())
+                                <div class="form-group">
+                                    <label class="form-label">Branch</label>
+                                    <select name="branch_id" class="form-select form-control">
+                                        <option value="">{{ active_branch()?->name ?? 'Unassigned' }}</option>
+                                        @foreach($branches as $branch)
+                                            <option value="{{ $branch->id }}" @selected((int) active_branch_id() === (int) $branch->id)>
+                                                {{ $branch->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" @click="open = false">Cancel</button>

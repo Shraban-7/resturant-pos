@@ -84,11 +84,11 @@
 
 ---
 
-## Milestone 10: Phase 3 Future Expansion & Multi-Branch Enterprise Scaling
-- [ ] **TASK-1001** [Est: 1.0 day]: Multi-Branch Management Architecture & branch-level data scoping.
-- [ ] **TASK-1002** [Est: 1.0 day]: SaaS / Multi-Tenant Isolation & Subscription Plan Billing Engine.
-- [ ] **TASK-1003** [Est: 1.0 day]: Centralized Executive Reporting & Multi-Branch Analytics Dashboard.
-- [ ] **TASK-1004** [Est: 1.0 day]: Franchise System Support, Fee Tracking, and Royalty Calculation.
-- [ ] **TASK-1005** [Est: 1.0 day]: Cross-Branch Inventory Transfer & Inter-Branch Stock Balancing.
-- [ ] **TASK-1006** [Est: 1.0 day]: Centralized Purchasing Engine & Bulk Vendor Procurement Dispatch.
-- [ ] **TASK-1007** [Est: 1.0 day]: Public Webhook & REST API Integrations (Aggregators, Accounting, Payments).
+## Milestone 10: Phase 3 Multi-Branch Expansion — 🟡 PARTIAL (practical subset)
+- [x] **TASK-1001** [Est: 1.0 day]: Multi-Branch Management Architecture & branch-level data scoping.
+- [ ] ~~**TASK-1002**: SaaS / Multi-Tenant Isolation & Subscription Billing~~ — deferred (not needed for single-product restaurant POS).
+- [x] **TASK-1003** [Est: 1.0 day]: Multi-Branch comparative sales/profit reporting.
+- [ ] ~~**TASK-1004**: Franchise System Support~~ — deferred.
+- [ ] ~~**TASK-1005**: Cross-Branch Inventory Transfer~~ — deferred (menu/stock stays seller-shared).
+- [ ] ~~**TASK-1006**: Centralized Purchasing Engine~~ — deferred (supplier module already covers procurement).
+- [ ] ~~**TASK-1007**: Public Webhook & Aggregator APIs~~ — deferred until partner integrations are required.

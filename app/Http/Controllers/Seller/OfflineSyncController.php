@@ -183,8 +183,17 @@ class OfflineSyncController extends Controller
             $payable = max(0, $subtotal - $discount);
             $paid = min((float) $order['amounts']['paid'], $payable);
 
+            $branchId = null;
+            if ($tableId) {
+                $branchId = DiningTable::query()
+                    ->where('seller_id', $sellerId)
+                    ->whereKey($tableId)
+                    ->value('branch_id');
+            }
+
             $sale = Sale::create([
                 'seller_id' => $sellerId,
+                'branch_id' => $branchId,
                 'customer_id' => $customerId,
                 'dining_table_id' => $tableId,
                 'seller_employee_id' => $employeeId,

@@ -45,12 +45,14 @@ class PosController extends Controller
         $customers = Customer::self()->get();
 
         $recentSales = Sale::self()
+            ->forActiveBranch()
             ->with(['customer', 'table', 'waiter'])
             ->where('is_hold', 0)
             ->latest('id')
             ->limit(5)
             ->get();
         $runningSales = Sale::self()
+            ->forActiveBranch()
             ->with(['customer', 'table', 'waiter'])
             ->where('is_hold', 1)
             ->latest('id')
@@ -67,8 +69,10 @@ class PosController extends Controller
             ->where('seller_id', auth()->id())
             ->withCount(['products' => fn ($q) => $q->where('seller_id', auth()->id())])
             ->get();
-        $diningTables = DiningTable::self()->with('floor')->get();
-        $employees = SellerEmployee::self()->get();
+        $diningTables = DiningTable::self()->forActiveBranch()->with('floor')->get();
+        $employees = SellerEmployee::self()->forActiveBranch()->get();
+        $branches = seller_branches();
+        $activeBranch = active_branch();
         $cartItems = $cart->items;
         $saleItems = null;
         $sale = null;
@@ -146,6 +150,8 @@ class PosController extends Controller
             'categories',
             'diningTables',
             'employees',
+            'branches',
+            'activeBranch',
             'sale',
             'saleItems',
             'productModifiersMap',
@@ -367,10 +373,15 @@ class PosController extends Controller
                     'due' => ($payable - $paid),
                     'payment_option' => $request->payment_type ?? 'cash',
                     'note' => $request->note,
+                    'branch_id' => active_branch_id(),
                 ];
 
                 if ($tableId) {
                     $saleData['dining_table_id'] = $tableId;
+                    $tableForBranch = DiningTable::self()->whereKey($tableId)->first();
+                    if ($tableForBranch?->branch_id) {
+                        $saleData['branch_id'] = $tableForBranch->branch_id;
+                    }
                 }
                 if ($employeeId) {
                     $saleData['seller_employee_id'] = $employeeId;
@@ -464,10 +475,15 @@ class PosController extends Controller
                     'paid' => 0,
                     'due' => $payable,
                     'note' => $request->note,
+                    'branch_id' => active_branch_id(),
                 ];
 
                 if ($tableId) {
                     $saleData['dining_table_id'] = $tableId;
+                    $tableForBranch = DiningTable::self()->whereKey($tableId)->first();
+                    if ($tableForBranch?->branch_id) {
+                        $saleData['branch_id'] = $tableForBranch->branch_id;
+                    }
                 }
                 if ($employeeId) {
                     $saleData['seller_employee_id'] = $employeeId;

@@ -116,6 +116,7 @@ class MenuController extends Controller
 
                 $sale = Sale::create([
                     'seller_id' => $table->seller_id,
+                    'branch_id' => $table->branch_id,
                     'order_id' => generateOrderId(),
                     'sale_date' => now(),
                     'subtotal' => $subtotal,

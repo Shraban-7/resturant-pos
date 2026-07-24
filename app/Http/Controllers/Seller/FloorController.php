@@ -13,12 +13,15 @@ class FloorController extends Controller
     public function index()
     {
         $floors = Floor::self()
+            ->forActiveBranch()
             ->withCount('tables')
             ->orderBy('priority')
             ->orderBy('name')
             ->get();
 
-        return view('seller.floors.index', compact('floors'));
+        $branches = seller_branches();
+
+        return view('seller.floors.index', compact('floors', 'branches'));
     }
 
     public function store(Request $request)
@@ -31,10 +34,15 @@ class FloorController extends Controller
                 Rule::unique('floors', 'name')->where(fn ($q) => $q->where('seller_id', Auth::id())),
             ],
             'priority' => 'nullable|integer|min:0|max:999',
+            'branch_id' => [
+                'nullable',
+                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+            ],
         ]);
 
         Floor::create([
             'seller_id' => Auth::id(),
+            'branch_id' => $data['branch_id'] ?? active_branch_id(),
             'name' => $data['name'],
             'priority' => $data['priority'] ?? 0,
         ]);
@@ -58,11 +66,16 @@ class FloorController extends Controller
                     ->ignore($floor->id),
             ],
             'priority' => 'nullable|integer|min:0|max:999',
+            'branch_id' => [
+                'nullable',
+                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+            ],
         ]);
 
         $floor->update([
             'name' => $data['name'],
             'priority' => $data['priority'] ?? 0,
+            'branch_id' => $data['branch_id'] ?? $floor->branch_id,
         ]);
 
         return redirect()

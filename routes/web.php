@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderStatusController;
+use App\Http\Controllers\Seller\BranchController;
 use App\Http\Controllers\Seller\CustomerController;
 use App\Http\Controllers\Seller\DashboardController;
 use App\Http\Controllers\Seller\DiningTableController;
@@ -95,6 +96,14 @@ Route::middleware(['auth', 'seller'])->prefix('seller')->as('seller.')->group(fu
         Route::post('/', [FloorController::class, 'store'])->name('store');
         Route::put('/{floor}', [FloorController::class, 'update'])->name('update');
         Route::delete('/{floor}', [FloorController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('branches')->as('branches.')->group(function () {
+        Route::get('/', [BranchController::class, 'index'])->name('index');
+        Route::post('/', [BranchController::class, 'store'])->name('store');
+        Route::put('/{branch}', [BranchController::class, 'update'])->name('update');
+        Route::delete('/{branch}', [BranchController::class, 'destroy'])->name('destroy');
+        Route::post('/switch', [BranchController::class, 'switch'])->name('switch');
     });
 
     Route::prefix('reservations')->as('reservations.')->group(function () {

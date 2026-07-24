@@ -27,6 +27,7 @@
                 <tr>
                     <th>Name</th>
                     <th>Role</th>
+                    <th>Branch</th>
                     <th>Employee Since</th>
                     <th class="text-right">Action</th>
                 </tr>
@@ -36,6 +37,7 @@
                     <tr>
                         <td class="font-medium text-slate-800">{{ $employee->name }}</td>
                         <td><span class="badge badge-light">{{ ucfirst($employee->role) }}</span></td>
+                        <td class="text-slate-500">{{ $employee->branch?->name ?? '—' }}</td>
                         <td class="text-slate-500">{{ $employee->created_at->format('d M Y') }}</td>
                         <td class="text-right">
                             <button class="btn btn-primary btn-sm" @click="$dispatch('open-modal', { id: 'editEmployee-{{ $employee->id }}' })">
@@ -73,6 +75,19 @@
                                                         @endforeach
                                                     </select>
                                                 </div>
+                                                @if(($branches ?? collect())->isNotEmpty())
+                                                    <div class="form-group">
+                                                        <label class="form-label">Branch</label>
+                                                        <select name="branch_id" class="form-select form-control-sm">
+                                                            <option value="">Unassigned</option>
+                                                            @foreach ($branches as $branch)
+                                                                <option value="{{ $branch->id }}" @selected((int) $employee->branch_id === (int) $branch->id)>
+                                                                    {{ $branch->name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                @endif
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" @click="open = false">Cancel</button>
@@ -132,6 +147,19 @@
                                     @endforeach
                                 </select>
                             </div>
+                            @if(($branches ?? collect())->isNotEmpty())
+                                <div class="form-group">
+                                    <label class="form-label">Branch</label>
+                                    <select name="branch_id" class="form-select form-control-sm">
+                                        <option value="">{{ active_branch()?->name ?? 'Unassigned' }}</option>
+                                        @foreach ($branches as $branch)
+                                            <option value="{{ $branch->id }}" @selected((int) active_branch_id() === (int) $branch->id)>
+                                                {{ $branch->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" @click="open = false">Cancel</button>

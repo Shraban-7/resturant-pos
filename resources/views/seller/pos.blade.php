@@ -48,6 +48,20 @@
             </div>
         </div>
 
+        @if(($branches ?? collect())->isNotEmpty())
+            <form action="{{ route('seller.branches.switch') }}" method="post" class="hidden md:block">
+                @csrf
+                <select name="branch_id" class="form-control form-control-sm min-w-[9rem]" onchange="this.form.submit()" title="Active branch">
+                    <option value="" @selected(is_all_branches_mode())>All branches</option>
+                    @foreach ($branches as $branch)
+                        <option value="{{ $branch->id }}" @selected((int) active_branch_id() === (int) $branch->id && ! is_all_branches_mode())>
+                            {{ $branch->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </form>
+        @endif
+
         <div class="flex items-center gap-1">
             <a href="{{ route('seller.kds.index') }}"
                class="relative btn btn-ghost btn-icon"
