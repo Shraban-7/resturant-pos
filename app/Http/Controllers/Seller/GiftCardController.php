@@ -42,18 +42,26 @@ class GiftCardController extends Controller
 
     public function verify(Request $request)
     {
+        $data = $request->validate([
+            'code' => 'required|string|max:64',
+        ]);
+
         $card = GiftCard::self()
-            ->where('code', strtoupper($request->code))
+            ->where('code', strtoupper($data['code']))
             ->where('is_active', true)
+            ->where(function ($query) {
+                $query->whereNull('expiry_date')
+                    ->orWhereDate('expiry_date', '>=', today());
+            })
             ->first();
 
         if (!$card || $card->balance <= 0) {
-            return errorResponse('Invalid or depleted gift card');
+            return errorResponse('Invalid, expired, or depleted gift card');
         }
 
-        return successResponse('Gift card verified', [
+        return apiResponse([
             'code' => $card->code,
             'balance' => (float) $card->balance,
-        ]);
+        ], 'Gift card verified');
     }
 }

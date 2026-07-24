@@ -95,16 +95,16 @@ Each milestone is **independently deployable**, ensuring zero disruption to exis
 
 ---
 
-## Milestone 9: Phase 2 Post-MVP Advanced Modules — ✅ COMPLETE
-- **Goal**: Expand system capability with advanced guest management, customer engagement, second screen, loyalty, and online ordering.
-- **Deployable Value**: Adds full post-MVP feature set for enterprise restaurant growth and multi-channel fulfillment.
+## Milestone 9: Phase 2 Post-MVP Advanced Modules — 🟡 PARTIAL
+- **Goal**: Expand dine-in guest management, customer engagement, and second-screen capabilities.
+- **Deployable Value**: Adds restaurant-focused reservation, QR ordering, customer display, loyalty, and gift-card tools.
 - **Key Deliverables**:
-  - ✅ **Table Reservations**: Calendar booking engine, guest count tracking, and auto-table status locking.
+  - ✅ **Table Reservations**: Booking list, guest count tracking, and automatic table status locking.
   - ✅ **QR Table Ordering**: Guest self-ordering with modifier choices and instant KDS ticket dispatch.
   - ✅ **Customer Display Screen (CDS)**: Live customer 2nd screen at `/seller/pos/cds` with `BroadcastChannel` cart sync.
   - ✅ **Loyalty Program**: Customer points balance tracking, reward tiers (Bronze/Silver/Gold), and manual point adjustments.
-  - ✅ **Gift Cards**: Digital gift cards issuance (`GC-XXXXX`), unique code verification, and POS redemption.
-  - ✅ **Delivery Management**: Delivery dispatch tracking, driver assignment, and status lifecycle management.
+  - 🟡 **Gift Cards**: Issuance (`GC-XXXXX`) and expiry-aware verification are implemented; POS redemption remains pending.
+  - ❌ **Delivery Management**: Removed because its order-creation path depended on the removed storefront.
   - ❌ **Online Ordering Storefront**: Removed by product decision (out of scope).
 
 ---

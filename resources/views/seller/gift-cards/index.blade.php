@@ -1,11 +1,14 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'Gift Cards')
+@section('page_title', 'Gift Cards')
 
 @section('content')
 <div class="space-y-6">
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-xl font-bold text-slate-900">Gift Cards Management</h1>
-            <p class="text-xs text-slate-500">Issue, track, and redeem digital gift cards at POS checkout</p>
+            <p class="text-xs text-slate-500">Issue, track, and verify digital gift cards</p>
         </div>
     </div>
 

@@ -111,13 +111,14 @@
                 init() {
                     const channel = new BroadcastChannel('cds_cart_sync');
                     channel.onmessage = (event) => {
-                        if (event.data) {
+                        if (event.data?.type === 'CART_STATE') {
                             this.cartItems = event.data.items || [];
                             this.subtotal = Number(event.data.subtotal || 0);
                             this.discount = Number(event.data.discount || 0);
                             this.totalPayable = Number(event.data.totalPayable || 0);
                         }
                     };
+                    channel.postMessage({ type: 'REQUEST_STATE' });
                 }
             };
         }

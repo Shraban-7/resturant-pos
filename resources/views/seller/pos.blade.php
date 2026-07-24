@@ -253,6 +253,10 @@
         const $customerPhone = document.getElementById('customer_phone');
         const $note = document.getElementById('note');
         const $mobileCartCount = document.getElementById('mobileCartCount');
+        const cdsChannel = 'BroadcastChannel' in window
+            ? new BroadcastChannel('cds_cart_sync')
+            : null;
+        let cdsBroadcastFrame = null;
 
         const $itemModalEl = document.getElementById('itemModal');
         const $itemModal = $itemModalEl ? $itemModalEl.closest('[x-data]') : null;
@@ -265,6 +269,49 @@
             if (!value) return fallback;
             try { return JSON.parse(value); } catch (_) { return fallback; }
         }
+
+        function broadcastCdsCart() {
+            if (!cdsChannel) return;
+
+            if (cdsBroadcastFrame) cancelAnimationFrame(cdsBroadcastFrame);
+            cdsBroadcastFrame = requestAnimationFrame(() => {
+                const items = Array.from(
+                    document.querySelectorAll('#cart .cart-item, #cart .sale-item')
+                ).map(el => {
+                    const quantity = Number(
+                        el.querySelector('.quantityInput, .saleQuantityInput')?.value || 0
+                    );
+                    const totalPrice = Number(el.querySelector('.price')?.textContent || 0);
+
+                    return {
+                        id: el.dataset.id,
+                        name: el.dataset.name
+                            || el.querySelector('.text-sm.font-medium')?.textContent?.trim()
+                            || 'Item',
+                        unit: el.dataset.unit || '',
+                        quantity,
+                        unit_price: Number(el.dataset.unitPrice || (quantity ? totalPrice / quantity : 0)),
+                        total_price: totalPrice,
+                    };
+                }).filter(item => item.quantity > 0);
+
+                const subtotal = Number($subtotal?.textContent || 0);
+                const discount = Number($discountInput?.value || 0);
+
+                cdsChannel.postMessage({
+                    type: 'CART_STATE',
+                    items,
+                    subtotal,
+                    discount,
+                    totalPayable: Math.max(0, subtotal - discount),
+                });
+                cdsBroadcastFrame = null;
+            });
+        }
+
+        cdsChannel?.addEventListener('message', event => {
+            if (event.data?.type === 'REQUEST_STATE') broadcastCdsCart();
+        });
 
         function offlineCartItems() {
             return Array.from(document.querySelectorAll('#cart .cart-item')).map(el => ({
@@ -399,6 +446,7 @@
             if (paid) due = (total - paid);
             $totalPrice.textContent = total;
             $due.textContent = due;
+            broadcastCdsCart();
         }
 
         function setItemToCart(item, cartHtml) {
@@ -1031,6 +1079,16 @@
         });
 
         // Initial
+        if ($cart) {
+            new MutationObserver(broadcastCdsCart).observe($cart, {
+                childList: true,
+                subtree: true,
+                characterData: true,
+                attributes: true,
+                attributeFilter: ['value'],
+            });
+        }
+        $discountInput?.addEventListener('input', broadcastCdsCart);
         updateCartTotals();
         refreshOfflineStatus();
     });

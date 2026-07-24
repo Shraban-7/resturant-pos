@@ -173,3 +173,69 @@ if(!function_exists('generateOrderId')) {
         return  $prefix . '-' . date('ymdHis') . rand(11, 99);
     }
 }
+
+if (! function_exists('active_branch_id')) {
+    function active_branch_id(): ?int
+    {
+        if (! auth()->check() || ! is_seller()) {
+            return null;
+        }
+
+        $sessionId = session('active_branch_id');
+        if ($sessionId) {
+            $exists = \App\Models\Branch::query()
+                ->where('seller_id', auth()->id())
+                ->whereKey($sessionId)
+                ->where('is_active', true)
+                ->exists();
+
+            if ($exists) {
+                return (int) $sessionId;
+            }
+
+            session()->forget('active_branch_id');
+        }
+
+        $default = \App\Models\Branch::query()
+            ->where('seller_id', auth()->id())
+            ->where('is_active', true)
+            ->orderByDesc('is_default')
+            ->orderBy('name')
+            ->value('id');
+
+        if ($default) {
+            session(['active_branch_id' => (int) $default]);
+
+            return (int) $default;
+        }
+
+        return null;
+    }
+}
+
+if (! function_exists('active_branch')) {
+    function active_branch(): ?\App\Models\Branch
+    {
+        $id = active_branch_id();
+
+        return $id
+            ? \App\Models\Branch::query()->where('seller_id', auth()->id())->find($id)
+            : null;
+    }
+}
+
+if (! function_exists('seller_branches')) {
+    function seller_branches()
+    {
+        if (! auth()->check() || ! is_seller()) {
+            return collect();
+        }
+
+        return \App\Models\Branch::query()
+            ->where('seller_id', auth()->id())
+            ->where('is_active', true)
+            ->orderByDesc('is_default')
+            ->orderBy('name')
+            ->get();
+    }
+}

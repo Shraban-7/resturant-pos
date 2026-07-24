@@ -1,4 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'Loyalty Program')
+@section('page_title', 'Loyalty Program')
 
 @section('content')
 <div class="space-y-6">

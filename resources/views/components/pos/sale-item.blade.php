@@ -1,5 +1,10 @@
 <div class="sale-item bg-white border border-amber-200 rounded-lg p-2.5 flex items-center gap-2.5 hover:border-amber-300 transition"
-     data-id="{{ $item->id }}" id="sale-item-{{ $item->id }}" data-itemid="{{ $item->item_id }}">
+     data-id="{{ $item->id }}"
+     id="sale-item-{{ $item->id }}"
+     data-itemid="{{ $item->item_id }}"
+     data-name="{{ $item->item_name }}"
+     data-unit="{{ $item->unit }}"
+     data-unit-price="{{ $item->unit_price }}">
     <img src="{{ asset('storage/' . $item->product->image) }}" alt="" class="h-11 w-11 object-cover rounded-md shrink-0">
     <div class="flex-1 min-w-0">
         <div class="text-sm font-medium text-slate-800 truncate">{{ $item->product->name }}</div>

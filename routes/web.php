@@ -5,7 +5,6 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderStatusController;
 use App\Http\Controllers\Seller\CustomerController;
 use App\Http\Controllers\Seller\DashboardController;
-use App\Http\Controllers\Seller\DeliveryController;
 use App\Http\Controllers\Seller\DiningTableController;
 use App\Http\Controllers\Seller\EmployeeController;
 use App\Http\Controllers\Seller\FloorController;
@@ -114,11 +113,6 @@ Route::middleware(['auth', 'seller'])->prefix('seller')->as('seller.')->group(fu
         Route::get('/', [GiftCardController::class, 'index'])->name('index');
         Route::post('/', [GiftCardController::class, 'store'])->name('store');
         Route::post('/verify', [GiftCardController::class, 'verify'])->name('verify');
-    });
-
-    Route::prefix('deliveries')->as('deliveries.')->group(function () {
-        Route::get('/', [DeliveryController::class, 'index'])->name('index');
-        Route::post('/{delivery}/status', [DeliveryController::class, 'updateStatus'])->name('update-status');
     });
 
     Route::prefix('stocks')->as('stocks.')->group(function () {
