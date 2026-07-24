@@ -473,4 +473,9 @@ class PosController extends Controller
             return successResponse('Sale held successfully');
         });
     }
+
+    public function cds()
+    {
+        return view('seller.pos.cds');
+    }
 }

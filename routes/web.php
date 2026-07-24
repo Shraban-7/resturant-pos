@@ -1,14 +1,18 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OnlineOrderController;
+use App\Http\Controllers\OrderStatusController;
 use App\Http\Controllers\Seller\CustomerController;
 use App\Http\Controllers\Seller\DashboardController;
+use App\Http\Controllers\Seller\DeliveryController;
 use App\Http\Controllers\Seller\DiningTableController;
 use App\Http\Controllers\Seller\EmployeeController;
 use App\Http\Controllers\Seller\FloorController;
+use App\Http\Controllers\Seller\GiftCardController;
 use App\Http\Controllers\Seller\KdsController;
+use App\Http\Controllers\Seller\LoyaltyController;
 use App\Http\Controllers\Seller\OfflineSyncController;
 use App\Http\Controllers\Seller\PosController;
 use App\Http\Controllers\Seller\ProductController;
@@ -19,6 +23,7 @@ use App\Http\Controllers\Seller\ReservationController;
 use App\Http\Controllers\Seller\SaleController;
 use App\Http\Controllers\Seller\SettingController;
 use App\Http\Controllers\Seller\StockController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     if ($user = auth()->user()) {
@@ -28,55 +33,44 @@ Route::get('/', function () {
     return redirect()->route('login');
 })->name('home');
 
-Route::prefix('menu')->as('menu.')->group(function () {
-    Route::get('/tracker/{token}', [MenuController::class, 'tracker'])->name('tracker');
-    Route::get('/{table}', [MenuController::class, 'index'])->name('index');
-    Route::post('/{table}/order', [MenuController::class, 'placeOrder'])->name('placeOrder');
-});
+// Digital QR Code Menu & Public Tracking
+Route::get('/menu/{table}', [MenuController::class, 'index'])->name('digital-menu');
+Route::post('/menu/{table}/order', [MenuController::class, 'placeOrder'])->name('digital-menu.order');
+Route::get('/order-status/{order}', [OrderStatusController::class, 'show'])->name('order-status.show');
 
+// Storefront Online Ordering
+Route::get('/online-order', [OnlineOrderController::class, 'index'])->name('online.order.index');
+Route::post('/online-order/checkout', [OnlineOrderController::class, 'checkout'])->name('online.order.checkout');
+
+// Guest authentication routes...
 Route::middleware('guest')->group(function () {
-    Route::get('login', [LoginController::class, 'show']);
-    Route::post('login', [LoginController::class, 'login'])->name('login');
-    // Route::get('register', [RegisterController::class, 'show']);
-    // Route::post('register', [RegisterController::class, 'register']);
+    Route::get('/login', [LoginController::class, 'index'])->name('login');
+    Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 });
 
+Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
-Route::get('logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+// Seller panel routes...
+Route::middleware(['auth', 'seller'])->prefix('seller')->as('seller.')->group(function () {
 
-Route::middleware('seller')->post(
-    '/api/seller/pos/offline-sync',
-    [OfflineSyncController::class, 'store']
-)->name('seller.pos.offlineSync');
-
-Route::middleware('seller')->prefix('seller')->as('seller.')->group(function () {
-
-    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::prefix('pos')->as('pos.')->group(function () {
         Route::get('/', [PosController::class, 'index'])->name('index');
-        Route::post('/item/add', [PosController::class, 'addItem'])->name('addItem');
-        Route::post('/item/remove', [PosController::class, 'removeItem'])->name('removeItem');
-        Route::post('/item/update-qty', [PosController::class, 'updateQuantity'])->name('updateQuantity');
+        Route::get('/cds', [PosController::class, 'cds'])->name('cds');
+        Route::post('/add-item', [PosController::class, 'addItem'])->name('add_item');
+        Route::post('/remove-item', [PosController::class, 'removeItem'])->name('remove_item');
+        Route::post('/update-quantity', [PosController::class, 'updateQuantity'])->name('update_quantity');
         Route::post('/checkout', [PosController::class, 'checkout'])->name('checkout');
-        Route::post('/hold', [PosController::class, 'holdOrder'])->name('hold');
-        Route::post('/sale-update', [SaleController::class, 'saleUpdate'])->name('updateSale');
-        Route::prefix('sale-item')->as('saleItem.')->group(function () {
-            Route::post('/add', [SaleController::class, 'addItemToSale'])->name('add');
-            Route::post('/remove', [SaleController::class, 'removeSaleItem'])->name('remove');
-            Route::post('/update-qty', [SaleController::class, 'updateSaleItemQuantity'])->name('updateQuantity');
-        });
+        Route::post('/hold-order', [PosController::class, 'holdOrder'])->name('hold_order');
     });
 
-    Route::prefix('kds')->as('kds.')->group(function () {
-        Route::get('/', [KdsController::class, 'index'])->name('index');
-        Route::post('/{ticket}/status', [KdsController::class, 'updateStatus'])->name('updateStatus');
-    });
+    Route::get('/kds', [KdsController::class, 'index'])->name('kds.index');
+    Route::post('/kds/tickets/{ticket}/status', [KdsController::class, 'updateStatus'])->name('kds.update-status');
 
     Route::prefix('sales')->as('sales.')->group(function () {
         Route::get('/', [SaleController::class, 'index'])->name('index');
-        Route::get('{sale:order_id}/invoice', [SaleController::class, 'invoice'])->name('invoice');
-        Route::get('{sale}/mark-paid', [SaleController::class, 'markPaid'])->name('mark-paid');
+        Route::get('/invoice/{sale}', [SaleController::class, 'invoice'])->name('invoice');
     });
 
     Route::prefix('products')->as('products.')->group(function () {
@@ -115,6 +109,22 @@ Route::middleware('seller')->prefix('seller')->as('seller.')->group(function () 
         Route::delete('/{reservation}', [ReservationController::class, 'destroy'])->name('destroy');
     });
 
+    Route::prefix('loyalty')->as('loyalty.')->group(function () {
+        Route::get('/', [LoyaltyController::class, 'index'])->name('index');
+        Route::post('/adjust', [LoyaltyController::class, 'adjust'])->name('adjust');
+    });
+
+    Route::prefix('gift-cards')->as('gift-cards.')->group(function () {
+        Route::get('/', [GiftCardController::class, 'index'])->name('index');
+        Route::post('/', [GiftCardController::class, 'store'])->name('store');
+        Route::post('/verify', [GiftCardController::class, 'verify'])->name('verify');
+    });
+
+    Route::prefix('deliveries')->as('deliveries.')->group(function () {
+        Route::get('/', [DeliveryController::class, 'index'])->name('index');
+        Route::post('/{delivery}/status', [DeliveryController::class, 'updateStatus'])->name('update-status');
+    });
+
     Route::prefix('stocks')->as('stocks.')->group(function () {
         Route::get('/', [StockController::class, 'index'])->name('index');
         Route::get('/create', [StockController::class, 'create'])->name('create');
@@ -122,7 +132,6 @@ Route::middleware('seller')->prefix('seller')->as('seller.')->group(function () 
     });
 
     Route::get('/report', [ReportController::class, 'index'])->name('report.index');
-
 
     Route::prefix('customers')->as('customers.')->group(function () {
         Route::get('/', [CustomerController::class, 'index'])->name('index');
