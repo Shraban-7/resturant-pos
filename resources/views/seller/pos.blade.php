@@ -78,7 +78,7 @@
                 <span id="offlineSyncBadge"
                       class="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-amber-500 text-white text-[10px] font-bold leading-[1.1rem] text-center">0</span>
             </button>
-            <button type="button" id="productCodeBtn" class="btn btn-ghost btn-icon" title="Scan barcode" @click="barcodeOpen = true">
+            <button type="button" id="productCodeBtn" class="btn btn-ghost btn-icon" title="Scan code or search by name" @click="barcodeOpen = true; $nextTick(() => document.getElementById('barcodeInput')?.focus())">
                 <i class="ri-barcode-line text-lg"></i>
             </button>
             <button type="button" id="fullscreen-btn" class="btn btn-ghost btn-icon" title="Fullscreen">
@@ -204,20 +204,20 @@
     </div>
 
     {{-- =================== BARCODE MODAL =================== --}}
-    <div x-show="barcodeOpen" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none" @keydown.escape.window="barcodeOpen = false">
+    <div x-show="barcodeOpen" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none" @keydown.escape.window="barcodeOpen = false" @close-barcode.window="barcodeOpen = false">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="barcodeOpen = false"></div>
         <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 p-6" @click.stop>
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-semibold text-slate-900">Scan Barcode</h3>
+                <h3 class="text-base font-semibold text-slate-900">Quick Add</h3>
                 <button type="button" class="btn btn-ghost btn-icon" @click="barcodeOpen = false">
                     <i class="ri-close-line text-xl"></i>
                 </button>
             </div>
             <div class="relative">
                 <i class="ri-barcode-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="barcodeInput" class="form-control pl-10 text-lg" placeholder="Scan or type code..." @keyup.enter="handleBarcode($event.target.value)">
+                <input type="text" id="barcodeInput" class="form-control pl-10 text-lg" placeholder="Scan code or type product name..." @keyup.enter="handleBarcode($event.target.value)">
             </div>
-            <p class="mt-2 text-xs text-slate-500">Press Enter to add the matching product to cart.</p>
+            <p class="mt-2 text-xs text-slate-500">Press Enter to open the matching product. Works with a barcode or a product name.</p>
         </div>
     </div>
 
@@ -271,9 +271,6 @@
             ? new BroadcastChannel('cds_cart_sync')
             : null;
         let cdsBroadcastFrame = null;
-
-        const $itemModalEl = document.getElementById('itemModal');
-        const $itemModal = $itemModalEl ? $itemModalEl.closest('[x-data]') : null;
 
         function showError(msg) {
             window.dispatchEvent(new CustomEvent('open-error', { detail: msg }));
@@ -513,13 +510,8 @@
                 return;
             }
 
-            // Open item modal
-            if (window.Alpine) {
-                const modalRoot = document.querySelector('#itemModal')?.closest('[x-data]');
-                if (modalRoot && modalRoot._x_dataStack) {
-                    modalRoot._x_dataStack[0].open = true;
-                }
-            }
+            window.dispatchEvent(new CustomEvent('open-item-modal'));
+
             // populate modal
             const modal = document.getElementById('itemModal');
             if (modal) {
@@ -668,9 +660,7 @@
                 btn.disabled = false;
                 if (!ok) { showError(d.message || 'Error'); return; }
                 setItemToCart(d.data.item, d.data.cart_item_html);
-                // Close modal
-                const root = modal.closest('[x-data]');
-                if (root && root._x_dataStack) root._x_dataStack[0].open = false;
+                window.dispatchEvent(new CustomEvent('close-item-modal'));
             })
             .catch(err => {
                 btn.innerHTML = original;
@@ -690,8 +680,7 @@
                     if (empty) empty.remove();
                     $cart.appendChild(offlineCartElement(line));
                     updateCartTotals();
-                    const root = modal.closest('[x-data]');
-                    if (root && root._x_dataStack) root._x_dataStack[0].open = false;
+                    window.dispatchEvent(new CustomEvent('close-item-modal'));
                     window.toast?.warning('Item added locally. It will be validated during synchronization.');
                     return;
                 }
@@ -810,24 +799,32 @@
         $discountInput.addEventListener('input', updateCheckoutPrice);
         $paidInput.addEventListener('input', updateCheckoutPrice);
 
-        // --- Barcode search ---
+        // --- Quick lookup: matches product code, exact name, then partial name ---
         window.handleBarcode = function (code) {
-            if (!code) return;
-            const card = Array.from(document.querySelectorAll('.item-card')).find(c => c.dataset.code === code);
+            const term = (code || '').trim();
+            if (!term) return;
+            const needle = term.toLowerCase();
+            const cards = Array.from(document.querySelectorAll('.item-card'));
+            const nameOf = c => (c.querySelector('.name')?.textContent || '').trim().toLowerCase();
+
+            const card = cards.find(c => c.dataset.code && c.dataset.code === term)
+                || cards.find(c => nameOf(c) === needle)
+                || cards.find(c => nameOf(c).includes(needle));
+
             if (card) {
                 card.click();
-                document.getElementById('barcodeInput').value = '';
-                // close barcode modal
-                const root = document.querySelector('[x-data*="barcodeOpen"]');
-                if (root && root._x_dataStack) root._x_dataStack[0].barcodeOpen = false;
+                const input = document.getElementById('barcodeInput');
+                if (input) input.value = '';
+                window.dispatchEvent(new CustomEvent('close-barcode'));
             } else {
-                showError('No product found with code: ' + code);
+                showError('No product found for: ' + term);
             }
         };
 
         document.getElementById('productCodeInput')?.addEventListener('keyup', function (e) {
+            if (e.key !== 'Enter') return;
             window.handleBarcode(e.target.value);
-            if (e.target.value) e.target.value = '';
+            e.target.value = '';
         });
 
         // --- Customer form toggle ---

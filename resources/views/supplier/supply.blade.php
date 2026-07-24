@@ -160,7 +160,7 @@
     </div>
 
     {{-- =================== BARCODE MODAL =================== --}}
-    <div x-show="barcodeOpen" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none" @keydown.escape.window="barcodeOpen = false">
+    <div x-show="barcodeOpen" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none" @keydown.escape.window="barcodeOpen = false" @close-barcode.window="barcodeOpen = false">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="barcodeOpen = false"></div>
         <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 p-6" @click.stop>
             <div class="flex items-center justify-between mb-4">
@@ -305,8 +305,7 @@
                 const total = modal.querySelector('#product-total-price');
                 if (total) total.textContent = price;
             }
-            const root = document.querySelector('#itemModal')?.closest('[x-data]');
-            if (root && root._x_dataStack) root._x_dataStack[0].open = true;
+            window.dispatchEvent(new CustomEvent('open-item-modal'));
         });
 
         // --- Modal field listeners ---
@@ -353,8 +352,7 @@
                 btn.disabled = false;
                 if (!ok) { showError(d.message || 'Error'); return; }
                 setItemToCart(d.data.item, d.data.cart_item_html);
-                const root = modal.closest('[x-data]');
-                if (root && root._x_dataStack) root._x_dataStack[0].open = false;
+                window.dispatchEvent(new CustomEvent('close-item-modal'));
             })
             .catch(err => {
                 btn.innerHTML = original;
@@ -424,23 +422,32 @@
         $discountInput.addEventListener('input', updateCheckoutPrice);
         $paidInput.addEventListener('input', updateCheckoutPrice);
 
-        // --- Barcode search ---
+        // --- Quick lookup: matches product code, exact name, then partial name ---
         window.handleBarcode = function (code) {
-            if (!code) return;
-            const card = Array.from(document.querySelectorAll('.item-card')).find(c => c.dataset.code === code);
+            const term = (code || '').trim();
+            if (!term) return;
+            const needle = term.toLowerCase();
+            const cards = Array.from(document.querySelectorAll('.item-card'));
+            const nameOf = c => (c.querySelector('.name')?.textContent || '').trim().toLowerCase();
+
+            const card = cards.find(c => c.dataset.code && c.dataset.code === term)
+                || cards.find(c => nameOf(c) === needle)
+                || cards.find(c => nameOf(c).includes(needle));
+
             if (card) {
                 card.click();
-                document.getElementById('barcodeInput').value = '';
-                const root = document.querySelector('[x-data*="barcodeOpen"]');
-                if (root && root._x_dataStack) root._x_dataStack[0].barcodeOpen = false;
+                const input = document.getElementById('barcodeInput');
+                if (input) input.value = '';
+                window.dispatchEvent(new CustomEvent('close-barcode'));
             } else {
-                showError('No product found with code: ' + code);
+                showError('No product found for: ' + term);
             }
         };
 
         document.getElementById('productCodeInput')?.addEventListener('keyup', function (e) {
+            if (e.key !== 'Enter') return;
             window.handleBarcode(e.target.value);
-            if (e.target.value) e.target.value = '';
+            e.target.value = '';
         });
 
         window.toggleCustomerForm = function () {

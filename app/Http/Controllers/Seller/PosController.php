@@ -17,6 +17,7 @@ use App\Models\ProductCategory;
 use App\Models\Sale;
 use App\Models\SellerEmployee;
 use App\Services\StockService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
@@ -363,7 +364,9 @@ class PosController extends Controller
                     'order_id' => $cart->order_id,
                     'client_order_id' => $request->client_order_id,
                     'device_id' => $request->device_id,
-                    'created_at_client' => $request->created_at_client,
+                    'created_at_client' => $request->created_at_client
+                        ? Carbon::parse($request->created_at_client)
+                        : null,
                     'synced_at' => $request->client_order_id ? now() : null,
                     'sale_date' => date('Y-m-d'),
                     'subtotal' => $subTotal,

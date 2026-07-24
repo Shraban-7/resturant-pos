@@ -27,7 +27,7 @@
     @if(!$isMobile)
         <div class="relative">
             <i class="ri-barcode-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-            <input type="text" id="productCodeInput" class="form-control pl-10" placeholder="Scan barcode...">
+            <input type="text" id="productCodeInput" class="form-control pl-10" placeholder="Scan code or type name, then Enter">
         </div>
     @endif
 

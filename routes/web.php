@@ -73,7 +73,8 @@ Route::middleware(['auth', 'seller'])->prefix('seller')->as('seller.')->group(fu
 
     Route::prefix('sales')->as('sales.')->group(function () {
         Route::get('/', [SaleController::class, 'index'])->name('index');
-        Route::get('/invoice/{sale}', [SaleController::class, 'invoice'])->name('invoice');
+        Route::get('/invoice/{sale:order_id}', [SaleController::class, 'invoice'])->name('invoice');
+        Route::get('/{sale}/mark-paid', [SaleController::class, 'markPaid'])->name('mark-paid');
     });
 
     Route::prefix('products')->as('products.')->group(function () {

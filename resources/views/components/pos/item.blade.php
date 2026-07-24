@@ -1,6 +1,6 @@
 <div class="item-card bg-white border border-slate-200 rounded-xl overflow-hidden cursor-pointer transition hover:border-brand-400 hover:shadow-md active:scale-[0.98] flex flex-col justify-between h-full w-full" id="item-{{ $item->id }}"
      data-id="{{ $item->id }}"
-     data-code="{{ $item->item_code }}"
+     data-code="{{ $item->item_code ?? '' }}"
      data-category="{{ $item->category_id }}"
      data-price="{{ $item->selling_price }}"
      data-stock="{{ $item->availableStock }}">

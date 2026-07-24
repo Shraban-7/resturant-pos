@@ -13,6 +13,13 @@ class Sale extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'created_at_client' => 'datetime',
+        'synced_at' => 'datetime',
+        'sale_date' => 'date',
+        'is_hold' => 'boolean',
+    ];
+
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id');

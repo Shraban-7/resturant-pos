@@ -13,6 +13,7 @@ use App\Models\DiningTable;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SellerEmployee;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -200,7 +201,9 @@ class OfflineSyncController extends Controller
                 'order_id' => generateOrderId(),
                 'client_order_id' => $order['client_order_id'],
                 'device_id' => $order['device_id'],
-                'created_at_client' => $order['created_at_client'],
+                'created_at_client' => ! empty($order['created_at_client'])
+                    ? Carbon::parse($order['created_at_client'])
+                    : null,
                 'synced_at' => now(),
                 'sale_date' => now()->toDateString(),
                 'subtotal' => $subtotal,
