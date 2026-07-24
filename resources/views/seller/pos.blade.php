@@ -125,7 +125,7 @@
             {{-- Products --}}
             <div>
                 <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Menu</h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3" id="productsGrid">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-8 gap-2 sm:gap-2.5" id="productsGrid">
                     @foreach ($products as $product)
                         <x-pos.item :item="$product" />
                     @endforeach
