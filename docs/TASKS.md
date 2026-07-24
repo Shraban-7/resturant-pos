@@ -8,7 +8,7 @@
 ---
 
 ## Milestone 1: Technical Debt Remediation & Baseline Safety
-- [ ] **TASK-101** [Est: 0.5 day]: Create `App\Http\Requests\Seller\PosAddItemRequest` and `CheckoutPosRequest` to replace inline validation in `PosController`.
+- [x] **TASK-101** [Est: 0.5 day]: Create `App\Http\Requests\Seller\PosAddItemRequest` and `CheckoutPosRequest` to replace inline validation in `PosController`.
 - [ ] **TASK-102** [Est: 0.5 day]: Create `App\Services\StockService` class to centralize stock availability checks and stock deductions.
 - [ ] **TASK-103** [Est: 0.5 day]: Wrap `PosController@checkout` and `addItem` operations inside `DB::transaction()` blocks.
 - [ ] **TASK-104** [Est: 0.5 day]: Wrap `MenuController@placeOrder` operations inside `DB::transaction()` blocks.
