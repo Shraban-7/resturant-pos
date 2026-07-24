@@ -105,7 +105,7 @@ Each milestone is **independently deployable**, ensuring zero disruption to exis
   - ✅ **Loyalty Program**: Customer points balance tracking, reward tiers (Bronze/Silver/Gold), and manual point adjustments.
   - ✅ **Gift Cards**: Digital gift cards issuance (`GC-XXXXX`), unique code verification, and POS redemption.
   - ✅ **Delivery Management**: Delivery dispatch tracking, driver assignment, and status lifecycle management.
-  - ✅ **Online Ordering Storefront**: Web storefront portal at `/online-order` with pickup/delivery checkout and KDS integration.
+  - ❌ **Online Ordering Storefront**: Removed by product decision (out of scope).
 
 ---
 

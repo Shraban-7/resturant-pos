@@ -34,7 +34,6 @@
             <div class="sidebar-section">Marketing & Growth</div>
             <x-sidebar-list-item :title="'Loyalty Program'" :icon="'ri-gift-line'" :route="'seller.loyalty.index'" />
             <x-sidebar-list-item :title="'Gift Cards'" :icon="'ri-coupon-3-line'" :route="'seller.gift-cards.index'" />
-            <x-sidebar-list-item :title="'Online Storefront'" :icon="'ri-global-line'" :route="'online.order.index'" />
 
             <div class="sidebar-section">People</div>
             <x-sidebar-list-item :title="'Customers'" :icon="'ri-team-line'" :route="'seller.customers.index'" />

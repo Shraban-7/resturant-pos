@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function dashboard(Request $request)
+    public function index(Request $request)
     {
         $fromDate = $request->get('fromDate');
         $toDate = $request->get('toDate');

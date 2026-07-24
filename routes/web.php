@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MenuController;
-use App\Http\Controllers\OnlineOrderController;
 use App\Http\Controllers\OrderStatusController;
 use App\Http\Controllers\Seller\CustomerController;
 use App\Http\Controllers\Seller\DashboardController;
@@ -38,10 +37,6 @@ Route::get('/menu/tracker/{token}', [MenuController::class, 'tracker'])->name('m
 Route::get('/menu/{table}', [MenuController::class, 'index'])->name('menu.index');
 Route::post('/menu/{table}/order', [MenuController::class, 'placeOrder'])->name('menu.placeOrder');
 Route::get('/order-status/{order}', [OrderStatusController::class, 'show'])->name('order-status.show');
-
-// Storefront Online Ordering
-Route::get('/online-order', [OnlineOrderController::class, 'index'])->name('online.order.index');
-Route::post('/online-order/checkout', [OnlineOrderController::class, 'checkout'])->name('online.order.checkout');
 
 // Guest authentication routes...
 Route::middleware('guest')->group(function () {

@@ -80,7 +80,7 @@
 - [x] **TASK-904** [Est: 0.5 day]: Customer Loyalty Program points balance, reward tiers, and manual point adjustments.
 - [x] **TASK-905** [Est: 0.5 day]: Digital Gift Cards issuance, unique code verification, and POS redemption.
 - [x] **TASK-906** [Est: 0.5 day]: Delivery Orders management, driver/courier assignment, and dispatch status tracking.
-- [x] **TASK-907** [Est: 0.5 day]: Online Ordering Storefront portal for pickup/delivery and guest checkout.
+- [ ] ~~**TASK-907**: Online Ordering Storefront portal~~ — removed from scope.
 
 ---
 
