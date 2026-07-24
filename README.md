@@ -1,64 +1,192 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# 🍽️ Restaurant POS & Enterprise Management System
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![Laravel](https://img.shields.io/badge/Laravel-v10.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-v8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v3.x-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Alpine.js](https://img.shields.io/badge/Alpine.js-v3.x-8BC0D0?style=for-the-badge&logo=alpine.js&logoColor=white)](https://alpinejs.dev)
+[![Laravel Reverb](https://img.shields.io/badge/WebSockets-Reverb-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com/docs/11.x/reverb)
+[![Offline PWA](https://img.shields.io/badge/PWA-IndexedDB_Sync-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
-## About Laravel
+A production-grade, full-featured **Restaurant Point-of-Sale (POS) & Operational Management System** built with **Laravel, Blade, Alpine.js, TailwindCSS, WebSockets (Laravel Reverb), and Service Worker PWA with IndexedDB offline sync**.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🌟 Core Features & Module Highlights
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### ⚡ Cashier POS Terminal
+- **Compact & High-Density Grid**: Responsive multi-column layout (6–8 cards per row on large displays) optimized for rapid order taking.
+- **Product Modifiers & Add-ons**: Choose dish variants, extra toppings, exclusions, and custom cooking notes directly from Alpine.js modals.
+- **Order Hold & Multi-Cart**: Hold active orders for dine-in tables or takeaway guests and resume instantly.
+- **Split Payments & Invoice Printing**: Cash, card, mobile banking, and due management with auto-generated receipt formats.
 
-## Learning Laravel
+### 🍳 Touchscreen Kitchen Display System (KDS)
+- **Real-Time WebSockets Sync**: Instant kitchen order ticket (KOT) card dispatch powered by **Laravel Reverb**.
+- **Bump-Bar Status Workflow**: Interactive ticket status transitions (`Pending` ➔ `Preparing` ➔ `Ready` ➔ `Served`).
+- **Prep Time Alerts**: Dynamic timer indicators highlighting overdue orders for kitchen staff.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 🗺️ Visual Floor Plan & Table Manager
+- **Multi-Floor Zoning**: Organize tables across custom floor zones (e.g., Main Hall, Rooftop, Patio, VIP Section).
+- **Interactive Visual Floor Map**: HTML5 drag-and-drop table layout designer with real-time coordinate saving.
+- **Occupancy Status Locking**: Automatic status synchronization (`Available`, `Occupied`, `Reserved`).
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 📦 Bill of Materials (BOM) & Inventory Auto-Deduction
+- **Recipe BOM Management**: Associate raw ingredients (e.g., flour, cheese, meat) with menu items and portion sizes.
+- **Automatic Stock Deductor (`DeductRecipeStockAction`)**: Automatically deducts raw ingredients from inventory upon completed or held POS sales.
 
-## Laravel Sponsors
+### 📲 Digital QR Code Menu & Customer Tracker
+- **Table Tent QR Generator**: Instant downloadable/printable QR code cards (PDF & SVG) per dining table.
+- **Contactless Guest Ordering**: Digital menu allowing guests to select item modifiers and submit orders from their smartphones.
+- **Real-Time Order Status Tracker**: Live guest tracking page (`/order-status/{order}`) displaying dish preparation status.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+### 📴 Offline-First PWA & IndexedDB Reconciliation
+- **Zero-Downtime Service Worker**: Service Worker caching static assets and POS web application shell (`public/sw.js`).
+- **IndexedDB Transaction Queue (`pos-idb.js`)**: Queue offline sales safely during internet outages.
+- **Idempotent Background Sync**: Server reconciliation endpoint (`POST /api/seller/pos/offline-sync`) syncs offline orders automatically upon reconnection.
 
-### Premium Partners
+### 📅 Table Reservations Engine
+- **Booking Calendar**: Manage table bookings with date, time slot, guest counts, and customer details.
+- **Auto-Table Locking**: Automatically reserves designated tables and releases them upon checkout or cancellation.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+### 🎁 Loyalty Program & Gift Cards
+- **Customer Loyalty Points**: Accumulated reward points balance per purchase, reward tier calculations (Bronze, Silver, Gold), and manual point adjustments.
+- **Digital Gift Cards**: Issue gift cards with unique codes (`GC-XXXXX`), track balance, verify expiry, and redeem at checkout.
 
-## Contributing
+### 🛵 Delivery & Driver Dispatch Management
+- **Courier Assignment**: Assign delivery orders to drivers with contact information (`driver_name`, `driver_phone`).
+- **Dispatch Lifecycle**: Track delivery progress (`Pending` ➔ `Assigned` ➔ `Out for Delivery` ➔ `Delivered`).
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 🚚 Supplier & Wholesale Module
+- **Supplier Portal & Invoicing**: Dedicated supplier interface for managing raw material supplies, supply invoices, and wholesale stock intake.
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🛠️ Technology Stack & Architecture
 
-## Security Vulnerabilities
+| Layer | Technologies Used |
+| :--- | :--- |
+| **Backend Framework** | Laravel 10.x, PHP 8.2+ |
+| **Database & ORM** | MySQL / MariaDB, Eloquent ORM with Composite Performance Indexes |
+| **Real-Time Engine** | Laravel Reverb (WebSockets), Laravel Echo, Event Broadcasting |
+| **Frontend UI** | Laravel Blade, TailwindCSS 3.x, Alpine.js 3.x, Remix Icons |
+| **Offline Architecture** | Service Worker PWA API, IndexedDB API (`pos-idb.js`) |
+| **Testing & Quality** | PHPUnit Unit & Feature Test Suite, FormRequest Validation |
+| **DevOps & Container** | Docker, Docker Compose, Nginx, PHP-FPM 8.2 |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## 🚀 Quick Start & Installation Guide
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Prerequisites
+- **PHP** >= 8.2 (with `pdo`, `mbstring`, `openssl`, `tokenizer`, `xml`, `cURL` extensions)
+- **Composer** >= 2.x
+- **Node.js** >= 18.x & **npm**
+- **MySQL** >= 8.0 or **MariaDB** >= 10.4
+
+### Step-by-Step Installation
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Shraban-7/restaurant_pos.git
+   cd restaurant_pos
+   ```
+
+2. **Install PHP & Node Dependencies**:
+   ```bash
+   composer install
+   npm install
+   ```
+
+3. **Configure Environment File**:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+   *Set your MySQL database credentials in `.env`:*
+   ```ini
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=restaurant_pos
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+4. **Run Database Migrations & Seeders**:
+   ```bash
+   php artisan migrate --seed
+   ```
+
+5. **Create Storage Symbolic Link**:
+   ```bash
+   php artisan storage:link
+   ```
+
+6. **Start Laravel Reverb WebSocket Server**:
+   ```bash
+   php artisan reverb:start
+   ```
+
+7. **Compile Frontend Assets & Run Local Server**:
+   ```bash
+   npm run dev
+   php artisan serve
+   ```
+   *Access POS at:* `http://localhost:8000`
+
+---
+
+## 🐳 Production Docker Deployment
+
+Deploy with zero hassle using the multi-stage production Docker setup:
+
+```bash
+# Build and start Docker containers in detached mode
+docker-compose up -d --build
+```
+
+The Docker stack includes:
+- **Nginx Web Server** (Port 80 / 443)
+- **PHP-FPM App Server** (Laravel Core)
+- **Laravel Reverb WebSocket Server** (Port 8080)
+- **MySQL Database Server**
+- **Redis Cache & Queue Worker**
+
+---
+
+## 🧪 Automated Testing
+
+Execute the comprehensive PHPUnit test suite covering stock calculations, POS checkout transaction safety, KDS event dispatch, and QR table ordering:
+
+```bash
+php artisan test
+```
+
+---
+
+## 🗺️ Project Roadmap Milestones
+
+- [x] **Milestone 1**: Technical Debt Remediation & Baseline Safety (`StockService`, `DB::transaction()`, Composite Indexes).
+- [x] **Milestone 2**: Restaurant Database Schema Extensions (Floors, Tables, Reservations, Recipes, Modifiers, KOT).
+- [x] **Milestone 3**: Multi-Floor & Interactive Drag-and-Drop Table Floor Map Manager.
+- [x] **Milestone 4**: Product Modifiers & Recipe BOM Auto-Stock Deductor.
+- [x] **Milestone 5**: Real-Time Kitchen Display System (KDS) & WebSockets (Laravel Reverb).
+- [x] **Milestone 6**: Enhanced Digital QR Code Menu & Customer Order Status Tracker.
+- [x] **Milestone 7**: Offline-First Service Worker PWA & IndexedDB Sync Reconciliation.
+- [x] **Milestone 8**: Automated Test Suite & Production Docker Deployment Infrastructure.
+- [x] **Milestone 9**: Phase 2 Post-MVP Modules (Reservations, Loyalty, Gift Cards, Deliveries).
+- [ ] **Milestone 10**: Phase 3 Multi-Branch Enterprise Scaling & API Framework (Planned).
+
+---
+
+## 👨‍💻 Author & Maintainer
+
+**Shraban-7**  
+- **Email**: [shakuatshraban@gmail.com](mailto:shakuatshraban@gmail.com)  
+- **GitHub**: [Shraban-7](https://github.com/Shraban-7)
+
+---
+
+## 📄 License
+
+This project is open-sourced software licensed under the [MIT License](LICENSE).
