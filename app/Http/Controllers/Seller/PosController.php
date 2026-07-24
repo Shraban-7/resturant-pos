@@ -99,6 +99,42 @@ class PosController extends Controller
             ->whereHas('recipe.ingredients')
             ->pluck('id');
 
+        $offlineProducts = $products->map(fn ($product) => [
+            'product_id' => $product->id,
+            'name' => $product->name,
+            'selling_price' => (float) $product->selling_price,
+            'buying_price' => (float) $product->buying_price,
+            'available_stock' => (float) $product->availableStock,
+            'category_id' => $product->product_category_id ?? $product->category_id,
+            'unit' => $product->unit?->short_name,
+            'image' => $product->image,
+            'active' => (bool) $product->is_active,
+            'modifiers' => $productModifiersMap[$product->id] ?? [],
+        ])->values();
+
+        $offlineCategories = $categories->map(fn ($category) => [
+            'category_id' => $category->id,
+            'name' => $category->name,
+        ])->values();
+
+        $offlineTables = $diningTables->map(fn ($table) => [
+            'table_id' => $table->id,
+            'name' => $table->name,
+            'status' => $table->status,
+            'floor_id' => $table->floor_id,
+        ])->values();
+
+        $offlineFloors = $diningTables->pluck('floor')->filter()->unique('id')->map(fn ($floor) => [
+            'floor_id' => $floor->id,
+            'name' => $floor->name,
+        ])->values();
+
+        $offlineCustomers = $customers->take(100)->map(fn ($customer) => [
+            'customer_id' => $customer->id,
+            'name' => $customer->name,
+            'phone' => $customer->phone,
+        ])->values();
+
         return view('seller.pos', compact(
             'products',
             'cart',
@@ -111,7 +147,12 @@ class PosController extends Controller
             'sale',
             'saleItems',
             'productModifiersMap',
-            'recipeProductIds'
+            'recipeProductIds',
+            'offlineProducts',
+            'offlineCategories',
+            'offlineTables',
+            'offlineFloors',
+            'offlineCustomers'
         ));
     }
 

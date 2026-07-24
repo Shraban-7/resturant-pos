@@ -220,37 +220,11 @@
     window.POS_OFFLINE_CONFIG = {
         seller_id: {{ (int) auth()->id() }},
         currency: 'BDT',
-        products: @json($products->map(fn ($product) => [
-            'product_id' => $product->id,
-            'name' => $product->name,
-            'selling_price' => (float) $product->selling_price,
-            'buying_price' => (float) $product->buying_price,
-            'available_stock' => (float) $product->availableStock,
-            'category_id' => $product->product_category_id ?? $product->category_id,
-            'unit' => $product->unit?->short_name,
-            'image' => $product->image,
-            'active' => (bool) $product->is_active,
-            'modifiers' => $productModifiersMap[$product->id] ?? [],
-        ])->values()),
-        categories: @json($categories->map(fn ($category) => [
-            'category_id' => $category->id,
-            'name' => $category->name,
-        ])->values()),
-        tables: @json($diningTables->map(fn ($table) => [
-            'table_id' => $table->id,
-            'name' => $table->name,
-            'status' => $table->status,
-            'floor_id' => $table->floor_id,
-        ])->values()),
-        floors: @json($diningTables->pluck('floor')->filter()->unique('id')->map(fn ($floor) => [
-            'floor_id' => $floor->id,
-            'name' => $floor->name,
-        ])->values()),
-        customers: @json($customers->take(100)->map(fn ($customer) => [
-            'customer_id' => $customer->id,
-            'name' => $customer->name,
-            'phone' => $customer->phone,
-        ])->values()),
+        products: {!! json_encode($offlineProducts ?? []) !!},
+        categories: {!! json_encode($offlineCategories ?? []) !!},
+        tables: {!! json_encode($offlineTables ?? []) !!},
+        floors: {!! json_encode($offlineFloors ?? []) !!},
+        customers: {!! json_encode($offlineCustomers ?? []) !!},
     };
 
     function posApp() {
