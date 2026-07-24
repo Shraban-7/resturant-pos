@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Slash Restora | Digital Menu</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
-
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
     <style>
         :root {
             --menu-primary: #1a1a2e;
@@ -409,134 +411,8 @@
     </style>
 </head>
 
-<body
-    x-data="{
-        cart: [],
-        cartOpen: false,
-        confirmOpen: false,
-        orderNumber: '',
-        add(card) {
-            const id = card.dataset.id;
-            const existing = this.cart.find(i => i.id === id);
-            if (existing) { existing.quantity++; } else {
-                this.cart.push({
-                    id, name: card.dataset.name,
-                    price: parseFloat(card.dataset.price),
-                    image: card.dataset.image,
-                    quantity: 1
-                });
-            }
-            this.updateCardUI(card, this.cart.find(i => i.id === id).quantity);
-            this.updateCartUI();
-        },
-        updateQty(id, delta) {
-            const item = this.cart.find(i => i.id === id);
-            if (!item) return;
-            item.quantity += delta;
-            if (item.quantity <= 0) this.cart = this.cart.filter(i => i.id !== id);
-            const card = document.querySelector(`.menu-card[data-id='${id}']`);
-            if (card) this.updateCardUI(card, item.quantity > 0 ? item.quantity : 0);
-            this.updateCartUI();
-        },
-        updateCardUI(card, qty) {
-            const actions = card.querySelector('.item-actions');
-            const available = card.dataset.available === '1';
-            if (!available) {
-                actions.innerHTML = `<span class='not-available-badge'><i class='ri-close-circle-line'></i> Not Available</span>`;
-                return;
-            }
-            if (qty > 0) {
-                actions.innerHTML = `
-                    <div class='quantity-controls'>
-                        <button type='button' class='qty-btn minus' data-act='minus' data-id='${card.dataset.id}'><i class='ri-subtract-line'></i></button>
-                        <span class='qty-value'>${qty}</span>
-                        <button type='button' class='qty-btn plus' data-act='plus' data-id='${card.dataset.id}'><i class='ri-add-line'></i></button>
-                    </div>`;
-            } else {
-                actions.innerHTML = `<button type='button' class='add-btn' data-act='add'><i class='ri-add-line'></i></button>`;
-            }
-        },
-        updateCartUI() {
-            const totalItems = this.cart.reduce((s, i) => s + i.quantity, 0);
-            const subtotal = this.cart.reduce((s, i) => s + i.price * i.quantity, 0);
-            this.$refs.cartBarCount.textContent = totalItems;
-            this.$refs.cartBarTotal.textContent = subtotal.toFixed(2);
-            this.$refs.headerCartBadge.textContent = totalItems;
-            this.$refs.headerCartBadge.classList.toggle('empty', totalItems === 0);
-            this.$refs.cartBar.classList.toggle('show', totalItems > 0);
-            if (this.cart.length === 0) {
-                this.$refs.cartItems.innerHTML = `
-                    <div class='empty-cart'>
-                        <i class='ri-shopping-bag-line'></i>
-                        <h5>Your cart is empty</h5>
-                        <p class='text-gray-500'>Add items from the menu to get started</p>
-                    </div>`;
-                this.$refs.cartSummarySection.style.display = 'none';
-            } else {
-                let html = '';
-                this.cart.forEach(item => {
-                    html += `
-                        <div class='cart-item' data-id='${item.id}'>
-                            <img src='${item.image}' alt='${item.name}' class='cart-item-image'>
-                            <div class='cart-item-details'>
-                                <div class='cart-item-name'>${item.name}</div>
-                                <div class='cart-item-price'>৳${(item.price * item.quantity).toFixed(2)}</div>
-                            </div>
-                            <div class='cart-item-controls'>
-                                <div class='quantity-controls'>
-                                    <button type='button' class='qty-btn minus' data-act='minus' data-id='${item.id}'><i class='ri-subtract-line'></i></button>
-                                    <span class='qty-value'>${item.quantity}</span>
-                                    <button type='button' class='qty-btn plus' data-act='plus' data-id='${item.id}'><i class='ri-add-line'></i></button>
-                                </div>
-                            </div>
-                        </div>`;
-                });
-                this.$refs.cartItems.innerHTML = html;
-                this.$refs.cartSummarySection.style.display = 'block';
-                this.$refs.subtotal.textContent = subtotal.toFixed(2);
-                this.$refs.total.textContent = subtotal.toFixed(2);
-            }
-        },
-        scrollToCategory(id) {
-            const sec = document.getElementById(id);
-            if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        },
-        async placeOrder() {
-            if (this.cart.length === 0) return;
-            const btn = this.$refs.placeOrderBtn;
-            btn.disabled = true;
-            const original = btn.innerHTML;
-            btn.innerHTML = 'Placing order...';
-            try {
-                const res = await fetch(`/menu/{{ $table->id }}/order`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                    body: JSON.stringify({ items: this.cart.map(i => ({ id: i.id, quantity: i.quantity })) })
-                });
-                if (!res.ok) throw new Error('Order failed');
-                const data = await res.json();
-                this.orderNumber = data.order_id;
-                this.cartOpen = false;
-                setTimeout(() => { this.confirmOpen = true; }, 300);
-                this.cart = [];
-                this.updateCartUI();
-                document.querySelectorAll('.menu-card').forEach(c => this.updateCardUI(c, 0));
-            } catch (err) {
-                alert('Something went wrong. Please try again.');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = original;
-            }
-        }
-    }"
-    @click="const t = $event.target.closest('[data-act]'); if (!t) return;
-             if (t.dataset.act === 'add') add(t.closest('.menu-card'));
-             else if (t.dataset.act === 'plus' || t.dataset.act === 'minus') {
-                const card = t.closest('.menu-card') || t.closest('.cart-item');
-                if (card) updateQty(card.dataset.id, t.dataset.act === 'plus' ? 1 : -1);
-             }"
-    @keydown.escape.window="cartOpen = false; confirmOpen = false"
->
+<body x-data="digitalMenuApp(@js($productModifiersMap ?? []))" x-cloak
+    @keydown.escape.window="cartOpen = false; confirmOpen = false; modifierOpen = false">
     <header class="header">
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="brand-logo">Slash<span>.</span>Restora</div>
@@ -546,7 +422,7 @@
                 </span>
                 <button type="button" class="cart-btn" @click="cartOpen = true" aria-label="Open cart">
                     <i class="ri-shopping-bag-line"></i>
-                    <span class="cart-badge empty" x-ref="headerCartBadge">0</span>
+                    <span class="cart-badge" :class="{ empty: cartCount === 0 }" x-text="cartCount"></span>
                 </button>
             </div>
         </div>
@@ -573,21 +449,29 @@
                     <h2 class="section-title">{{ $category->name }}</h2>
                     <div class="menu-grid">
                         @foreach ($category->products as $product)
+                            @php
+                                $hasMods = ($productModifiersMap[$product->id] ?? []) !== [];
+                                $inStock = $product->availableStock > 0;
+                            @endphp
                             <article class="menu-card"
                                      data-id="{{ $product->id }}"
                                      data-name="{{ $product->name }}"
                                      data-price="{{ $product->selling_price }}"
                                      data-image="{{ storage_url($product->image) }}"
-                                     data-available="{{ $product->availableStock > 0 ? '1' : '0' }}">
+                                     data-available="{{ $inStock ? '1' : '0' }}"
+                                     data-has-modifiers="{{ $hasMods ? '1' : '0' }}">
                                 <div class="menu-card-body">
                                     <img src="{{ storage_url($product->image) }}" alt="{{ $product->name }}" class="menu-card-image" loading="lazy">
                                     <div class="menu-card-content">
                                         <h3 class="menu-card-title">{{ $product->name }}</h3>
+                                        @if($hasMods)
+                                            <div class="text-xs text-gray-400 mb-1">Customizable</div>
+                                        @endif
                                         <div class="menu-card-footer">
                                             <div class="menu-card-price">{{ money($product->selling_price) }}</div>
                                             <div class="item-actions">
-                                                @if ($product->availableStock > 0)
-                                                    <button type="button" class="add-btn" data-act="add">
+                                                @if ($inStock)
+                                                    <button type="button" class="add-btn" @click="startAdd($el.closest('.menu-card'))">
                                                         <i class="ri-add-line"></i>
                                                     </button>
                                                 @else
@@ -607,11 +491,11 @@
         </div>
     </main>
 
-    <div class="cart-bar" x-ref="cartBar" x-cloak>
+    <div class="cart-bar" :class="{ show: cartCount > 0 }" x-cloak>
         <div class="cart-bar-info">
-            <span class="cart-bar-count"><span x-ref="cartBarCount">0</span> items</span>
+            <span class="cart-bar-count"><span x-text="cartCount">0</span> items</span>
             <span class="text-gray-400">|</span>
-            <span class="cart-bar-total">৳<span x-ref="cartBarTotal">0.00</span></span>
+            <span class="cart-bar-total">৳<span x-text="cartTotal.toFixed(2)">0.00</span></span>
         </div>
         <button type="button" class="view-cart-btn" @click="cartOpen = true">
             View Cart & Checkout
@@ -620,7 +504,51 @@
     </div>
 
     <template x-teleport="body">
-        <div x-show="cartOpen" x-cloak class="fixed inset-0 z-[60] flex items-end" style="display:none" @keydown.escape.window="cartOpen = false">
+        <div x-show="modifierOpen" x-cloak class="fixed inset-0 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-4" style="display:none">
+            <div class="absolute inset-0 bg-gray-900/50" @click="modifierOpen = false"></div>
+            <div class="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[85vh] flex flex-col">
+                <div class="px-5 py-4 border-b border-gray-100">
+                    <h5 class="text-lg font-bold text-gray-900" x-text="pendingItem?.name"></h5>
+                    <p class="text-sm text-gray-500">Choose options</p>
+                </div>
+                <div class="flex-1 overflow-y-auto px-5 py-3 space-y-4">
+                    <template x-for="group in modifierGroups" :key="group.name">
+                        <div>
+                            <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                                <span x-text="group.name"></span>
+                                <span x-show="group.required" class="text-rose-500 normal-case"> · required</span>
+                            </div>
+                            <div class="space-y-2">
+                                <template x-for="mod in group.items" :key="mod.id">
+                                    <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-300 cursor-pointer">
+                                        <input type="checkbox" class="rounded border-gray-300"
+                                               :checked="isModSelected(mod.id)"
+                                               @change="toggleModifier(mod)">
+                                        <span class="flex-1 text-sm font-medium" x-text="mod.name"></span>
+                                        <span class="text-sm text-gray-500" x-text="mod.price > 0 ? ('+৳' + Number(mod.price).toFixed(2)) : 'Free'"></span>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                    <div>
+                        <label class="text-xs font-semibold uppercase tracking-wide text-gray-500">Special notes</label>
+                        <textarea class="mt-2 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" rows="2"
+                                  x-model="pendingNote" placeholder="e.g. less spicy, no onion"></textarea>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-100 flex gap-2">
+                    <button type="button" class="flex-1 py-3 rounded-xl border border-gray-200 font-semibold" @click="modifierOpen = false">Cancel</button>
+                    <button type="button" class="flex-1 py-3 rounded-xl text-white font-semibold" style="background:#e94560" @click="confirmModifiers()">
+                        Add · ৳<span x-text="pendingLineTotal.toFixed(2)"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template x-teleport="body">
+        <div x-show="cartOpen" x-cloak class="fixed inset-0 z-[60] flex items-end" style="display:none">
             <div class="absolute inset-0 bg-gray-900/50" @click="cartOpen = false"></div>
             <div class="relative w-full bg-white rounded-t-3xl shadow-2xl flex flex-col" style="max-height: 80vh;">
                 <div class="w-10 h-1 bg-gray-300 rounded mx-auto mt-3"></div>
@@ -633,39 +561,61 @@
                     </button>
                 </div>
                 <div class="flex-1 px-6 py-2 overflow-y-auto">
-                    <div x-ref="cartItems">
+                    <template x-if="cart.length === 0">
                         <div class="empty-cart">
                             <i class="ri-shopping-bag-line"></i>
                             <h5>Your cart is empty</h5>
                             <p class="text-gray-500">Add items from the menu to get started</p>
                         </div>
-                    </div>
-                    <div x-ref="cartSummarySection" style="display:none;">
-                        <div class="cart-summary">
-                            <div class="cart-summary-row">
-                                <span>Subtotal</span>
-                                <span>৳<span x-ref="subtotal">0.00</span></span>
+                    </template>
+                    <template x-if="cart.length > 0">
+                        <div>
+                            <template x-for="item in cart" :key="item.key">
+                                <div class="cart-item">
+                                    <img :src="item.image" :alt="item.name" class="cart-item-image">
+                                    <div class="cart-item-details">
+                                        <div class="cart-item-name" x-text="item.name"></div>
+                                        <div class="text-xs text-gray-400" x-show="item.modifiers?.length"
+                                             x-text="(item.modifiers || []).map(m => m.name).join(', ')"></div>
+                                        <div class="text-xs text-amber-700 italic" x-show="item.note" x-text="item.note"></div>
+                                        <div class="cart-item-price">৳<span x-text="(item.price * item.quantity).toFixed(2)"></span></div>
+                                    </div>
+                                    <div class="cart-item-controls">
+                                        <div class="quantity-controls">
+                                            <button type="button" class="qty-btn minus" @click="updateQty(item.key, -1)"><i class="ri-subtract-line"></i></button>
+                                            <span class="qty-value" x-text="item.quantity"></span>
+                                            <button type="button" class="qty-btn plus" @click="updateQty(item.key, 1)"><i class="ri-add-line"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <div class="cart-summary">
+                                <div class="cart-summary-row">
+                                    <span>Subtotal</span>
+                                    <span>৳<span x-text="cartTotal.toFixed(2)"></span></span>
+                                </div>
+                                <div class="cart-summary-row total">
+                                    <span>Total</span>
+                                    <span>৳<span x-text="cartTotal.toFixed(2)"></span></span>
+                                </div>
                             </div>
-                            <div class="cart-summary-row total">
-                                <span>Total</span>
-                                <span>৳<span x-ref="total">0.00</span></span>
-                            </div>
+                            <button type="button" class="place-order-btn" :disabled="placing" @click="placeOrder()">
+                                <i class="ri-send-plane-line mr-2"></i>
+                                <span x-text="placing ? 'Placing order...' : 'Place Order'"></span>
+                            </button>
+                            <p class="text-center text-gray-400 mt-3 text-xs">
+                                <i class="ri-shield-check-line mr-1"></i>
+                                Your order will be prepared immediately
+                            </p>
                         </div>
-                        <button type="button" class="place-order-btn" x-ref="placeOrderBtn" @click="placeOrder()">
-                            <i class="ri-send-plane-line mr-2"></i>Place Order
-                        </button>
-                        <p class="text-center text-gray-400 mt-3 text-xs">
-                            <i class="ri-shield-check-line mr-1"></i>
-                            Your order will be prepared immediately
-                        </p>
-                    </div>
+                    </template>
                 </div>
             </div>
         </div>
     </template>
 
     <template x-teleport="body">
-        <div x-show="confirmOpen" x-cloak class="fixed inset-0 z-[70] flex items-center justify-center p-4" style="display:none" @keydown.escape.window="confirmOpen = false">
+        <div x-show="confirmOpen" x-cloak class="fixed inset-0 z-[70] flex items-center justify-center p-4" style="display:none">
             <div class="absolute inset-0 bg-gray-900/60" @click="confirmOpen = false"></div>
             <div class="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center">
                 <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
@@ -678,9 +628,12 @@
                 </div>
                 <p class="confirmation-message">
                     Your order has been sent to the kitchen.<br>
-                    <strong>Estimated time: 15-20 minutes</strong>
+                    <strong>Track live preparation progress</strong>
                 </p>
-                <button type="button" class="done-btn" @click="confirmOpen = false">Done</button>
+                <a :href="trackerUrl" class="done-btn inline-flex items-center justify-center no-underline mb-3" x-show="trackerUrl">
+                    Track Order
+                </a>
+                <button type="button" class="done-btn" style="background:#6c757d" @click="confirmOpen = false">Done</button>
             </div>
         </div>
     </template>
@@ -688,6 +641,156 @@
     <style>
         [x-cloak] { display: none !important; }
     </style>
+
+    <script>
+        function digitalMenuApp(modifiersMap) {
+            return {
+                cart: [],
+                cartOpen: false,
+                confirmOpen: false,
+                modifierOpen: false,
+                placing: false,
+                orderNumber: '',
+                trackerUrl: '',
+                modifiersMap: modifiersMap || {},
+                pendingItem: null,
+                pendingModifiers: [],
+                pendingNote: '',
+
+                get cartCount() {
+                    return this.cart.reduce((s, i) => s + i.quantity, 0);
+                },
+                get cartTotal() {
+                    return this.cart.reduce((s, i) => s + i.price * i.quantity, 0);
+                },
+                get modifierGroups() {
+                    if (!this.pendingItem) return [];
+                    const mods = this.modifiersMap[this.pendingItem.id] || [];
+                    const groups = {};
+                    mods.forEach(m => {
+                        const name = m.group_name || 'Options';
+                        if (!groups[name]) groups[name] = { name, required: false, items: [] };
+                        groups[name].items.push(m);
+                        if (m.is_required) groups[name].required = true;
+                    });
+                    return Object.values(groups);
+                },
+                get pendingLineTotal() {
+                    if (!this.pendingItem) return 0;
+                    const addons = this.pendingModifiers.reduce((s, m) => s + Number(m.price || 0), 0);
+                    return Number(this.pendingItem.price) + addons;
+                },
+
+                lineKey(id, modifiers) {
+                    const ids = (modifiers || []).map(m => m.id).sort((a, b) => a - b).join('-');
+                    return id + ':' + ids;
+                },
+                isModSelected(id) {
+                    return this.pendingModifiers.some(m => m.id === id);
+                },
+                toggleModifier(mod) {
+                    if (this.isModSelected(mod.id)) {
+                        this.pendingModifiers = this.pendingModifiers.filter(m => m.id !== mod.id);
+                    } else {
+                        this.pendingModifiers = [...this.pendingModifiers, mod];
+                    }
+                },
+                startAdd(card) {
+                    if (!card || card.dataset.available !== '1') return;
+                    const id = card.dataset.id;
+                    const base = {
+                        id,
+                        name: card.dataset.name,
+                        price: parseFloat(card.dataset.price),
+                        image: card.dataset.image,
+                    };
+                    if (card.dataset.hasModifiers === '1') {
+                        this.pendingItem = base;
+                        this.pendingModifiers = [];
+                        this.pendingNote = '';
+                        this.modifierOpen = true;
+                        return;
+                    }
+                    this.addLine({ ...base, modifiers: [], note: '' });
+                },
+                confirmModifiers() {
+                    for (const group of this.modifierGroups) {
+                        if (group.required && !group.items.some(m => this.isModSelected(m.id))) {
+                            alert('Please choose an option for: ' + group.name);
+                            return;
+                        }
+                    }
+                    this.addLine({
+                        ...this.pendingItem,
+                        modifiers: this.pendingModifiers.map(m => ({
+                            id: m.id,
+                            name: m.name,
+                            price: Number(m.price),
+                            group_name: m.group_name,
+                        })),
+                        note: this.pendingNote,
+                        price: this.pendingLineTotal,
+                    });
+                    this.modifierOpen = false;
+                    this.pendingItem = null;
+                },
+                addLine(line) {
+                    const key = this.lineKey(line.id, line.modifiers);
+                    const existing = this.cart.find(i => i.key === key);
+                    if (existing) {
+                        existing.quantity++;
+                    } else {
+                        this.cart.push({ ...line, key, quantity: 1 });
+                    }
+                },
+                updateQty(key, delta) {
+                    const item = this.cart.find(i => i.key === key);
+                    if (!item) return;
+                    item.quantity += delta;
+                    if (item.quantity <= 0) this.cart = this.cart.filter(i => i.key !== key);
+                },
+                scrollToCategory(id) {
+                    const sec = document.getElementById(id);
+                    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                },
+                async placeOrder() {
+                    if (this.cart.length === 0 || this.placing) return;
+                    this.placing = true;
+                    try {
+                        const res = await fetch(`/menu/{{ $table->id }}/order`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            },
+                            body: JSON.stringify({
+                                items: this.cart.map(i => ({
+                                    id: Number(i.id),
+                                    quantity: i.quantity,
+                                    note: i.note || null,
+                                    modifiers: i.modifiers || [],
+                                })),
+                            }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok || data.status === false) {
+                            throw new Error(data.message || 'Order failed');
+                        }
+                        this.orderNumber = data.order_id;
+                        this.trackerUrl = data.tracker_url || '';
+                        this.cartOpen = false;
+                        this.cart = [];
+                        setTimeout(() => { this.confirmOpen = true; }, 250);
+                    } catch (err) {
+                        alert(err.message || 'Something went wrong. Please try again.');
+                    } finally {
+                        this.placing = false;
+                    }
+                },
+            };
+        }
+    </script>
 </body>
 
 </html>

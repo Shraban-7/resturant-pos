@@ -40,6 +40,14 @@
                     </button>
                 </div>
                 <span class="{{ $badgeClass }}">{{ ucfirst($table->status) }}</span>
+                <div class="mt-3 flex flex-col gap-2">
+                    <a href="{{ route('seller.diningTables.qrCard', $table) }}" class="btn btn-secondary btn-sm w-full" target="_blank">
+                        <i class="ri-qr-code-line"></i> QR Card
+                    </a>
+                    <a href="{{ route('menu.index', $table) }}" class="btn btn-ghost btn-sm w-full" target="_blank">
+                        <i class="ri-external-link-line"></i> Open Menu
+                    </a>
+                </div>
             </div>
         </div>
     @empty

@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\KitchenTicket;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -15,7 +16,7 @@ class KitchenStatusUpdatedEvent implements ShouldBroadcastNow
 
     public function __construct(public KitchenTicket $ticket)
     {
-        $this->ticket->loadMissing(['diningTable', 'items']);
+        $this->ticket->loadMissing(['diningTable', 'items', 'sale']);
     }
 
     public function broadcastOn(): array
@@ -27,7 +28,8 @@ class KitchenStatusUpdatedEvent implements ShouldBroadcastNow
 
         $token = $this->ticket->diningTable?->qr_code_token;
         if ($token) {
-            $channels[] = new PrivateChannel("table.{$token}");
+            // Public channel: knowing the table token authorizes guest trackers.
+            $channels[] = new Channel("table.{$token}");
         }
 
         return $channels;
@@ -44,6 +46,7 @@ class KitchenStatusUpdatedEvent implements ShouldBroadcastNow
             'ticket_id' => $this->ticket->id,
             'ticket_number' => $this->ticket->ticket_number,
             'sale_id' => $this->ticket->sale_id,
+            'order_id' => $this->ticket->sale?->order_id,
             'table_id' => $this->ticket->dining_table_id,
             'table_name' => $this->ticket->diningTable?->name,
             'status' => $this->ticket->status,

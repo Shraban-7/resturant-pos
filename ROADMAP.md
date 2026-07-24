@@ -64,10 +64,11 @@ Each milestone is **independently deployable**, ensuring zero disruption to exis
 
 ## Milestone 6: Enhanced Digital QR Code Menu & Customer Tracker
 - **Goal**: Upgrade public QR menu with dish modifier options and smartphone order tracking.
+- **Status**: COMPLETE (TASK-601–603)
 - **Deployable Value**: Customers can order from table QR codes and track meal preparation progress live.
 - **Key Deliverables**:
-  - Table QR code card generator.
-  - Digital menu modifier selector.
+  - Table QR code card generator (print/PDF + SVG download).
+  - Digital menu modifier selector with special notes.
   - Real-time customer order tracker view (`/menu/tracker/{token}`).
 
 ---

@@ -25,9 +25,9 @@ Route::get('/', function () {
 })->name('home');
 
 Route::prefix('menu')->as('menu.')->group(function () {
+    Route::get('/tracker/{token}', [MenuController::class, 'tracker'])->name('tracker');
     Route::get('/{table}', [MenuController::class, 'index'])->name('index');
     Route::post('/{table}/order', [MenuController::class, 'placeOrder'])->name('placeOrder');
-
 });
 
 Route::middleware('guest')->group(function () {
@@ -109,6 +109,8 @@ Route::middleware('seller')->prefix('seller')->as('seller.')->group(function () 
         Route::post('/store', [DiningTableController::class, 'store'])->name('store');
         Route::post('/{table}/update', [DiningTableController::class, 'update'])->name('update');
         Route::delete('/{table}/destroy', [DiningTableController::class, 'destroy'])->name('destroy');
+        Route::get('/{table}/qr-card', [DiningTableController::class, 'qrCard'])->name('qrCard');
+        Route::get('/{table}/qr.svg', [DiningTableController::class, 'qrSvg'])->name('qrSvg');
     });
 
     Route::prefix('employees')->as('employees.')->group(function () {

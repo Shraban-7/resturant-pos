@@ -48,6 +48,8 @@ Broadcast::channel('seller.{sellerId}.staff', function ($user, int $sellerId) {
 });
 
 Broadcast::channel('table.{token}', function ($user, string $token) {
+    // Guests use the public Channel("table.{token}") — no auth callback needed.
+    // Keep this for any private listeners (e.g. authenticated seller tools).
     $table = DiningTable::query()
         ->where('qr_code_token', $token)
         ->first();
@@ -56,9 +58,9 @@ Broadcast::channel('table.{token}', function ($user, string $token) {
         return false;
     }
 
-    if (($user->role ?? null) === 'seller') {
+    if ($user && ($user->role ?? null) === 'seller') {
         return (int) $user->id === (int) $table->seller_id;
     }
 
-    return true;
+    return (bool) $table;
 });

@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\KitchenTicket;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -21,11 +22,18 @@ class OrderPlacedEvent implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         $sellerId = $this->ticket->seller_id;
-
-        return [
+        $channels = [
             new PrivateChannel("seller.{$sellerId}.kds"),
             new PrivateChannel("seller.{$sellerId}.pos"),
         ];
+
+        $token = $this->ticket->diningTable?->qr_code_token;
+        if ($token) {
+            // Public channel: knowing the table token authorizes guest trackers.
+            $channels[] = new Channel("table.{$token}");
+        }
+
+        return $channels;
     }
 
     public function broadcastAs(): string

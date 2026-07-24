@@ -51,9 +51,9 @@
 ---
 
 ## Milestone 6: Enhanced Digital QR Code Menu & Customer Tracker
-- [ ] **TASK-601** [Est: 0.5 day]: Add QR code card PDF/image generator per table in table settings.
-- [ ] **TASK-602** [Est: 0.5 day]: Update `MenuController@index` to load item modifier choices for guest selection.
-- [ ] **TASK-603** [Est: 1.0 day]: Build real-time customer order tracking screen (`resources/views/order-status.blade.php`).
+- [x] **TASK-601** [Est: 0.5 day]: Add QR code card PDF/image generator per table in table settings.
+- [x] **TASK-602** [Est: 0.5 day]: Update `MenuController@index` to load item modifier choices for guest selection.
+- [x] **TASK-603** [Est: 1.0 day]: Build real-time customer order tracking screen (`resources/views/order-status.blade.php`).
 
 ---
 

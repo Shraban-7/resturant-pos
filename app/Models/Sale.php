@@ -32,6 +32,11 @@ class Sale extends Model
         return $this->hasMany(SaleItem::class, 'sale_id');
     }
 
+    public function kitchenTickets()
+    {
+        return $this->hasMany(KitchenTicket::class, 'sale_id');
+    }
+
     public function scopeSelf($query)
     {
         return $query->where('seller_id', auth()->id());

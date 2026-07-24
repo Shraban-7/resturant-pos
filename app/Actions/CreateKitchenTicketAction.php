@@ -43,9 +43,15 @@ class CreateKitchenTicketAction
 
         $ticket->load(['items', 'diningTable', 'sale.waiter']);
 
+        if ($ticket->diningTable) {
+            $ticket->diningTable->ensureQrToken();
+            $ticket->setRelation('diningTable', $ticket->diningTable->fresh());
+        }
+
         event(new OrderPlacedEvent($ticket));
 
         if ($sale->table) {
+            $sale->table->ensureQrToken();
             event(new TableStatusChangedEvent($sale->table->fresh(), $sale->id));
         }
 
