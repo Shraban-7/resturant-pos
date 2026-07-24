@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('product_categories', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('seller_id')->nullable()->index();
             $table->string('name');
             $table->timestamps();
         });

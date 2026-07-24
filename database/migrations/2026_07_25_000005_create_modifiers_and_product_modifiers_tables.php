@@ -16,6 +16,8 @@ return new class extends Migration
                 $table->string('name');
                 $table->decimal('price', 10, 2)->default(0.00);
                 $table->boolean('is_active')->default(true);
+                $table->integer('sort_order')->default(0);
+                $table->softDeletes();
                 $table->timestamps();
 
                 $table->index(['seller_id', 'group_name']);
@@ -28,6 +30,7 @@ return new class extends Migration
                 $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
                 $table->foreignId('modifier_id')->constrained('modifiers')->onDelete('cascade');
                 $table->boolean('is_required')->default(false);
+                $table->integer('max_select')->default(1);
                 $table->timestamps();
 
                 $table->unique(['product_id', 'modifier_id']);

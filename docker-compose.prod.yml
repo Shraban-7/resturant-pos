@@ -1,0 +1,113 @@
+name: restaurant-pos
+
+services:
+  app:
+    build:
+      context: .
+      target: runtime
+      args:
+        VITE_REVERB_APP_KEY: ${REVERB_APP_KEY}
+        VITE_REVERB_HOST: ${REVERB_HOST}
+        VITE_REVERB_PORT: ${REVERB_PORT}
+        VITE_REVERB_SCHEME: ${REVERB_SCHEME}
+    image: restaurant-pos-app:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      CONTAINER_ROLE: app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - app-storage:/var/www/html/storage
+    networks:
+      - pos
+
+  web:
+    build:
+      context: .
+      target: web
+    image: restaurant-pos-web:latest
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "${APP_HTTP_PORT:-80}:80"
+    networks:
+      - pos
+
+  reverb:
+    image: restaurant-pos-app:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      CONTAINER_ROLE: reverb
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    depends_on:
+      - app
+      - redis
+    networks:
+      - pos
+
+  worker:
+    image: restaurant-pos-app:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      CONTAINER_ROLE: worker
+    command: php artisan queue:work --tries=3 --max-time=3600 --sleep=1
+    depends_on:
+      - app
+      - redis
+    networks:
+      - pos
+
+  scheduler:
+    image: restaurant-pos-app:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      CONTAINER_ROLE: scheduler
+    command: php artisan schedule:work
+    depends_on:
+      - app
+    networks:
+      - pos
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-${DB_PASSWORD}}
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pos
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - pos
+
+volumes:
+  app-storage:
+  db-data:
+  redis-data:
+
+networks:
+  pos:
+    driver: bridge

@@ -85,10 +85,14 @@ Each milestone is **independently deployable**, ensuring zero disruption to exis
 
 ---
 
-## Milestone 8: Automated Test Suite & CI/CD Deployment Pipeline
-- **Goal**: Validate application stability with automated PHPUnit/Pest tests and deployment scripts.
+## Milestone 8: Automated Test Suite & Production Deployment — ✅ COMPLETE
+- **Goal**: Validate application stability with automated PHPUnit tests and deployment scripts.
 - **Deployable Value**: Guarantees production readiness and regression prevention.
 - **Key Deliverables**:
-  - Unit tests for `StockService` and `DeductRecipeStockAction`.
-  - Feature tests for POS checkout safety, KDS ticket routing, and QR order submission.
-  - Docker container configuration and production deployment script.
+  - ✅ Unit tests for `StockService` and `DeductRecipeStockAction` (`tests/Unit`).
+  - ✅ Feature tests for POS checkout transaction safety & KDS ticket creation (`tests/Feature/PosCheckoutTest`, `KdsTicketTest`).
+  - ✅ Feature tests for QR order submission, modifier pricing & table status locking (`tests/Feature/QrOrderTest`).
+  - ✅ Reconciled fresh-install migrations (kitchen tickets, modifiers, recipes, categories) so the schema matches the models on any new environment.
+  - ✅ Multi-stage `Dockerfile` (Node asset build → Composer → PHP-FPM runtime → Nginx) with a hardened `docker-compose.prod.yml` (app, web, reverb, queue worker, scheduler, MySQL, Redis).
+  - ✅ Zero-touch `deploy.sh` production deployment script + `.env.production.example`.
+- **Result**: `php artisan test` — 29 passing tests (88 assertions).

@@ -65,7 +65,7 @@
 ---
 
 ## Milestone 8: Automated Test Suite & Production Deployment
-- [ ] **TASK-801** [Est: 0.5 day]: Write PHPUnit unit tests for `StockService` and `DeductRecipeStockAction`.
-- [ ] **TASK-802** [Est: 0.5 day]: Write PHPUnit feature tests for POS checkout transaction safety & KDS ticket creation.
-- [ ] **TASK-803** [Est: 0.5 day]: Write feature tests for QR code order submission & table status locking.
-- [ ] **TASK-804** [Est: 0.5 day]: Finalize Docker container configuration and production deployment script.
+- [x] **TASK-801** [Est: 0.5 day]: Write PHPUnit unit tests for `StockService` and `DeductRecipeStockAction`.
+- [x] **TASK-802** [Est: 0.5 day]: Write PHPUnit feature tests for POS checkout transaction safety & KDS ticket creation.
+- [x] **TASK-803** [Est: 0.5 day]: Write feature tests for QR code order submission & table status locking.
+- [x] **TASK-804** [Est: 0.5 day]: Finalize Docker container configuration and production deployment script.

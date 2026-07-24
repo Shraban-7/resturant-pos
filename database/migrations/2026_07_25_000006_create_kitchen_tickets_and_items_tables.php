@@ -8,30 +8,39 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('kitchen_tickets')) {
+        if (! Schema::hasTable('kitchen_tickets')) {
             Schema::create('kitchen_tickets', function (Blueprint $table) {
                 $table->id();
+                $table->foreignId('seller_id')->constrained('users')->onDelete('cascade');
                 $table->foreignId('sale_id')->constrained('sales')->onDelete('cascade');
-                $table->foreignId('table_id')->nullable()->constrained('dining_tables')->onDelete('set null');
+                $table->foreignId('dining_table_id')->nullable()->constrained('dining_tables')->onDelete('set null');
                 $table->string('ticket_number');
-                $table->enum('status', ['pending', 'preparing', 'ready', 'served'])->default('pending');
+                $table->string('status')->default('pending');
+                $table->string('station')->nullable();
+                $table->timestamp('fired_at')->nullable();
                 $table->timestamp('prepared_at')->nullable();
+                $table->timestamp('served_at')->nullable();
                 $table->timestamps();
 
+                $table->index(['seller_id', 'status']);
                 $table->index(['sale_id', 'status']);
             });
         }
 
-        if (!Schema::hasTable('kitchen_ticket_items')) {
+        if (! Schema::hasTable('kitchen_ticket_items')) {
             Schema::create('kitchen_ticket_items', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('ticket_id')->constrained('kitchen_tickets')->onDelete('cascade');
-                $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-                $table->integer('quantity');
+                $table->foreignId('kitchen_ticket_id')->constrained('kitchen_tickets')->onDelete('cascade');
+                $table->foreignId('sale_item_id')->nullable()->constrained('sale_items')->onDelete('set null');
+                $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('set null');
+                $table->string('product_name');
+                $table->decimal('quantity', 10, 2)->default(1);
                 $table->json('modifiers_json')->nullable();
                 $table->string('special_instructions')->nullable();
-                $table->enum('status', ['pending', 'preparing', 'ready'])->default('pending');
+                $table->string('status')->default('pending');
                 $table->timestamps();
+
+                $table->index('kitchen_ticket_id');
             });
         }
     }

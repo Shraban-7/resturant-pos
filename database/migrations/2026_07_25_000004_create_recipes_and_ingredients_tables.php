@@ -11,9 +11,12 @@ return new class extends Migration
         if (!Schema::hasTable('recipes')) {
             Schema::create('recipes', function (Blueprint $table) {
                 $table->id();
+                $table->foreignId('seller_id')->constrained('users')->onDelete('cascade');
                 $table->foreignId('product_id')->unique()->constrained('products')->onDelete('cascade');
                 $table->text('instructions')->nullable();
                 $table->integer('preparation_time_minutes')->default(15);
+                $table->boolean('is_active')->default(true);
+                $table->softDeletes();
                 $table->timestamps();
             });
         }

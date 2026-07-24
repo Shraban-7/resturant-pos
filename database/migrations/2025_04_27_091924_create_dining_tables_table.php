@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('branch_id')->nullable();
             $table->unsignedBigInteger('seller_id');
             $table->string('name');
-            $table->enum('status', [DiningTable::FREE, DiningTable::OCCUPIED, DiningTable::RESERVED])->default(DiningTable::FREE);
+            $table->string('status')->default(DiningTable::FREE);
             $table->timestamps();
         });
     }
