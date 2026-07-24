@@ -22,6 +22,12 @@
 <x-error-modal />
 
 <div class="flex flex-col h-screen bg-slate-50 overflow-hidden" x-data="posApp()" x-cloak>
+    <div id="offlineStatusBanner" class="hidden shrink-0 px-4 py-2 text-sm font-medium bg-amber-100 text-amber-900 border-b border-amber-200">
+        <div class="flex items-center justify-between gap-3">
+            <span><i class="ri-wifi-off-line mr-1"></i> Offline mode — completed orders will sync automatically.</span>
+            <span id="offlinePendingCount" class="badge badge-warning hidden"></span>
+        </div>
+    </div>
 
     {{-- =================== TOP BAR =================== --}}
     <header class="bg-white border-b border-slate-200 h-16 flex items-center gap-3 px-4 shrink-0 z-20">
@@ -51,6 +57,13 @@
                 <span id="posKitchenReadyBadge"
                       class="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold leading-[1.1rem] text-center hidden">0</span>
             </a>
+            <button type="button" id="offlineSyncButton"
+                    class="relative btn btn-ghost btn-icon hidden"
+                    title="Synchronize offline orders">
+                <i class="ri-cloud-line text-lg"></i>
+                <span id="offlineSyncBadge"
+                      class="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-amber-500 text-white text-[10px] font-bold leading-[1.1rem] text-center">0</span>
+            </button>
             <button type="button" id="productCodeBtn" class="btn btn-ghost btn-icon" title="Scan barcode" @click="barcodeOpen = true">
                 <i class="ri-barcode-line text-lg"></i>
             </button>
@@ -204,6 +217,42 @@
 
 @push('footer')
 <script>
+    window.POS_OFFLINE_CONFIG = {
+        seller_id: {{ (int) auth()->id() }},
+        currency: 'BDT',
+        products: @json($products->map(fn ($product) => [
+            'product_id' => $product->id,
+            'name' => $product->name,
+            'selling_price' => (float) $product->selling_price,
+            'buying_price' => (float) $product->buying_price,
+            'available_stock' => (float) $product->availableStock,
+            'category_id' => $product->product_category_id ?? $product->category_id,
+            'unit' => $product->unit?->short_name,
+            'image' => $product->image,
+            'active' => (bool) $product->is_active,
+            'modifiers' => $productModifiersMap[$product->id] ?? [],
+        ])->values()),
+        categories: @json($categories->map(fn ($category) => [
+            'category_id' => $category->id,
+            'name' => $category->name,
+        ])->values()),
+        tables: @json($diningTables->map(fn ($table) => [
+            'table_id' => $table->id,
+            'name' => $table->name,
+            'status' => $table->status,
+            'floor_id' => $table->floor_id,
+        ])->values()),
+        floors: @json($diningTables->pluck('floor')->filter()->unique('id')->map(fn ($floor) => [
+            'floor_id' => $floor->id,
+            'name' => $floor->name,
+        ])->values()),
+        customers: @json($customers->take(100)->map(fn ($customer) => [
+            'customer_id' => $customer->id,
+            'name' => $customer->name,
+            'phone' => $customer->phone,
+        ])->values()),
+    };
+
     function posApp() {
         return {
             cartOpen: false,
@@ -236,6 +285,119 @@
 
         function showError(msg) {
             window.dispatchEvent(new CustomEvent('open-error', { detail: msg }));
+        }
+
+        function parseJsonAttribute(value, fallback = []) {
+            if (!value) return fallback;
+            try { return JSON.parse(value); } catch (_) { return fallback; }
+        }
+
+        function offlineCartItems() {
+            return Array.from(document.querySelectorAll('#cart .cart-item')).map(el => ({
+                product_id: Number(el.dataset.itemid),
+                quantity: Number(el.querySelector('.quantityInput')?.value || 0),
+                unit_price_snapshot: Number(el.dataset.unitPrice || 0),
+                discount: Number(el.dataset.discount || 0),
+                modifiers: parseJsonAttribute(el.dataset.modifiers),
+                notes: el.dataset.note || null,
+            })).filter(item => item.product_id && item.quantity > 0);
+        }
+
+        function makeOfflineOrder(clientOrderId, deviceId) {
+            const subtotal = offlineCartItems().reduce(
+                (sum, item) => sum + Math.max(0, item.unit_price_snapshot * item.quantity - item.discount),
+                0
+            );
+            const discount = Number($discountInput.value || 0);
+            const payable = Math.max(0, subtotal - discount);
+            const paid = Number($paidInput.value || 0);
+            const tableId = Number($tableSelect?.value || 0) || null;
+
+            return {
+                client_order_id: clientOrderId,
+                device_id: deviceId,
+                seller_id: {{ (int) auth()->id() }},
+                source_order_id: orderId,
+                channel: tableId ? 'dine_in' : 'retail',
+                dining_table_id: tableId,
+                customer_id: Number($customerSelect?.value || 0) || null,
+                customer_name: $customerName?.value || null,
+                customer_phone: $customerPhone?.value || null,
+                seller_employee_id: Number($employeeSelect?.value || 0) || null,
+                items: offlineCartItems(),
+                amounts: {
+                    subtotal,
+                    discount,
+                    payable,
+                    paid,
+                    due: payable - paid,
+                    payment_type: 'cash',
+                },
+                note: $note.value || null,
+                created_at_client: new Date().toISOString(),
+                schema_version: 1,
+            };
+        }
+
+        function offlineCartElement(line) {
+            const temporaryId = `offline-${window.PosOffline.uuid()}`;
+            const element = document.createElement('div');
+            element.className = 'cart-item bg-white border border-amber-300 rounded-lg p-2.5 flex items-center gap-2.5';
+            element.id = `cart-item-${temporaryId}`;
+            Object.assign(element.dataset, {
+                id: temporaryId,
+                itemid: String(line.productId),
+                name: line.name,
+                unitPrice: String(line.unitPrice),
+                discount: String(line.discount),
+                note: line.note || '',
+                modifiers: JSON.stringify(line.modifiers || []),
+                source: 'offline',
+            });
+
+            const details = document.createElement('div');
+            details.className = 'flex-1 min-w-0';
+            const name = document.createElement('div');
+            name.className = 'text-sm font-medium text-slate-800 truncate';
+            name.textContent = line.name;
+            details.appendChild(name);
+            if (line.modifiers?.length) {
+                const modifiers = document.createElement('div');
+                modifiers.className = 'text-[10px] text-slate-500 truncate';
+                modifiers.textContent = line.modifiers.map(item => item.name).join(', ');
+                details.appendChild(modifiers);
+            }
+            const controls = document.createElement('div');
+            controls.className = 'flex items-center gap-1 mt-1';
+            controls.innerHTML = `<button type="button" class="qty-btn decrement"><i class="ri-subtract-line text-sm pointer-events-none"></i></button>
+                <input type="text" class="quantityInput qty-input" value="${line.quantity}" readonly>
+                <button type="button" class="qty-btn increment"><i class="ri-add-line text-sm pointer-events-none"></i></button>`;
+            details.appendChild(controls);
+
+            const side = document.createElement('div');
+            side.className = 'text-right shrink-0';
+            const price = document.createElement('div');
+            price.className = 'text-sm font-semibold text-slate-900 price';
+            price.textContent = String((line.unitPrice * line.quantity) - line.discount);
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'text-xs text-red-600 hover:underline mt-0.5';
+            remove.textContent = 'Remove';
+            remove.addEventListener('click', () => {
+                element.remove();
+                updateCartTotals();
+            });
+            side.append(price, remove);
+            element.append(details, side);
+            return element;
+        }
+
+        function updateOfflineLine(cartItem) {
+            const quantity = Number(cartItem.querySelector('.quantityInput')?.value || 0);
+            const total = Math.max(0, Number(cartItem.dataset.unitPrice || 0) * quantity - Number(cartItem.dataset.discount || 0));
+            const price = cartItem.querySelector('.price');
+            if (price) price.textContent = total.toFixed(2);
+            updateCartTotals();
         }
 
         function updateCartTotals() {
@@ -477,12 +639,39 @@
             .catch(err => {
                 btn.innerHTML = original;
                 btn.disabled = false;
+                if (window.PosOffline && !isSale) {
+                    const card = document.getElementById('item-' + id);
+                    const line = {
+                        productId: Number(id),
+                        name: card?.querySelector('.name')?.textContent?.trim() || 'Item',
+                        quantity: Number(quantity),
+                        unitPrice: lineUnit,
+                        discount,
+                        note,
+                        modifiers: mods,
+                    };
+                    const empty = $cart.querySelector('.empty-state');
+                    if (empty) empty.remove();
+                    $cart.appendChild(offlineCartElement(line));
+                    updateCartTotals();
+                    const root = modal.closest('[x-data]');
+                    if (root && root._x_dataStack) root._x_dataStack[0].open = false;
+                    window.toast?.warning('Item added locally. It will be validated during synchronization.');
+                    return;
+                }
                 showError(err.message || 'Network error');
             });
         };
 
         // --- Remove item ---
         window.removeItem = function (cartItemId) {
+            const localItem = document.getElementById('cart-item-' + cartItemId);
+            if (!navigator.onLine || localItem?.dataset.source === 'offline') {
+                localItem?.remove();
+                updateCartTotals();
+                return;
+            }
+
             const url = isSale
                 ? "{{ route('seller.pos.saleItem.remove') }}"
                 : "{{ route('seller.pos.removeItem') }}";
@@ -502,6 +691,11 @@
                     if (stockEl) stockEl.textContent = item.stock;
                 }
                 updateCartTotals();
+            })
+            .catch(() => {
+                localItem?.remove();
+                updateCartTotals();
+                window.toast?.warning('Item removed locally and will reconcile during sync.');
             });
         };
 
@@ -532,6 +726,10 @@
         function updateCartQuantity(cartItemId) {
             const cartItem = document.getElementById('cart-item-' + cartItemId);
             const qty = parseInt(cartItem.querySelector('.quantityInput').value);
+            if (!navigator.onLine || cartItem.dataset.source === 'offline') {
+                updateOfflineLine(cartItem);
+                return;
+            }
             fetch("{{ route('seller.pos.updateQuantity') }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
@@ -544,6 +742,10 @@
                 if (stockEl) stockEl.textContent = item.stock;
                 cartItem.querySelector('.price').textContent = d.data.cart_item.total_price;
                 updateCartTotals();
+            })
+            .catch(() => {
+                updateOfflineLine(cartItem);
+                window.toast?.warning('Quantity changed locally and will sync later.');
             });
         }
 
@@ -604,16 +806,31 @@
         });
 
         // --- Checkout ---
-        window.checkout = function () {
+        window.checkout = async function () {
             const btn = document.getElementById('checkoutBtn');
             const original = btn.innerHTML;
             btn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> Processing...';
             btn.disabled = true;
 
-            fetch("{{ route('seller.pos.checkout') }}", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
-                body: JSON.stringify({
+            if (!window.PosOffline) {
+                btn.innerHTML = original;
+                btn.disabled = false;
+                showError('Offline storage is not ready. Please retry.');
+                return;
+            }
+
+            const items = offlineCartItems();
+            if (items.length === 0) {
+                btn.innerHTML = original;
+                btn.disabled = false;
+                showError('No items added!');
+                return;
+            }
+
+            const clientOrderId = window.PosOffline.uuid();
+            const deviceId = await window.PosOffline.deviceId();
+            const createdAtClient = new Date().toISOString();
+            const requestPayload = {
                     order_id: orderId,
                     customer_id: $customerSelect?.value,
                     customer_name: $customerName?.value,
@@ -623,16 +840,69 @@
                     discount_amount: $discountInput.value,
                     paid_amount: $paidInput.value,
                     note: $note.value,
-                })
-            })
-            .then(r => r.json().then(d => ({ ok: r.ok, d })))
-            .then(({ ok, d }) => {
-                if (!ok) { btn.innerHTML = original; btn.disabled = false; showError(d.message || 'Error'); return; }
+                    payment_type: 'cash',
+                    client_order_id: clientOrderId,
+                    device_id: deviceId,
+                    created_at_client: createdAtClient,
+            };
+
+            const saveOffline = async () => {
+                const order = makeOfflineOrder(clientOrderId, deviceId);
+                order.created_at_client = createdAtClient;
+                await window.PosOffline.queueOrder(order);
+                $cart.innerHTML = `<div class="empty-state py-10">
+                    <i class="ri-cloud-off-line"></i>
+                    <h3>Order saved offline</h3>
+                    <p>Reference: ${clientOrderId.slice(0, 8).toUpperCase()}</p>
+                </div>`;
+                updateCartTotals();
+                window.toast?.warning('Order saved offline and pending synchronization.', 7000);
+                btn.innerHTML = original;
+                btn.disabled = true;
+            };
+
+            if (!navigator.onLine) {
+                try {
+                    await saveOffline();
+                } catch (error) {
+                    btn.innerHTML = original;
+                    btn.disabled = false;
+                    showError('Could not save the offline order: ' + error.message);
+                }
+                return;
+            }
+
+            try {
+                const response = await fetch("{{ route('seller.pos.checkout') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                    body: JSON.stringify(requestPayload),
+                });
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    if (response.status >= 500) {
+                        await saveOffline();
+                        return;
+                    }
+                    btn.innerHTML = original;
+                    btn.disabled = false;
+                    showError(data.message || 'Checkout failed');
+                    return;
+                }
+
                 const url = "{{ route('seller.sales.invoice', $cart->order_id) }}";
                 window.open(url, 'Invoice', 'width=800,height=600,scrollbars=yes,resizable=yes');
                 setTimeout(() => window.location.reload(), 200);
-            })
-            .catch(err => { btn.innerHTML = original; btn.disabled = false; showError(err.message || 'Network error'); });
+            } catch (error) {
+                try {
+                    await saveOffline();
+                } catch (storageError) {
+                    btn.innerHTML = original;
+                    btn.disabled = false;
+                    showError('Network failed and the order could not be saved: ' + storageError.message);
+                }
+            }
         };
 
         // --- Hold ---
@@ -747,8 +1017,45 @@
                 });
         })();
 
+        // --- Offline status and durable queue badge ---
+        const offlineBanner = document.getElementById('offlineStatusBanner');
+        const offlinePendingCount = document.getElementById('offlinePendingCount');
+        const offlineSyncButton = document.getElementById('offlineSyncButton');
+        const offlineSyncBadge = document.getElementById('offlineSyncBadge');
+
+        async function refreshOfflineStatus() {
+            const offline = !navigator.onLine;
+            offlineBanner?.classList.toggle('hidden', !offline);
+
+            if (!window.PosOffline) return;
+            const count = await window.PosOffline.pendingCount();
+            offlineSyncButton?.classList.toggle('hidden', count === 0);
+            if (offlineSyncBadge) offlineSyncBadge.textContent = String(count);
+            if (offlinePendingCount) {
+                offlinePendingCount.textContent = `${count} pending`;
+                offlinePendingCount.classList.toggle('hidden', count === 0);
+            }
+        }
+
+        offlineSyncButton?.addEventListener('click', async () => {
+            offlineSyncButton.disabled = true;
+            await window.PosOffline?.drain();
+            await refreshOfflineStatus();
+            offlineSyncButton.disabled = false;
+        });
+        window.addEventListener('online', () => {
+            window.toast?.info('Connection restored. Synchronizing pending orders…');
+            refreshOfflineStatus();
+        });
+        window.addEventListener('offline', refreshOfflineStatus);
+        window.addEventListener('pos-offline-queue-changed', refreshOfflineStatus);
+        navigator.serviceWorker?.addEventListener('message', event => {
+            if (event.data?.type === 'POS_OFFLINE_QUEUE_CHANGED') refreshOfflineStatus();
+        });
+
         // Initial
         updateCartTotals();
+        refreshOfflineStatus();
     });
 </script>
 @endpush

@@ -1,0 +1,17 @@
+{
+    "name": "Restaurant POS",
+    "short_name": "POS",
+    "description": "Offline-capable restaurant point of sale",
+    "start_url": "/seller/pos",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#f8fafc",
+    "theme_color": "#2563eb",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "48x48",
+            "type": "image/x-icon"
+        }
+    ]
+}

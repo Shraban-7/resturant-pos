@@ -8,6 +8,7 @@ use App\Http\Controllers\Seller\DashboardController;
 use App\Http\Controllers\Seller\DiningTableController;
 use App\Http\Controllers\Seller\EmployeeController;
 use App\Http\Controllers\Seller\KdsController;
+use App\Http\Controllers\Seller\OfflineSyncController;
 use App\Http\Controllers\Seller\PosController;
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Controllers\Seller\ProductModifierController;
@@ -39,6 +40,11 @@ Route::middleware('guest')->group(function () {
 
 
 Route::get('logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+
+Route::middleware('seller')->post(
+    '/api/seller/pos/offline-sync',
+    [OfflineSyncController::class, 'store']
+)->name('seller.pos.offlineSync');
 
 Route::middleware('seller')->prefix('seller')->as('seller.')->group(function () {
 

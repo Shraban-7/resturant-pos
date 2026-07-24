@@ -58,9 +58,9 @@
 ---
 
 ## Milestone 7: Offline-First Service Worker PWA & IndexedDB Sync
-- [ ] **TASK-701** [Est: 0.5 day]: Create Service Worker manifest & static asset caching script (`public/sw.js`).
-- [ ] **TASK-702** [Est: 1.0 day]: Implement IndexedDB offline queue manager (`public/js/pos-idb.js`).
-- [ ] **TASK-703** [Est: 0.5 day]: Build server-side offline reconciliation sync handler (`POST /api/seller/pos/offline-sync`).
+- [x] **TASK-701** [Est: 0.5 day]: Create Service Worker manifest & static asset caching script (`public/sw.js`).
+- [x] **TASK-702** [Est: 1.0 day]: Implement IndexedDB offline queue manager (`public/js/pos-idb.js`).
+- [x] **TASK-703** [Est: 0.5 day]: Build server-side offline reconciliation sync handler (`POST /api/seller/pos/offline-sync`).
 
 ---
 

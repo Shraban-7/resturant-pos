@@ -24,6 +24,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'seller' => Seller::class,
             'supplier' => Supplier::class,
         ]);
+
+        // Background Sync cannot read the page's CSRF token. The endpoint still
+        // requires the authenticated seller session and validates every payload.
+        $middleware->validateCsrfTokens(except: [
+            'api/seller/pos/offline-sync',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

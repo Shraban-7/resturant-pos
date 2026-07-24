@@ -21,6 +21,9 @@ class CheckoutPosRequest extends FormRequest
             'customer_id' => 'nullable|exists:customers,id',
             'dining_table_id' => 'nullable|exists:dining_tables,id',
             'seller_employee_id' => 'nullable|exists:seller_employees,id',
+            'client_order_id' => 'nullable|uuid',
+            'device_id' => 'nullable|uuid',
+            'created_at_client' => 'nullable|date',
         ];
     }
 }

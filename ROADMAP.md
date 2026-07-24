@@ -75,11 +75,13 @@ Each milestone is **independently deployable**, ensuring zero disruption to exis
 
 ## Milestone 7: Offline-First Service Worker PWA & IndexedDB Sync
 - **Goal**: Provide zero-downtime POS checkout during internet outages.
+- **Status**: COMPLETE (TASK-701–703)
 - **Deployable Value**: Cashiers can continue placing orders offline; transactions sync automatically upon reconnection.
 - **Key Deliverables**:
-  - Service Worker script (`public/sw.js`).
-  - IndexedDB storage engine (`public/js/pos-idb.js`) for products & offline order queues.
-  - Server-side idempotent offline sync endpoint (`POST /api/seller/pos/offline-sync`).
+  - PWA manifest, offline fallback, and versioned Service Worker app-shell/runtime caching.
+  - IndexedDB catalog snapshots, durable offline orders, retry queue, and conflict log—without LocalStorage.
+  - Background Sync plus online/visibility fallbacks and POS connectivity/pending-order indicators.
+  - Server-side idempotent reconciliation endpoint (`POST /api/seller/pos/offline-sync`) with stock, table, sale, and KOT integration.
 
 ---
 

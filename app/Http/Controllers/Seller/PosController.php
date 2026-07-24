@@ -28,8 +28,7 @@ class PosController extends Controller
         protected StockService $stockService,
         protected DeductRecipeStockAction $deductRecipeStock,
         protected CreateKitchenTicketAction $createKitchenTicket
-    ) {
-    }
+    ) {}
 
     public function index(Request $request)
     {
@@ -149,8 +148,8 @@ class PosController extends Controller
                 $totalPrice = ($qty * $lineUnit) - $discount;
 
                 // Availability: finished goods when no recipe; otherwise ingredients checked inside action.
-                if (!$this->deductRecipeStock->usesRecipe($product)
-                    && !$this->stockService->hasAvailableStock($product, $qty)) {
+                if (! $this->deductRecipeStock->usesRecipe($product)
+                    && ! $this->stockService->hasAvailableStock($product, $qty)) {
                     throw new RuntimeException('Insufficient stock!');
                 }
 
@@ -242,6 +241,7 @@ class PosController extends Controller
             return apiResponse($response, 'Cart updated successfully');
         });
     }
+
     public function checkout(CheckoutPosRequest $request)
     {
         try {
@@ -265,7 +265,7 @@ class PosController extends Controller
                     ->lockForUpdate()
                     ->first();
 
-                if (!$cart || count($cart->items) == 0) {
+                if (! $cart || count($cart->items) == 0) {
                     throw new RuntimeException('No items added!');
                 }
 
@@ -296,17 +296,32 @@ class PosController extends Controller
                 $tableId = $request->dining_table_id ?? $request->table_id;
                 $employeeId = $request->seller_employee_id ?? $request->employee_id;
 
+                if ($request->client_order_id) {
+                    $existingSale = Sale::query()
+                        ->where('seller_id', $cart->seller_id)
+                        ->where('client_order_id', $request->client_order_id)
+                        ->first();
+
+                    if ($existingSale) {
+                        return successResponse('Sale already completed');
+                    }
+                }
+
                 $saleData = [
                     'seller_id' => $cart->seller_id,
                     'customer_id' => $customer_id,
                     'order_id' => $cart->order_id,
+                    'client_order_id' => $request->client_order_id,
+                    'device_id' => $request->device_id,
+                    'created_at_client' => $request->created_at_client,
+                    'synced_at' => $request->client_order_id ? now() : null,
                     'sale_date' => date('Y-m-d'),
                     'subtotal' => $subTotal,
                     'discount' => $discount,
                     'payable' => $payable,
                     'paid' => $paid,
                     'due' => ($payable - $paid),
-                    'payment_type' => $request->payment_type ?? 'cash',
+                    'payment_option' => $request->payment_type ?? 'cash',
                     'note' => $request->note,
                 ];
 
@@ -351,7 +366,7 @@ class PosController extends Controller
                 ->with('items.item.unit')
                 ->first();
 
-            if (!$cart || count($cart->items) == 0) {
+            if (! $cart || count($cart->items) == 0) {
                 return errorResponse('No items added!');
             }
 
