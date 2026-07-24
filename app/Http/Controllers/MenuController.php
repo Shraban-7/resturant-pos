@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\DeductRecipeStockAction;
 use App\Http\Requests\PlaceQrOrderRequest;
 use App\Models\DiningTable;
 use App\Models\Product;
@@ -14,11 +15,10 @@ use RuntimeException;
 
 class MenuController extends Controller
 {
-    protected StockService $stockService;
-
-    public function __construct(StockService $stockService)
-    {
-        $this->stockService = $stockService;
+    public function __construct(
+        protected StockService $stockService,
+        protected DeductRecipeStockAction $deductRecipeStock
+    ) {
     }
 
     public function index(DiningTable $table)
@@ -43,15 +43,15 @@ class MenuController extends Controller
                 $saleItems = [];
                 $deductions = [];
 
-                // Validate & lock all products before mutating stock or creating the sale.
                 foreach ($request->items as $item) {
                     $product = Product::query()
-                        ->with('unit')
+                        ->with(['unit', 'recipe.ingredients.ingredientProduct'])
                         ->whereKey($item['id'])
                         ->lockForUpdate()
                         ->firstOrFail();
 
-                    if (!$this->stockService->hasAvailableStock($product, $item['quantity'])) {
+                    if (!$this->deductRecipeStock->usesRecipe($product)
+                        && !$this->stockService->hasAvailableStock($product, $item['quantity'])) {
                         throw new RuntimeException("Insufficient stock for item: {$product->name}");
                     }
 
@@ -76,7 +76,7 @@ class MenuController extends Controller
                 }
 
                 foreach ($deductions as $deduction) {
-                    $this->stockService->deductStock($deduction['product'], $deduction['quantity']);
+                    $this->deductRecipeStock->execute($deduction['product'], $deduction['quantity']);
                 }
 
                 $sale = Sale::create([
@@ -88,7 +88,6 @@ class MenuController extends Controller
                     'paid' => 0,
                     'due' => $subtotal,
                     'dining_table_id' => $table->id,
-                    'status' => 'pending',
                 ]);
 
                 foreach ($saleItems as $saleItem) {

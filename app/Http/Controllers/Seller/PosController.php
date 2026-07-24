@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Seller;
 
+use App\Actions\DeductRecipeStockAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Seller\CheckoutPosRequest;
 use App\Http\Requests\Seller\PosAddItemRequest;
@@ -22,16 +23,22 @@ use RuntimeException;
 
 class PosController extends Controller
 {
-    protected StockService $stockService;
-
-    public function __construct(StockService $stockService)
-    {
-        $this->stockService = $stockService;
+    public function __construct(
+        protected StockService $stockService,
+        protected DeductRecipeStockAction $deductRecipeStock
+    ) {
     }
 
     public function index(Request $request)
     {
-        $products = Product::self()->with(['category', 'unit'])->latest('id')->get();
+        $products = Product::self()
+            ->with([
+                'category',
+                'unit',
+                'modifiers' => fn ($q) => $q->where('modifiers.is_active', true)->orderBy('group_name')->orderBy('sort_order'),
+            ])
+            ->latest('id')
+            ->get();
         $customers = Customer::self()->get();
 
         $recentSales = Sale::self()
@@ -75,32 +82,88 @@ class PosController extends Controller
             }
         }
 
-        return view('seller.pos', compact('products', 'cart', 'customers', 'recentSales', 'runningSales', 'categories', 'diningTables', 'employees', 'sale', 'saleItems'));
+        $productModifiersMap = $products->mapWithKeys(function (Product $product) {
+            return [
+                $product->id => $product->modifiers->map(fn ($m) => [
+                    'id' => $m->id,
+                    'name' => $m->name,
+                    'group_name' => $m->group_name,
+                    'price' => (float) $m->price,
+                    'is_required' => (bool) $m->pivot->is_required,
+                ])->values(),
+            ];
+        });
+
+        $recipeProductIds = Product::self()
+            ->whereHas('recipe.ingredients')
+            ->pluck('id');
+
+        return view('seller.pos', compact(
+            'products',
+            'cart',
+            'customers',
+            'recentSales',
+            'runningSales',
+            'categories',
+            'diningTables',
+            'employees',
+            'sale',
+            'saleItems',
+            'productModifiersMap',
+            'recipeProductIds'
+        ));
     }
 
     public function addItem(PosAddItemRequest $request)
     {
         try {
             return DB::transaction(function () use ($request) {
-                $product = Product::query()->whereKey($request->product_id)->lockForUpdate()->firstOrFail();
+                $product = Product::query()
+                    ->with(['recipe.ingredients.ingredientProduct'])
+                    ->whereKey($request->product_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
                 $cart = Cart::where('order_id', $request->order_id)
                     ->where('seller_id', auth()->id())
                     ->firstOrFail();
 
-                if (!$this->stockService->hasAvailableStock($product, $request->quantity)) {
+                $modifiers = collect($request->input('modifiers', []))
+                    ->map(fn ($m) => [
+                        'id' => (int) ($m['id'] ?? 0),
+                        'name' => $m['name'] ?? '',
+                        'group_name' => $m['group_name'] ?? '',
+                        'price' => (float) ($m['price'] ?? 0),
+                    ])
+                    ->filter(fn ($m) => $m['id'] > 0)
+                    ->values()
+                    ->all();
+
+                $modifierTotal = collect($modifiers)->sum('price');
+                $unitPrice = (float) $request->unit_price;
+                $lineUnit = $unitPrice + $modifierTotal;
+                $qty = (float) $request->quantity;
+                $discount = (float) $request->discount;
+                $totalPrice = ($qty * $lineUnit) - $discount;
+
+                // Availability: finished goods when no recipe; otherwise ingredients checked inside action.
+                if (!$this->deductRecipeStock->usesRecipe($product)
+                    && !$this->stockService->hasAvailableStock($product, $qty)) {
                     throw new RuntimeException('Insufficient stock!');
                 }
 
                 CartItem::create([
                     'cart_id' => $cart->id,
                     'item_id' => $product->id,
-                    'unit_price' => $request->unit_price,
-                    'discount' => $request->discount,
-                    'quantity' => $request->quantity,
-                    'total_price' => ($request->quantity * $request->unit_price) - $request->discount,
+                    'unit_price' => $lineUnit,
+                    'discount' => $discount,
+                    'quantity' => $qty,
+                    'total_price' => $totalPrice,
+                    'note' => $request->input('note'),
+                    'modifiers_json' => $modifiers ?: null,
                 ]);
 
-                $this->stockService->deductStock($product, $request->quantity);
+                $this->deductRecipeStock->execute($product, $qty);
 
                 $cart_items = CartItem::where('cart_id', $cart->id)->with('item')->get();
                 $itemHtml = '';
@@ -108,6 +171,8 @@ class PosController extends Controller
                 foreach ($cart_items as $item) {
                     $itemHtml .= View::make('components.pos.cart-item', ['item' => $item])->render();
                 }
+
+                $product->refresh();
 
                 return apiResponse([
                     'item' => [
@@ -127,16 +192,16 @@ class PosController extends Controller
         return DB::transaction(function () use ($request) {
             $cart_item = CartItem::whereHas('cart', function ($q) {
                 $q->where('seller_id', auth()->id());
-            })->findOrFail($request->cart_item_id);
+            })->with(['item.recipe.ingredients.ingredientProduct'])->findOrFail($request->cart_item_id);
 
             $item = $cart_item->item;
-            $this->stockService->restoreStock($item, $cart_item->quantity);
+            $this->deductRecipeStock->restore($item, $cart_item->quantity);
 
             $response = [
                 'item' => [
                     'id' => $item->id,
-                    'stock' => $item->availableStock
-                ]
+                    'stock' => $this->stockService->availableQuantity($item->fresh()),
+                ],
             ];
 
             $cart_item->delete();
@@ -150,32 +215,31 @@ class PosController extends Controller
         return DB::transaction(function () use ($request) {
             $cart_item = CartItem::whereHas('cart', function ($q) {
                 $q->where('seller_id', auth()->id());
-            })->with('item')->findOrFail($request->cart_item_id);
+            })->with(['item.recipe.ingredients.ingredientProduct'])->findOrFail($request->cart_item_id);
 
             $item = $cart_item->item;
-            $quantity = $request->quantity;
+            $quantity = (float) $request->quantity;
 
             if ($quantity > $cart_item->quantity) {
                 $diff = $quantity - $cart_item->quantity;
-                $this->stockService->deductStock($item, $diff);
+                $this->deductRecipeStock->execute($item, $diff);
             } elseif ($quantity < $cart_item->quantity) {
                 $diff = $cart_item->quantity - $quantity;
-                $this->stockService->restoreStock($item, $diff);
+                $this->deductRecipeStock->restore($item, $diff);
             }
 
             $cart_item->quantity = $quantity;
-            $cart_item->total_price = ($cart_item->unit_price * $quantity);
+            $cart_item->total_price = ($cart_item->unit_price * $quantity) - ($cart_item->discount ?? 0);
             $cart_item->save();
 
             $response = [
-                'item' => ['id' => $item->id, 'stock' => $item->availableStock],
+                'item' => ['id' => $item->id, 'stock' => $this->stockService->availableQuantity($item->fresh())],
                 'cart_item' => ['total_price' => $cart_item->total_price],
             ];
 
             return apiResponse($response, 'Cart updated successfully');
         });
     }
-
     public function checkout(CheckoutPosRequest $request)
     {
         try {
@@ -218,6 +282,7 @@ class PosController extends Controller
                         'quantity' => $item->quantity,
                         'total_price' => $item->total_price,
                         'note' => $item->note,
+                        'modifiers_json' => $item->modifiers_json,
                     ];
                 }
 
@@ -300,6 +365,7 @@ class PosController extends Controller
                     'quantity' => $item->quantity,
                     'total_price' => $item->total_price,
                     'note' => $item->note,
+                    'modifiers_json' => $item->modifiers_json,
                 ];
             }
 

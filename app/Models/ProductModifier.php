@@ -12,6 +12,11 @@ class ProductModifier extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'is_required' => 'boolean',
+        'max_select' => 'integer',
+    ];
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');

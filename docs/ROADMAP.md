@@ -42,10 +42,12 @@ Each milestone is **independently deployable**, ensuring zero disruption to exis
 
 ## Milestone 4: Product Modifiers & Recipe BOM Auto-Stock Deductor
 - **Goal**: Enable dish modifiers (add-ons/exclusions) and raw ingredient inventory auto-deduction.
-- **Deployable Value**: Automatically deducts raw ingredients (flour, meat, cheese) when dishes are sold.
+- **Status**: COMPLETE (TASK-401–403)
+- **Deployable Value**: POS can sell configurable add-ons; recipes automatically deduct raw ingredients when dishes are sold.
 - **Key Deliverables**:
-  - Modifiers management UI and POS checkout modal selector.
-  - `DeductRecipeStockAction` for Bill of Materials (BOM) raw material deduction.
+  - Product modifiers UI at `/seller/products/{product}/modifiers`.
+  - POS item modal modifier selection + special instructions.
+  - `DeductRecipeStockAction` wired into POS cart mutations and QR `placeOrder`.
 
 ---
 

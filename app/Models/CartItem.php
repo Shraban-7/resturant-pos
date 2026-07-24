@@ -12,6 +12,12 @@ class CartItem extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'modifiers_json' => 'array',
+        'unit_price' => 'decimal:2',
+        'discount' => 'decimal:2',
+        'total_price' => 'decimal:2',
+    ];
 
     public function cart(): BelongsTo
     {
@@ -20,6 +26,6 @@ class CartItem extends Model
 
     public function item(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class, 'item_id');
     }
 }

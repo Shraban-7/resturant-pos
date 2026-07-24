@@ -302,16 +302,16 @@
                 showError('Already added! Use the +/- buttons in the cart to change quantity.');
                 return;
             }
-            if (stock <= 0) {
+            if (stock <= 0 && !(window.recipeProductIds || []).includes(parseInt(id, 10))) {
                 showError('Stock out!');
                 return;
             }
 
             // Open item modal
             if (window.Alpine) {
-                const modal = document.querySelector('#itemModal')?.closest('[x-data]');
-                if (modal && modal._x_dataStack) {
-                    modal._x_dataStack[0].open = true;
+                const modalRoot = document.querySelector('#itemModal')?.closest('[x-data]');
+                if (modalRoot && modalRoot._x_dataStack) {
+                    modalRoot._x_dataStack[0].open = true;
                 }
             }
             // populate modal
@@ -321,33 +321,94 @@
                 modal.querySelector('input[name="stock"]').value = stock;
                 modal.querySelector('input[name="quantity"]').value = 1;
                 modal.querySelector('input[name="price"]').value = price;
+                const basePrice = modal.querySelector('input[name="base_price"]');
+                if (basePrice) basePrice.value = price;
                 modal.querySelector('input[name="discount_amount"]').value = 0;
                 modal.querySelector('input[name="note"]').value = '';
-                const title = modal.querySelector('#productModalLabel');
+                const title = document.getElementById('productModalLabel');
                 if (title) title.textContent = name;
-                const total = modal.querySelector('#product-total-price');
-                if (total) total.textContent = price;
+                renderModifiers(id);
+                recalcModalTotal();
             }
         });
 
-        // --- Modal field listeners ---
-        const modal = document.getElementById('itemModal');
-        if (modal) {
-            const onChange = () => {
-                const q = parseFloat(modal.querySelector('input[name="quantity"]').value) || 0;
-                const p = parseFloat(modal.querySelector('input[name="price"]').value) || 0;
-                const dtype = modal.querySelector('select[name="discount_type"]').value;
-                const damount = parseFloat(modal.querySelector('input[name="discount_amount"]').value) || 0;
-                let discount = dtype === 'amount' ? damount : (p * damount / 100);
-                const total = (q * p) - (discount || 0);
-                const t = modal.querySelector('#product-total-price');
-                if (t) t.textContent = isNaN(total) ? 0 : total;
-            };
-            modal.querySelectorAll('input[name="quantity"], input[name="price"], input[name="discount_amount"]').forEach(el => {
-                el.addEventListener('keyup', onChange);
-                el.addEventListener('input', onChange);
+        window.recipeProductIds = @json(($recipeProductIds ?? collect())->values());
+        const productModifiersMap = @json($productModifiersMap ?? []);
+
+        function selectedModifiers() {
+            const modal = document.getElementById('itemModal');
+            if (!modal) return [];
+            return Array.from(modal.querySelectorAll('input[name="modifier_ids[]"]:checked')).map(el => ({
+                id: parseInt(el.value, 10),
+                name: el.dataset.name,
+                group_name: el.dataset.group,
+                price: parseFloat(el.dataset.price) || 0,
+            }));
+        }
+
+        function modifiersExtra() {
+            return selectedModifiers().reduce((sum, m) => sum + (m.price || 0), 0);
+        }
+
+        function renderModifiers(productId) {
+            const section = document.getElementById('modifiersSection');
+            const list = document.getElementById('modifiersList');
+            if (!section || !list) return;
+            const mods = productModifiersMap[productId] || [];
+            if (!mods.length) {
+                section.style.display = 'none';
+                list.innerHTML = '';
+                return;
+            }
+            section.style.display = '';
+            const groups = {};
+            mods.forEach(m => {
+                const g = m.group_name || 'Options';
+                if (!groups[g]) groups[g] = [];
+                groups[g].push(m);
             });
-            modal.querySelector('select[name="discount_type"]').addEventListener('change', onChange);
+            list.innerHTML = Object.keys(groups).map(group => {
+                const rows = groups[group].map(m => `
+                    <label class="flex items-center gap-2 text-sm text-slate-700 py-0.5">
+                        <input type="checkbox" class="rounded border-slate-300 modifier-check"
+                               name="modifier_ids[]" value="${m.id}"
+                               data-name="${m.name.replace(/"/g, '&quot;')}"
+                               data-group="${(m.group_name || '').replace(/"/g, '&quot;')}"
+                               data-price="${m.price}"
+                               ${m.is_required ? 'checked' : ''}>
+                        <span class="flex-1">${m.name}</span>
+                        <span class="text-slate-500">+${m.price}</span>
+                    </label>
+                `).join('');
+                return `<div><div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">${group}</div>${rows}</div>`;
+            }).join('');
+            list.querySelectorAll('.modifier-check').forEach(el => {
+                el.addEventListener('change', recalcModalTotal);
+            });
+        }
+
+        function recalcModalTotal() {
+            const modal = document.getElementById('itemModal');
+            if (!modal) return;
+            const q = parseFloat(modal.querySelector('input[name="quantity"]').value) || 0;
+            const p = parseFloat(modal.querySelector('input[name="price"]').value) || 0;
+            const dtype = modal.querySelector('select[name="discount_type"]').value;
+            const damount = parseFloat(modal.querySelector('input[name="discount_amount"]').value) || 0;
+            const extra = modifiersExtra();
+            let discount = dtype === 'amount' ? damount : ((p + extra) * damount / 100);
+            const total = (q * (p + extra)) - (discount || 0);
+            const t = modal.querySelector('#product-total-price');
+            if (t) t.textContent = isNaN(total) ? 0 : total.toFixed(2);
+        }
+
+        // --- Modal field listeners ---
+        const modalEl = document.getElementById('itemModal');
+        if (modalEl) {
+            modalEl.querySelectorAll('input[name="quantity"], input[name="price"], input[name="discount_amount"]').forEach(el => {
+                el.addEventListener('keyup', recalcModalTotal);
+                el.addEventListener('input', recalcModalTotal);
+            });
+            modalEl.querySelector('select[name="discount_type"]').addEventListener('change', recalcModalTotal);
         }
 
         // --- Add to cart from modal ---
@@ -357,7 +418,21 @@
             const id = modal.querySelector('input[name="id"]').value;
             const quantity = modal.querySelector('input[name="quantity"]').value;
             const price = modal.querySelector('input[name="price"]').value;
-            const discount = modal.querySelector('input[name="discount_amount"]').value;
+            const dtype = modal.querySelector('select[name="discount_type"]').value;
+            const damount = parseFloat(modal.querySelector('input[name="discount_amount"]').value) || 0;
+            const note = modal.querySelector('input[name="note"]').value || '';
+            const mods = selectedModifiers();
+            const extra = mods.reduce((s, m) => s + (m.price || 0), 0);
+            const lineUnit = (parseFloat(price) || 0) + extra;
+            const discount = dtype === 'amount' ? damount : (lineUnit * damount / 100);
+
+            const missingRequired = (productModifiersMap[id] || []).filter(m => m.is_required)
+                .some(m => !mods.find(s => s.id === m.id));
+            if (missingRequired) {
+                showError('Please select required modifiers.');
+                return;
+            }
+
             const btn = document.getElementById('addToCartBtn');
             const original = btn.innerHTML;
             btn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> Adding...';
@@ -371,7 +446,15 @@
             fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
-                body: JSON.stringify({ order_id: oid, product_id: id, quantity, unit_price: price, discount })
+                body: JSON.stringify({
+                    order_id: oid,
+                    product_id: id,
+                    quantity,
+                    unit_price: price,
+                    discount,
+                    note,
+                    modifiers: mods,
+                })
             })
             .then(r => r.json().then(d => ({ ok: r.ok, d })))
             .then(({ ok, d }) => {

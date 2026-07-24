@@ -9,18 +9,31 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('dining_tables', function (Blueprint $table) {
-            $table->foreignId('floor_id')->nullable()->after('seller_id')->constrained('floors')->onDelete('set null');
-            $table->string('qr_code_token', 64)->nullable()->unique()->after('capacity');
-            $table->integer('x_position')->default(0)->after('qr_code_token');
-            $table->integer('y_position')->default(0)->after('x_position');
+            if (!Schema::hasColumn('dining_tables', 'floor_id')) {
+                $table->foreignId('floor_id')->nullable()->after('seller_id')->constrained('floors')->onDelete('set null');
+            }
+            if (!Schema::hasColumn('dining_tables', 'qr_code_token')) {
+                $table->string('qr_code_token', 64)->nullable()->unique();
+            }
+            if (!Schema::hasColumn('dining_tables', 'x_position')) {
+                $table->integer('x_position')->default(0);
+            }
+            if (!Schema::hasColumn('dining_tables', 'y_position')) {
+                $table->integer('y_position')->default(0);
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('dining_tables', function (Blueprint $table) {
-            $table->dropForeign(['floor_id']);
-            $table->dropColumn(['floor_id', 'qr_code_token', 'x_position', 'y_position']);
+            if (Schema::hasColumn('dining_tables', 'floor_id')) {
+                $table->dropForeign(['floor_id']);
+            }
+            $cols = array_filter(['floor_id', 'qr_code_token', 'x_position', 'y_position'], fn ($c) => Schema::hasColumn('dining_tables', $c));
+            if ($cols) {
+                $table->dropColumn($cols);
+            }
         });
     }
 };

@@ -3,6 +3,14 @@
     <img src="{{ asset('storage/' . $item->item->image) }}" alt="" class="h-11 w-11 object-cover rounded-md shrink-0">
     <div class="flex-1 min-w-0">
         <div class="text-sm font-medium text-slate-800 truncate">{{ $item->item->name }}</div>
+        @if (!empty($item->modifiers_json))
+            <div class="text-[10px] text-slate-500 truncate">
+                {{ collect($item->modifiers_json)->pluck('name')->filter()->implode(', ') }}
+            </div>
+        @endif
+        @if (!empty($item->note))
+            <div class="text-[10px] text-amber-700 truncate">{{ $item->note }}</div>
+        @endif
         <div class="flex items-center gap-1 mt-1">
             <button type="button" class="qty-btn decrement" aria-label="Decrease">
                 <i class="ri-subtract-line text-sm"></i>

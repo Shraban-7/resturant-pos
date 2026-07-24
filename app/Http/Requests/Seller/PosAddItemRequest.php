@@ -19,6 +19,12 @@ class PosAddItemRequest extends FormRequest
             'quantity' => 'required|numeric|min:0.01',
             'discount' => 'required|numeric|min:0',
             'unit_price' => 'required|numeric|min:0',
+            'note' => 'nullable|string|max:255',
+            'modifiers' => 'nullable|array',
+            'modifiers.*.id' => 'required_with:modifiers|integer|exists:modifiers,id',
+            'modifiers.*.name' => 'nullable|string|max:255',
+            'modifiers.*.price' => 'nullable|numeric|min:0',
+            'modifiers.*.group_name' => 'nullable|string|max:100',
         ];
     }
 }

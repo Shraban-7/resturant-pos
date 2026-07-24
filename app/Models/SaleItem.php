@@ -11,6 +11,10 @@ class SaleItem extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'modifiers_json' => 'array',
+    ];
+
     public function sale()
     {
         return $this->belongsTo(Sale::class, 'sale_id');

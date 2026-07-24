@@ -35,9 +35,9 @@
 ---
 
 ## Milestone 4: Product Modifiers & Recipe BOM Auto-Stock Deductor
-- [ ] **TASK-401** [Est: 0.5 day]: Build Product Modifiers management interface under `/seller/products/{product}/modifiers`.
-- [ ] **TASK-402** [Est: 0.5 day]: Update POS item checkout modal (`item-modal.blade.php`) to select modifiers and special notes.
-- [ ] **TASK-403** [Est: 1.0 day]: Create `App\Actions\DeductRecipeStockAction` for automatic raw ingredient inventory deduction.
+- [x] **TASK-401** [Est: 0.5 day]: Build Product Modifiers management interface under `/seller/products/{product}/modifiers`.
+- [x] **TASK-402** [Est: 0.5 day]: Update POS item checkout modal (`item-modal.blade.php`) to select modifiers and special notes.
+- [x] **TASK-403** [Est: 1.0 day]: Create `App\Actions\DeductRecipeStockAction` for automatic raw ingredient inventory deduction.
 
 ---
 

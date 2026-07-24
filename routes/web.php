@@ -9,6 +9,7 @@ use App\Http\Controllers\Seller\DiningTableController;
 use App\Http\Controllers\Seller\EmployeeController;
 use App\Http\Controllers\Seller\PosController;
 use App\Http\Controllers\Seller\ProductController;
+use App\Http\Controllers\Seller\ProductModifierController;
 use App\Http\Controllers\Seller\ReportController;
 use App\Http\Controllers\Seller\SaleController;
 use App\Http\Controllers\Seller\SettingController;
@@ -70,6 +71,13 @@ Route::middleware('seller')->prefix('seller')->as('seller.')->group(function () 
         Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit');
         Route::post('/{product}/update', [ProductController::class, 'update'])->name('update');
         Route::get('/{product}/delete', [ProductController::class, 'delete'])->name('delete');
+
+        Route::prefix('{product}/modifiers')->as('modifiers.')->group(function () {
+            Route::get('/', [ProductModifierController::class, 'index'])->name('index');
+            Route::post('/', [ProductModifierController::class, 'store'])->name('store');
+            Route::put('/{productModifier}', [ProductModifierController::class, 'update'])->name('update');
+            Route::delete('/{productModifier}', [ProductModifierController::class, 'destroy'])->name('destroy');
+        });
     });
 
     Route::prefix('stocks')->as('stocks.')->group(function () {
