@@ -49,6 +49,11 @@ class DiningTable extends Model
         return $this->hasMany(KitchenTicket::class, 'dining_table_id');
     }
 
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class, 'table_id');
+    }
+
     public function ensureQrToken(): string
     {
         if (! $this->qr_code_token) {

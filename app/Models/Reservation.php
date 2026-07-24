@@ -12,9 +12,24 @@ class Reservation extends Model
 
     protected $guarded = ['id'];
 
+    public const PENDING = 'pending';
+    public const CONFIRMED = 'confirmed';
+    public const SEATED = 'seated';
+    public const CANCELLED = 'cancelled';
+
     protected $casts = [
         'reservation_time' => 'datetime',
     ];
+
+    public static function statuses(): array
+    {
+        return [
+            self::PENDING,
+            self::CONFIRMED,
+            self::SEATED,
+            self::CANCELLED,
+        ];
+    }
 
     public function seller(): BelongsTo
     {

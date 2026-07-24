@@ -707,7 +707,10 @@
                 const cartItem = e.target.closest('.cart-item, .sale-item');
                 const itemId = cartItem.dataset.itemid;
                 const stock = parseInt(document.querySelector('#item-' + itemId + ' .stock').textContent) || 0;
-                if (stock <= 0) { showError('Stock out!'); return; }
+                if (stock <= 0) {
+                    const isRecipe = (window.recipeProductIds || []).includes(parseInt(itemId, 10));
+                    if (!isRecipe) { showError('Stock out!'); return; }
+                }
                 input.value = parseInt(input.value) + 1;
                 if (isSale) updateSaleQuantity(cartItem.dataset.id);
                 else updateCartQuantity(cartItem.dataset.id);

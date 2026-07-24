@@ -48,6 +48,9 @@
                         <td>{{ $product->stock_out }}</td>
                         <td class="text-right">
                             <div class="inline-flex items-center gap-1">
+                                <a href="{{ route('seller.products.recipe.edit', $product) }}" class="btn btn-secondary btn-sm" title="Recipe BOM">
+                                    <i class="ri-flask-line"></i>
+                                </a>
                                 <a href="{{ route('seller.products.modifiers.index', $product) }}" class="btn btn-secondary btn-sm" title="Modifiers">
                                     <i class="ri-list-settings-line"></i>
                                 </a>

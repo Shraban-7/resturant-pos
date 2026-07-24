@@ -65,7 +65,7 @@ class PosController extends Controller
             ->where('seller_id', auth()->id())
             ->withCount(['products' => fn ($q) => $q->where('seller_id', auth()->id())])
             ->get();
-        $diningTables = DiningTable::self()->get();
+        $diningTables = DiningTable::self()->with('floor')->get();
         $employees = SellerEmployee::self()->get();
         $cartItems = $cart->items;
         $saleItems = null;
@@ -120,8 +120,9 @@ class PosController extends Controller
         try {
             return DB::transaction(function () use ($request) {
                 $product = Product::query()
-                    ->with(['recipe.ingredients.ingredientProduct'])
+                    ->with(['recipe.ingredients.ingredientProduct', 'modifiers'])
                     ->whereKey($request->product_id)
+                    ->where('seller_id', auth()->id())
                     ->lockForUpdate()
                     ->firstOrFail();
 
@@ -129,19 +130,23 @@ class PosController extends Controller
                     ->where('seller_id', auth()->id())
                     ->firstOrFail();
 
-                $modifiers = collect($request->input('modifiers', []))
-                    ->map(fn ($m) => [
-                        'id' => (int) ($m['id'] ?? 0),
-                        'name' => $m['name'] ?? '',
-                        'group_name' => $m['group_name'] ?? '',
-                        'price' => (float) ($m['price'] ?? 0),
-                    ])
-                    ->filter(fn ($m) => $m['id'] > 0)
-                    ->values()
-                    ->all();
+                $modifiers = collect($request->input('modifiers', []));
+                $requestedIds = $modifiers->pluck('id')->filter()->map(fn ($id) => (int) $id)->unique()->values();
+                $allowed = $product->relationLoaded('modifiers')
+                    ? $product->modifiers
+                    : $product->modifiers()->where('modifiers.is_active', true)->get();
+
+                $allowed = $allowed->where('is_active', true)->whereIn('id', $requestedIds);
+
+                $modifiers = $allowed->map(fn ($m) => [
+                    'id' => (int) $m->id,
+                    'name' => $m->name,
+                    'group_name' => $m->group_name,
+                    'price' => (float) $m->price,
+                ])->values()->all();
 
                 $modifierTotal = collect($modifiers)->sum('price');
-                $unitPrice = (float) $request->unit_price;
+                $unitPrice = (float) $product->selling_price;
                 $lineUnit = $unitPrice + $modifierTotal;
                 $qty = (float) $request->quantity;
                 $discount = (float) $request->discount;
@@ -190,56 +195,64 @@ class PosController extends Controller
 
     public function removeItem(Request $request)
     {
-        return DB::transaction(function () use ($request) {
-            $cart_item = CartItem::whereHas('cart', function ($q) {
-                $q->where('seller_id', auth()->id());
-            })->with(['item.recipe.ingredients.ingredientProduct'])->findOrFail($request->cart_item_id);
+        try {
+            return DB::transaction(function () use ($request) {
+                $cart_item = CartItem::whereHas('cart', function ($q) {
+                    $q->where('seller_id', auth()->id());
+                })->with(['item.recipe.ingredients.ingredientProduct'])->findOrFail($request->cart_item_id);
 
-            $item = $cart_item->item;
-            $this->deductRecipeStock->restore($item, $cart_item->quantity);
+                $item = $cart_item->item;
+                $this->deductRecipeStock->restore($item, $cart_item->quantity);
 
-            $response = [
-                'item' => [
-                    'id' => $item->id,
-                    'stock' => $this->stockService->availableQuantity($item->fresh()),
-                ],
-            ];
+                $response = [
+                    'item' => [
+                        'id' => $item->id,
+                        'stock' => $this->stockService->availableQuantity($item->fresh()),
+                    ],
+                ];
 
-            $cart_item->delete();
+                $cart_item->delete();
 
-            return apiResponse($response, 'Item removed successfully');
-        });
+                return apiResponse($response, 'Item removed successfully');
+            });
+        } catch (RuntimeException|InvalidArgumentException $e) {
+            return errorResponse($e->getMessage());
+        }
     }
 
     public function updateQuantity(Request $request)
     {
-        return DB::transaction(function () use ($request) {
-            $cart_item = CartItem::whereHas('cart', function ($q) {
-                $q->where('seller_id', auth()->id());
-            })->with(['item.recipe.ingredients.ingredientProduct'])->findOrFail($request->cart_item_id);
+        try {
+            return DB::transaction(function () use ($request) {
+                $cart_item = CartItem::whereHas('cart', function ($q) {
+                    $q->where('seller_id', auth()->id());
+                })->with(['item.recipe.ingredients.ingredientProduct'])->findOrFail($request->cart_item_id);
 
-            $item = $cart_item->item;
-            $quantity = (float) $request->quantity;
+                $item = $cart_item->item;
+                $quantity = (float) $request->quantity;
 
-            if ($quantity > $cart_item->quantity) {
-                $diff = $quantity - $cart_item->quantity;
-                $this->deductRecipeStock->execute($item, $diff);
-            } elseif ($quantity < $cart_item->quantity) {
-                $diff = $cart_item->quantity - $quantity;
-                $this->deductRecipeStock->restore($item, $diff);
-            }
+                if ($quantity > $cart_item->quantity) {
+                    $diff = $quantity - $cart_item->quantity;
+                    $this->deductRecipeStock->execute($item, $diff);
+                } elseif ($quantity < $cart_item->quantity) {
+                    $diff = $cart_item->quantity - $quantity;
+                    $this->deductRecipeStock->restore($item, $diff);
+                }
 
-            $cart_item->quantity = $quantity;
-            $cart_item->total_price = ($cart_item->unit_price * $quantity) - ($cart_item->discount ?? 0);
-            $cart_item->save();
+                $cart_item->quantity = $quantity;
+                $cart_item->total_price = ($cart_item->unit_price * $quantity) - ($cart_item->discount ?? 0);
+                $cart_item->save();
 
-            $response = [
-                'item' => ['id' => $item->id, 'stock' => $this->stockService->availableQuantity($item->fresh())],
-                'cart_item' => ['total_price' => $cart_item->total_price],
-            ];
+                $response = [
+                    'item' => ['id' => $item->id, 'stock' => $this->stockService->availableQuantity($item->fresh())],
+                    'cart_item' => ['total_price' => $cart_item->total_price],
+                ];
 
-            return apiResponse($response, 'Cart updated successfully');
-        });
+                return apiResponse($response, 'Cart updated successfully');
+            });
+        } catch (RuntimeException|InvalidArgumentException $e) {
+            return errorResponse($e->getMessage());
+        }
     }
 
     public function checkout(CheckoutPosRequest $request)

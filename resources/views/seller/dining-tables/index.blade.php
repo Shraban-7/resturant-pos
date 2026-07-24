@@ -14,6 +14,9 @@
         <p class="page-subtitle">{{ $tables->count() }} {{ Str::plural('table', $tables->count()) }} configured</p>
     </div>
     <div class="page-actions">
+        <a href="{{ route('seller.diningTables.floorMap') }}" class="btn btn-secondary">
+            <i class="ri-layout-masonry-line"></i> Floor Map
+        </a>
         <button type="button" class="btn btn-primary" @click="$dispatch('open-modal', { id: 'addTable' })">
             <i class="ri-add-line"></i> Add New Table
         </button>
@@ -26,6 +29,7 @@
             $badgeClass = match ($table->status) {
                 \App\Models\DiningTable::FREE => 'badge-success',
                 \App\Models\DiningTable::RESERVED => 'badge-warning',
+                \App\Models\DiningTable::CLEANING => 'badge-primary',
                 default => 'badge-danger',
             };
         @endphp
@@ -34,12 +38,20 @@
                 <div class="flex items-center justify-center mb-2 gap-1">
                     <h4 class="text-lg font-semibold text-slate-800">{{ $table->name }}</h4>
                     <button type="button" class="btn btn-sm btn-ghost p-1"
-                            @click="$dispatch('open-modal', { id: 'editTable', table: { id: {{ $table->id }}, name: @js($table->name), status: @js($table->status) } })"
+                            @click="$dispatch('open-modal', { id: 'editTable', table: {
+                                id: {{ $table->id }},
+                                name: @js($table->name),
+                                status: @js($table->status),
+                                floor_id: {{ $table->floor_id ?: 'null' }}
+                            } })"
                             title="Edit">
                         <i class="ri-edit-box-line text-base"></i>
                     </button>
                 </div>
                 <span class="{{ $badgeClass }}">{{ ucfirst($table->status) }}</span>
+                @if($table->floor)
+                    <p class="text-xs text-slate-400 mt-1">{{ $table->floor->name }}</p>
+                @endif
                 <div class="mt-3 flex flex-col gap-2">
                     <a href="{{ route('seller.diningTables.qrCard', $table) }}" class="btn btn-secondary btn-sm w-full" target="_blank">
                         <i class="ri-qr-code-line"></i> QR Card
@@ -63,6 +75,8 @@
     @endforelse
 </div>
 
+@php $floorsJson = $floors->map(fn ($f) => ['id' => $f->id, 'name' => $f->name]); @endphp
+
 <div x-data="{ open: false }"
      @open-modal.window="if ($event.detail && $event.detail.id === 'addTable') open = true"
      @keydown.escape.window="open = false">
@@ -84,6 +98,15 @@
                                 <label class="form-label">Name</label>
                                 <input name="name" type="text" class="form-control" required>
                             </div>
+                            <div class="form-group">
+                                <label class="form-label">Floor</label>
+                                <select name="floor_id" class="form-select form-control">
+                                    <option value="">Unassigned</option>
+                                    @foreach($floors as $floor)
+                                        <option value="{{ $floor->id }}">{{ $floor->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" @click="open = false">Cancel</button>
@@ -96,7 +119,7 @@
     </template>
 </div>
 
-<div x-data="{ open: false, t: null, statuses: @js($tableStatus) }"
+<div x-data="{ open: false, t: null, statuses: @js($tableStatus), floors: @js($floorsJson) }"
      @open-modal.window="const d = $event.detail; if (d && d.id === 'editTable' && d.table) { t = d.table; open = true; }"
      @keydown.escape.window="open = false">
     <template x-teleport="body">
@@ -116,6 +139,15 @@
                             <div class="form-group">
                                 <label class="form-label">Name</label>
                                 <input name="name" type="text" class="form-control" :value="t ? t.name : ''" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Floor</label>
+                                <select name="floor_id" class="form-select form-control">
+                                    <option value="">Unassigned</option>
+                                    <template x-for="f in floors" :key="f.id">
+                                        <option :value="f.id" :selected="t && t.floor_id == f.id" x-text="f.name"></option>
+                                    </template>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Status</label>

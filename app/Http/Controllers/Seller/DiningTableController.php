@@ -5,32 +5,46 @@ namespace App\Http\Controllers\Seller;
 use App\Events\TableStatusChangedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\DiningTable;
+use App\Models\Floor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class DiningTableController extends Controller
 {
     public function index()
     {
-        $tables = DiningTable::where('seller_id', Auth::id())->get();
+        $tables = DiningTable::self()->with('floor')->orderBy('name')->get();
         $tables->each(fn (DiningTable $table) => $table->ensureQrToken());
         $tableStatus = DiningTable::statuses();
+        $floors = Floor::self()->orderBy('priority')->orderBy('name')->get();
 
-        return view('seller.dining-tables.index', compact('tables', 'tableStatus'));
+        return view('seller.dining-tables.index', compact('tables', 'tableStatus', 'floors'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|unique:dining_tables,name',
+        $data = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('dining_tables', 'name')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+            ],
+            'floor_id' => [
+                'nullable',
+                Rule::exists('floors', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+            ],
         ]);
 
         DiningTable::create([
             'seller_id' => Auth::id(),
-            'name' => $request->name,
+            'name' => $data['name'],
+            'floor_id' => $data['floor_id'] ?? null,
             'status' => DiningTable::FREE,
-            'qr_code_token' => \Illuminate\Support\Str::random(48),
+            'qr_code_token' => Str::random(48),
         ]);
 
         return redirect()->back()->with('success', 'Table created successfully.');
@@ -40,13 +54,26 @@ class DiningTableController extends Controller
     {
         abort_unless((int) $table->seller_id === (int) Auth::id(), 403);
 
-        $request->validate([
-            'name' => 'required|unique:dining_tables,name,' . $table->id,
+        $data = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('dining_tables', 'name')
+                    ->where(fn ($q) => $q->where('seller_id', Auth::id()))
+                    ->ignore($table->id),
+            ],
+            'status' => 'required|in:'.implode(',', DiningTable::statuses()),
+            'floor_id' => [
+                'nullable',
+                Rule::exists('floors', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+            ],
         ]);
 
         $table->update([
-            'name' => $request->name,
-            'status' => $request->status,
+            'name' => $data['name'],
+            'status' => $data['status'],
+            'floor_id' => $data['floor_id'] ?? null,
         ]);
 
         event(new TableStatusChangedEvent($table->fresh()));
@@ -61,6 +88,48 @@ class DiningTableController extends Controller
         $table->delete();
 
         return redirect()->route('seller.diningTables.index')->with('success', 'Table deleted successfully.');
+    }
+
+    public function floorMap(Request $request)
+    {
+        $floors = Floor::self()->orderBy('priority')->orderBy('name')->get();
+        $floorId = $request->integer('floor_id') ?: $floors->first()?->id;
+
+        $tables = DiningTable::self()
+            ->when($floorId, fn ($q) => $q->where('floor_id', $floorId))
+            ->when(! $floorId, fn ($q) => $q->whereNull('floor_id'))
+            ->orderBy('name')
+            ->get();
+
+        return view('seller.dining-tables.floor-map', compact('floors', 'tables', 'floorId'));
+    }
+
+    public function savePositions(Request $request)
+    {
+        $data = $request->validate([
+            'positions' => 'required|array|min:1',
+            'positions.*.id' => [
+                'required',
+                'integer',
+                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+            ],
+            'positions.*.x' => 'required|integer|min:0|max:5000',
+            'positions.*.y' => 'required|integer|min:0|max:5000',
+        ]);
+
+        foreach ($data['positions'] as $position) {
+            DiningTable::self()
+                ->whereKey($position['id'])
+                ->update([
+                    'x_position' => $position['x'],
+                    'y_position' => $position['y'],
+                ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Floor plan saved.',
+        ]);
     }
 
     public function qrCard(DiningTable $table)
@@ -84,7 +153,7 @@ class DiningTableController extends Controller
 
         return response($svg, 200, [
             'Content-Type' => 'image/svg+xml',
-            'Content-Disposition' => 'attachment; filename="table-' . $table->id . '-qr.svg"',
+            'Content-Disposition' => 'attachment; filename="table-'.$table->id.'-qr.svg"',
         ]);
     }
 }

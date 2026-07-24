@@ -12,6 +12,10 @@ class RecipeIngredient extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'quantity' => 'decimal:3',
+    ];
+
     public function recipe(): BelongsTo
     {
         return $this->belongsTo(Recipe::class, 'recipe_id');

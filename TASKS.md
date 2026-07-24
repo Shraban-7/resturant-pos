@@ -38,7 +38,7 @@
 - [x] **TASK-401** [Est: 0.5 day]: Build Product Modifiers management interface under `/seller/products/{product}/modifiers`.
 - [x] **TASK-402** [Est: 0.5 day]: Update POS item checkout modal (`item-modal.blade.php`) to select modifiers and special notes.
 - [x] **TASK-403** [Est: 1.0 day]: Create `App\Actions\DeductRecipeStockAction` for automatic raw ingredient inventory deduction.
-
+- [x] **TASK-404** [Est: 0.5 day]: Build Recipe BOM management UI under `/seller/products/{product}/recipe` and wire held-sale stock path.
 ---
 
 ## Milestone 5: Real-Time Kitchen Display System (KDS) & WebSockets

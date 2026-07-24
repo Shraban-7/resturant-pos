@@ -2,24 +2,29 @@
 
 namespace App\Http\Controllers\Seller;
 
-use App\Models\Sale;
-use App\Models\Product;
-use App\Models\Customer;
-use App\Models\SaleItem;
-use App\Models\DiningTable;
-use Illuminate\Http\Request;
-use App\Models\BusinessSetting;
+use App\Actions\DeductRecipeStockAction;
+use App\Events\TableStatusChangedEvent;
 use App\Http\Controllers\Controller;
+use App\Models\BusinessSetting;
+use App\Models\Customer;
+use App\Models\DiningTable;
+use App\Models\Product;
+use App\Models\Sale;
+use App\Models\SaleItem;
 use App\Services\StockService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
+use InvalidArgumentException;
+use RuntimeException;
 
 class SaleController extends Controller
 {
-    protected StockService $stockService;
-
-    public function __construct(StockService $stockService)
-    {
-        $this->stockService = $stockService;
+    public function __construct(
+        protected StockService $stockService,
+        protected DeductRecipeStockAction $deductRecipeStock,
+    ) {
     }
 
     public function index(Request $request)
@@ -32,6 +37,8 @@ class SaleController extends Controller
 
     public function invoice(Sale $sale)
     {
+        abort_unless((int) $sale->seller_id === (int) Auth::id(), 403);
+
         $sale->load('items', 'customer');
 
         $settings = BusinessSetting::where('user_id', $sale->seller_id)->first();
@@ -41,279 +48,171 @@ class SaleController extends Controller
 
     public function markPaid(Sale $sale)
     {
-        $sale->paid = $sale->payable;
-        $sale->due = 0;
+        abort_unless((int) $sale->seller_id === (int) Auth::id(), 403);
 
-        if ($sale->dining_table_id != '') {
-            $sale->table->status = DiningTable::FREE;
-        }
-        $sale->save();
+        DB::transaction(function () use ($sale) {
+            $sale->paid = $sale->payable;
+            $sale->due = 0;
+            $sale->save();
+
+            if ($sale->dining_table_id) {
+                $table = DiningTable::self()
+                    ->whereKey($sale->dining_table_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($table) {
+                    $table->update(['status' => DiningTable::FREE]);
+                    event(new TableStatusChangedEvent($table->fresh()));
+                }
+            }
+        });
 
         return redirect()->back()->with('success', 'Sale Due Paid Successfully');
     }
 
-    public function addToCart($product_id)
-    {
-        $product = Product::find($product_id);
-
-        if (!$this->stockService->hasAvailableStock($product, 1)) {
-            return redirect()->back()->with('error', 'Stock not available!');
-        }
-
-        $sale = Sale::whereNull('paid_amount')->first();
-
-        $this->stockService->deductStock($product, 1);
-
-        if ($sale) {
-
-            $productCheck = SaleItem::where('product_id', $product_id)->first();
-
-            if ($productCheck) {
-                $productCheck->quantity = $productCheck->quantity + 1;
-                $productCheck->price = $productCheck->price;
-                $productCheck->total_price += $productCheck->price;
-                $productCheck->save();
-            } else {
-                SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $product_id,
-                    'price' => $product->price,
-                    'quantity' => 1,
-                    'total_price' => $product->price,
-                ]);
-            }
-
-            $sale->subtotal += $product->price;
-            $sale->save();
-
-            return redirect()->back()->with('success', 'Added to cart successfully');
-        }
-
-        $sale = Sale::create([
-            'seller_id' => auth()->id(),
-            'subtotal' => $product->price,
-        ]);
-
-        SaleItem::create([
-            'sale_id' => $sale->id,
-            'product_id' => $product_id,
-            'price' => $product->price,
-            'quantity' => 1,
-            'total_price' => $product->price,
-        ]);
-
-        return redirect()->back()->with('success', 'Added to cart successfully');
-    }
-
-    public function deleteFromCart($sale_item_id)
-    {
-        $saleItem = SaleItem::with('sale', 'product')->find($sale_item_id);
-
-        $product = $saleItem->product;
-        $sale = $saleItem->sale;
-
-        $sale->subtotal -= $product->price;
-        $sale->save();
-
-        $saleItem->delete();
-
-        $this->stockService->restoreStock($product, 1);
-
-        return redirect()->back()->with('success', 'Removed from cart successfully');
-    }
-
-    public function updateCart($sale_item_id, Request $request)
-    {
-        $type = $request->type;
-
-        $saleItem = SaleItem::with('sale', 'product')->find($sale_item_id);
-
-        $sale = $saleItem->sale;
-
-        if ($type == 'increment') {
-
-            if (!$this->stockService->hasAvailableStock($saleItem->product, 1)) {
-                return redirect()->back()->with('error', 'Stock not available!');
-            }
-
-            $saleItem->quantity = $saleItem->quantity + 1;
-            $saleItem->total_price = $saleItem->total_price + $saleItem->price;
-            $saleItem->save();
-
-            $sale->subtotal += $saleItem->price;
-            $sale->save();
-
-            $this->stockService->deductStock($saleItem->product, 1);
-
-            return redirect()->back()->with('success', 'Increment successful');
-        }
-
-        if ($type == 'decrement') {
-
-            if ($saleItem->quantity == 1) {
-                $saleItem->delete();
-            }
-
-            if ($saleItem->quantity > 1) {
-                $saleItem->quantity = $saleItem->quantity - 1;
-                $saleItem->total_price = $saleItem->total_price - $saleItem->price;
-                $saleItem->save();
-            }
-
-            $sale->subtotal -= $saleItem->price;
-
-            if ($sale->subtotal == 0) {
-                $sale->delete();
-            } else {
-                $sale->save();
-            }
-
-            $this->stockService->restoreStock($saleItem->product, 1);
-        }
-
-        return redirect()->back()->with('success', 'Removed from cart successfully');
-    }
-
-    public function checkout($sale_id, Request $request)
-    {
-        $sale = Sale::find($sale_id);
-
-        $paid = $request->paid_amount;
-        $due = $sale->subtotal - $paid;
-
-        $sale->paid_amount = $paid;
-        $sale->due_amount = $due;
-        $sale->customer_id = $request->customer_id;
-        $sale->save();
-
-        return redirect()->route('seller.sales.invoice', $sale->id);
-    }
-
     public function addItemToSale(Request $request)
     {
-        $request->validate([
-            'order_id' => 'required|string|exists:sales,order_id',
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|numeric',
-            'discount' => 'required|numeric',
-            'unit_price' => 'required|numeric',
-        ]);
+        try {
+            return DB::transaction(function () use ($request) {
+                $request->validate([
+                    'order_id' => 'required|string|exists:sales,order_id',
+                    'product_id' => 'required|exists:products,id',
+                    'quantity' => 'required|numeric|min:0.01',
+                    'discount' => 'required|numeric|min:0',
+                    'unit_price' => 'required|numeric|min:0',
+                ]);
 
-        $product = Product::find($request->product_id);
+                $sale = Sale::self()
+                    ->where('order_id', $request->order_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-        $sale = Sale::where('order_id', $request->order_id)->first();
+                $product = Product::self()
+                    ->with(['unit', 'recipe.ingredients.ingredientProduct'])
+                    ->whereKey($request->product_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-        if (!$this->stockService->hasAvailableStock($product, $request->quantity)) {
-            return errorResponse('Insufficient stock!');
+                $qty = (float) $request->quantity;
+
+                if (! $this->deductRecipeStock->usesRecipe($product)
+                    && ! $this->stockService->hasAvailableStock($product, $qty)) {
+                    throw new RuntimeException('Insufficient stock!');
+                }
+
+                $saleItem = SaleItem::create([
+                    'sale_id' => $sale->id,
+                    'seller_id' => $sale->seller_id,
+                    'item_id' => $product->id,
+                    'item_name' => $product->name,
+                    'buying_price' => $product->buying_price,
+                    'unit_price' => $request->unit_price,
+                    'unit' => $product->unit?->short_name ?? 'pcs',
+                    'discount' => $request->discount,
+                    'quantity' => $qty,
+                    'total_price' => ($qty * $request->unit_price) - $request->discount,
+                ]);
+
+                $this->deductRecipeStock->execute($product, $qty);
+
+                $sale->due += $saleItem->total_price;
+                $sale->subtotal += $saleItem->total_price;
+                $sale->payable += $saleItem->total_price;
+                $sale->save();
+
+                $saleItems = SaleItem::where('sale_id', $sale->id)->with('product')->get();
+                $itemHtml = '';
+                foreach ($saleItems as $line) {
+                    $itemHtml .= View::make('components.pos.sale-item', ['item' => $line])->render();
+                }
+
+                return apiResponse([
+                    'item' => [
+                        'id' => $product->id,
+                        'stock' => $this->stockService->availableQuantity($product->fresh()),
+                    ],
+                    'cart_item_html' => $itemHtml,
+                ], 'Item added successfully');
+            });
+        } catch (RuntimeException|InvalidArgumentException $e) {
+            return errorResponse($e->getMessage());
         }
-
-        $sale_item = SaleItem::create([
-            'sale_id' => $sale->id,
-            'seller_id' => $sale->seller_id,
-            'item_id' => $product->id,
-            'item_name' => $product->name,
-            'buying_price' => $product->buying_price,
-            'unit_price' => $request->unit_price,
-            'unit' => $product->unit,
-            'discount' => $request->discount,
-            'quantity' => $request->quantity,
-            'total_price' => ($request->quantity * $request->unit_price) - $request->discount,
-        ]);
-
-        $this->stockService->deductStock($product, $request->quantity);
-
-        $sale->due += $sale_item->total_price;
-        $sale->subtotal += $sale_item->total_price;
-        $sale->payable += $sale_item->total_price;
-        $sale->save();
-
-        $sale_items = SaleItem::where('sale_id', $sale->id)->with('product')->get();
-        $itemHtml = '';
-
-        foreach ($sale_items as $sale_item) {
-            $itemHtml .= View::make('components.pos.sale-item', ['item' => $sale_item])->render();
-        }
-
-        $response = [
-            'item' => [
-                'id' => $product->id,
-                'stock' => $this->stockService->availableQuantity($product)
-            ],
-            'cart_item_html' => $itemHtml
-        ];
-
-        return apiResponse($response, 'Item addedd successfully');
     }
 
     public function removeSaleItem(Request $request)
     {
-        $sale_item = SaleItem::find($request->sale_item_id);
+        return DB::transaction(function () use ($request) {
+            $saleItem = SaleItem::query()
+                ->whereHas('sale', fn ($q) => $q->where('seller_id', Auth::id()))
+                ->with(['product.recipe.ingredients.ingredientProduct'])
+                ->findOrFail($request->sale_item_id);
 
-        $item = $sale_item->product;
+            $item = $saleItem->product;
+            $this->deductRecipeStock->restore($item, (float) $saleItem->quantity);
 
-        $this->stockService->restoreStock($item, $sale_item->quantity);
+            $response = [
+                'item' => [
+                    'id' => $item->id,
+                    'stock' => $this->stockService->availableQuantity($item->fresh()),
+                ],
+            ];
 
-        $response = [
-            'item' => [
-                'id' => $item->id,
-                'stock' => $this->stockService->availableQuantity($item)
-            ]
-        ];
+            $sale = Sale::self()->whereKey($saleItem->sale_id)->lockForUpdate()->firstOrFail();
+            $sale->due -= $saleItem->total_price;
+            $sale->subtotal -= $saleItem->total_price;
+            $sale->payable -= $saleItem->total_price;
+            $sale->save();
 
-        $sale = Sale::where('id', $sale_item->sale_id)->first();
+            $saleItem->delete();
 
-        $sale->due -= $sale_item->total_price;
-        $sale->subtotal -= $sale_item->total_price;
-        $sale->payable -= $sale_item->total_price;
-        $sale->save();
-
-        $sale_item->delete();
-
-        return apiResponse($response, 'Item removed successfully');
+            return apiResponse($response, 'Item removed successfully');
+        });
     }
 
     public function updateSaleItemQuantity(Request $request)
     {
-        $sale_item = SaleItem::with('product')->find($request->sale_item_id);
-        $sale = Sale::where('id', $sale_item->sale_id)->first();
-        $item = $sale_item->product;
-        $quantity = $request->quantity;
+        try {
+            return DB::transaction(function () use ($request) {
+                $saleItem = SaleItem::query()
+                    ->whereHas('sale', fn ($q) => $q->where('seller_id', Auth::id()))
+                    ->with(['product.recipe.ingredients.ingredientProduct'])
+                    ->findOrFail($request->sale_item_id);
 
-        if ($quantity > $sale_item->quantity) {
-            $updatedQuantity = ($quantity - $sale_item->quantity);
+                $sale = Sale::self()->whereKey($saleItem->sale_id)->lockForUpdate()->firstOrFail();
+                $item = $saleItem->product;
+                $quantity = (float) $request->quantity;
 
-            if (!$this->stockService->hasAvailableStock($item, $updatedQuantity)) {
-                return errorResponse('Insufficient stock!');
-            }
+                if ($quantity > $saleItem->quantity) {
+                    $diff = $quantity - $saleItem->quantity;
+                    $this->deductRecipeStock->execute($item, $diff);
+                    $deltaPrice = $saleItem->unit_price * $diff;
+                    $sale->due += $deltaPrice;
+                    $sale->subtotal += $deltaPrice;
+                    $sale->payable += $deltaPrice;
+                    $sale->save();
+                } elseif ($quantity < $saleItem->quantity) {
+                    $diff = $saleItem->quantity - $quantity;
+                    $this->deductRecipeStock->restore($item, $diff);
+                    $deltaPrice = $saleItem->unit_price * $diff;
+                    $sale->due -= $deltaPrice;
+                    $sale->subtotal -= $deltaPrice;
+                    $sale->payable -= $deltaPrice;
+                    $sale->save();
+                }
 
-            $this->stockService->deductStock($item, $updatedQuantity);
-            $totalPriceQuantity = $sale_item->unit_price * $updatedQuantity;
-            $sale->due += $totalPriceQuantity;
-            $sale->subtotal += $totalPriceQuantity;
-            $sale->payable += $totalPriceQuantity;
-            $sale->save();
+                $saleItem->quantity = $quantity;
+                $saleItem->total_price = $saleItem->unit_price * $quantity;
+                $saleItem->save();
+
+                return apiResponse([
+                    'item' => ['id' => $item->id, 'stock' => $this->stockService->availableQuantity($item->fresh())],
+                    'sale_item' => ['total_price' => $saleItem->total_price],
+                ], 'Sale updated successfully');
+            });
+        } catch (RuntimeException|InvalidArgumentException $e) {
+            return errorResponse($e->getMessage());
         }
-
-        if ($quantity < $sale_item->quantity) {
-            $updatedQuantity = ($sale_item->quantity - $quantity);
-            $this->stockService->restoreStock($item, $updatedQuantity);
-            $totalPriceQuantity = $sale_item->unit_price * $updatedQuantity;
-            $sale->due -= $totalPriceQuantity;
-            $sale->subtotal -= $totalPriceQuantity;
-            $sale->payable -= $totalPriceQuantity;
-            $sale->save();
-        }
-
-        $sale_item->quantity = $quantity;
-        $sale_item->total_price = ($sale_item->unit_price * $quantity);
-        $sale_item->save();
-
-        $response = [
-            'item' => ['id' => $item->id, 'stock' => $this->stockService->availableQuantity($item)],
-            'sale_item' => ['total_price' => $sale_item->total_price],
-        ];
-
-        return apiResponse($response, 'Sale updated successfully');
     }
 
     public function saleUpdate(Request $request)
@@ -332,69 +231,68 @@ class SaleController extends Controller
             'customer_id.required' => 'Please select a customer',
         ]);
 
-        $customer_id = null;
-
-        if ($request->customer_id != '') {
-            $customer_id = $request->customer_id;
-        }
-
+        $customer_id = $request->customer_id ?: null;
         $customer_name = $request->customer_name ?? '';
         $customer_phone = $request->customer_phone ?? '';
 
         if ($customer_name != '' && $customer_phone != '') {
-
             $newCustomer = Customer::create([
-                'seller_id' => auth()->id(),
+                'seller_id' => Auth::id(),
                 'name' => $customer_name,
                 'phone' => $customer_phone,
             ]);
-
             $customer_id = $newCustomer->id;
         }
 
-        $sale = Sale::where('order_id', $request->order_id)->with('items.product.unit')->first();
-
-        if (!$sale || count($sale->items) == 0) {
-            return errorResponse('No items added!');
-        }
-
-        $discount = $request->discount_amount ?? 0;
-        $paid = $request->paid_amount ?? 0;
-        $payable = ($sale->subtotal - $discount);
-
-        $saleData = [
-            'seller_id' => $sale->seller_id,
-            'is_hold' => 0,
-            'customer_id' => $customer_id,
-            'order_id' => $sale->order_id,
-            'sale_date' => date('Y-m-d'),
-            'subtotal' => $sale->subtotal,
-            'discount' => $discount,
-            'payable' => $payable,
-            'paid' => $paid,
-            'due' => ($payable - $paid),
-            'note' => $request->note,
-        ];
-
-        if ($request->table_id) {
-            $saleData['dining_table_id'] = $request->table_id;
-        }
-        if ($request->employee_id) {
-            $saleData['seller_employee_id'] = $request->employee_id;
-        }
-
-        $sale->update($saleData);
-
-        if ($request->table_id) {
-            $table = DiningTable::self()
-                ->where('id', $request->table_id)
+        return DB::transaction(function () use ($request, $customer_id) {
+            $sale = Sale::self()
+                ->where('order_id', $request->order_id)
+                ->with('items.product.unit')
+                ->lockForUpdate()
                 ->first();
 
-            if ($table) {
-                $table->update(['status' => DiningTable::OCCUPIED]);
+            if (! $sale || count($sale->items) == 0) {
+                return errorResponse('No items added!');
             }
-        }
 
-        return successResponse('Sale complete');
+            $discount = $request->discount_amount ?? 0;
+            $paid = $request->paid_amount ?? 0;
+            $payable = ($sale->subtotal - $discount);
+
+            $saleData = [
+                'is_hold' => 0,
+                'customer_id' => $customer_id,
+                'sale_date' => date('Y-m-d'),
+                'subtotal' => $sale->subtotal,
+                'discount' => $discount,
+                'payable' => $payable,
+                'paid' => $paid,
+                'due' => ($payable - $paid),
+                'note' => $request->note,
+            ];
+
+            if ($request->table_id) {
+                $saleData['dining_table_id'] = $request->table_id;
+            }
+            if ($request->employee_id) {
+                $saleData['seller_employee_id'] = $request->employee_id;
+            }
+
+            $sale->update($saleData);
+
+            if ($request->table_id) {
+                $table = DiningTable::self()
+                    ->where('id', $request->table_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($table) {
+                    $table->update(['status' => DiningTable::OCCUPIED]);
+                    event(new TableStatusChangedEvent($table->fresh(), $sale->id));
+                }
+            }
+
+            return successResponse('Sale complete');
+        });
     }
 }

@@ -7,12 +7,15 @@ use App\Http\Controllers\Seller\CustomerController;
 use App\Http\Controllers\Seller\DashboardController;
 use App\Http\Controllers\Seller\DiningTableController;
 use App\Http\Controllers\Seller\EmployeeController;
+use App\Http\Controllers\Seller\FloorController;
 use App\Http\Controllers\Seller\KdsController;
 use App\Http\Controllers\Seller\OfflineSyncController;
 use App\Http\Controllers\Seller\PosController;
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Controllers\Seller\ProductModifierController;
+use App\Http\Controllers\Seller\RecipeController;
 use App\Http\Controllers\Seller\ReportController;
+use App\Http\Controllers\Seller\ReservationController;
 use App\Http\Controllers\Seller\SaleController;
 use App\Http\Controllers\Seller\SettingController;
 use App\Http\Controllers\Seller\StockController;
@@ -90,6 +93,26 @@ Route::middleware('seller')->prefix('seller')->as('seller.')->group(function () 
             Route::put('/{productModifier}', [ProductModifierController::class, 'update'])->name('update');
             Route::delete('/{productModifier}', [ProductModifierController::class, 'destroy'])->name('destroy');
         });
+
+        Route::prefix('{product}/recipe')->as('recipe.')->group(function () {
+            Route::get('/', [RecipeController::class, 'edit'])->name('edit');
+            Route::put('/', [RecipeController::class, 'update'])->name('update');
+            Route::delete('/', [RecipeController::class, 'destroy'])->name('destroy');
+        });
+    });
+
+    Route::prefix('floors')->as('floors.')->group(function () {
+        Route::get('/', [FloorController::class, 'index'])->name('index');
+        Route::post('/', [FloorController::class, 'store'])->name('store');
+        Route::put('/{floor}', [FloorController::class, 'update'])->name('update');
+        Route::delete('/{floor}', [FloorController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('reservations')->as('reservations.')->group(function () {
+        Route::get('/', [ReservationController::class, 'index'])->name('index');
+        Route::post('/', [ReservationController::class, 'store'])->name('store');
+        Route::put('/{reservation}', [ReservationController::class, 'update'])->name('update');
+        Route::delete('/{reservation}', [ReservationController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('stocks')->as('stocks.')->group(function () {
@@ -112,6 +135,8 @@ Route::middleware('seller')->prefix('seller')->as('seller.')->group(function () 
 
     Route::prefix('dining-tables')->as('diningTables.')->group(function () {
         Route::get('/', [DiningTableController::class, 'index'])->name('index');
+        Route::get('/floor-map', [DiningTableController::class, 'floorMap'])->name('floorMap');
+        Route::post('/positions', [DiningTableController::class, 'savePositions'])->name('savePositions');
         Route::post('/store', [DiningTableController::class, 'store'])->name('store');
         Route::post('/{table}/update', [DiningTableController::class, 'update'])->name('update');
         Route::delete('/{table}/destroy', [DiningTableController::class, 'destroy'])->name('destroy');

@@ -18,37 +18,37 @@ Each milestone is **independently deployable**, ensuring zero disruption to exis
 
 ---
 
-## Milestone 2: Restaurant Schema Extensions & Domain Models
+## Milestone 2: Restaurant Schema Extensions & Domain Models — ✅ COMPLETE
 - **Goal**: Introduce restaurant-specific database tables and Eloquent models without altering existing commercial tables.
-- **Status**: COMPLETE (TASK-201–206)
 - **Deployable Value**: Establishes schema support for floors, tables, reservations, recipes (BOM), modifiers, and KOT tickets.
 - **Key Deliverables**:
-  - Migrations for `floors`, `reservations`, `recipes`, `recipe_ingredients`, `modifiers`, `product_modifiers`, `kitchen_tickets`, `kitchen_ticket_items`.
-  - Extended `dining_tables` with `floor_id`, QR token, and layout coordinates.
-  - Eloquent models with relationships and `scopeSelf()` tenant helpers.
+  - ✅ Migrations for `floors`, `reservations`, `recipes`, `recipe_ingredients`, `modifiers`, `product_modifiers`, `kitchen_tickets`, `kitchen_ticket_items`.
+  - ✅ Extended `dining_tables` with `floor_id`, QR token, and layout coordinates.
+  - ✅ Eloquent models with relationships, `scopeSelf()` tenant helpers, and `DiningTable::reservations()` inverse.
 
 ---
 
-## Milestone 3: Multi-Floor & Interactive Table Layout Manager
+## Milestone 3: Multi-Floor & Interactive Table Layout Manager — ✅ COMPLETE
 - **Goal**: Provide sellers with visual table management and multi-floor zoning.
-- **Status**: COMPLETE (TASK-301–303)
-- **Deployable Value**: Sellers can organize tables by floor zones (e.g., Main Room, Patio), drag tables on a floor map, and manage reservations.
+- **Deployable Value**: Sellers can organize tables by floor zones, drag tables on a floor map, and manage reservations with status sync.
 - **Key Deliverables**:
-  - Floor zone management CRUD at `/seller/floors`.
-  - Interactive visual floor map at `/seller/dining-tables/floor-map` with drag-to-save positions.
-  - Reservation booking at `/seller/reservations` with table status sync.
+  - ✅ Floor zone CRUD at `/seller/floors`.
+  - ✅ Interactive visual floor map at `/seller/dining-tables/floor-map` with drag-to-save positions.
+  - ✅ Reservation booking at `/seller/reservations` with table status sync (`reserved` / `occupied` / release on cancel).
+  - ✅ Table create/edit accepts `floor_id`; status whitelist + per-seller name uniqueness.
+  - ✅ `markPaid` tenant isolation + table status persistence fixed.
 
 ---
 
-## Milestone 4: Product Modifiers & Recipe BOM Auto-Stock Deductor
+## Milestone 4: Product Modifiers & Recipe BOM Auto-Stock Deductor — ✅ COMPLETE
 - **Goal**: Enable dish modifiers (add-ons/exclusions) and raw ingredient inventory auto-deduction.
-- **Status**: COMPLETE (TASK-401–403)
 - **Deployable Value**: POS can sell configurable add-ons; recipes automatically deduct raw ingredients when dishes are sold.
 - **Key Deliverables**:
-  - Product modifiers UI at `/seller/products/{product}/modifiers`.
-  - POS item modal modifier selection + special instructions.
-  - `DeductRecipeStockAction` wired into POS cart mutations and QR `placeOrder`.
-
+  - ✅ Product modifiers UI at `/seller/products/{product}/modifiers`.
+  - ✅ Recipe BOM management UI at `/seller/products/{product}/recipe`.
+  - ✅ POS item modal modifier selection + special instructions.
+  - ✅ `DeductRecipeStockAction` wired into POS cart mutations, held-sale mutations, and QR `placeOrder`.
+  - ✅ POS server-side modifier price validation; recipe dishes allow qty+ when finished stock is 0.
 ---
 
 ## Milestone 5: Real-Time Kitchen Display System (KDS) & WebSockets
