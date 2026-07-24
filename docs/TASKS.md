@@ -28,9 +28,9 @@
 ---
 
 ## Milestone 3: Multi-Floor & Table Floor Plan Manager
-- [ ] **TASK-301** [Est: 0.5 day]: Implement `FloorController` CRUD methods and routing under `/seller/floors`.
-- [ ] **TASK-302** [Est: 1.0 day]: Build interactive visual floor plan layout Blade view (`resources/views/seller/dining-tables/floor-map.blade.php`).
-- [ ] **TASK-303** [Est: 0.5 day]: Build reservation booking management controller and Blade view (`/seller/reservations`).
+- [x] **TASK-301** [Est: 0.5 day]: Implement `FloorController` CRUD methods and routing under `/seller/floors`.
+- [x] **TASK-302** [Est: 1.0 day]: Build interactive visual floor plan layout Blade view (`resources/views/seller/dining-tables/floor-map.blade.php`).
+- [x] **TASK-303** [Est: 0.5 day]: Build reservation booking management controller and Blade view (`/seller/reservations`).
 
 ---
 

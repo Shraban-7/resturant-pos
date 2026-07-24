@@ -31,11 +31,12 @@ Each milestone is **independently deployable**, ensuring zero disruption to exis
 
 ## Milestone 3: Multi-Floor & Interactive Table Layout Manager
 - **Goal**: Provide sellers with visual table management and multi-floor zoning.
-- **Deployable Value**: Sellers can organize tables by floor zones (e.g., Main Room, Patio) and track status (Free, Occupied, Reserved).
+- **Status**: COMPLETE (TASK-301–303)
+- **Deployable Value**: Sellers can organize tables by floor zones (e.g., Main Room, Patio), drag tables on a floor map, and manage reservations.
 - **Key Deliverables**:
-  - Floor zone management CRUD controllers and Blade views.
-  - Interactive visual floor map view with real-time status badges.
-  - Table reservation booking system.
+  - Floor zone management CRUD at `/seller/floors`.
+  - Interactive visual floor map at `/seller/dining-tables/floor-map` with drag-to-save positions.
+  - Reservation booking at `/seller/reservations` with table status sync.
 
 ---
 
