@@ -17,7 +17,6 @@
             <div class="sidebar-section">Main</div>
             <x-sidebar-list-item :title="'Dashboard'" :icon="'ri-dashboard-line'" :route="'seller.dashboard'" />
             <x-sidebar-list-item :title="'POS'" :icon="'ri-shopping-cart-2-line'" :route="'seller.pos.index'" />
-            <x-sidebar-list-item :title="'Customer Display'" :icon="'ri-tv-2-line'" :route="'seller.pos.cds'" />
 
             <div class="sidebar-section">Inventory</div>
             <x-sidebar-list-item :title="'Products'" :icon="'ri-box-3-line'" :route="'seller.products.index'" />

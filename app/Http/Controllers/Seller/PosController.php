@@ -517,9 +517,4 @@ class PosController extends Controller
             return errorResponse($e->getMessage());
         }
     }
-
-    public function cds()
-    {
-        return view('seller.pos.cds');
-    }
 }

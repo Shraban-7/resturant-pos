@@ -53,7 +53,6 @@ Route::middleware(['auth', 'seller'])->prefix('seller')->as('seller.')->group(fu
 
     Route::prefix('pos')->as('pos.')->group(function () {
         Route::get('/', [PosController::class, 'index'])->name('index');
-        Route::get('/cds', [PosController::class, 'cds'])->name('cds');
         Route::post('/add-item', [PosController::class, 'addItem'])->name('addItem');
         Route::post('/remove-item', [PosController::class, 'removeItem'])->name('removeItem');
         Route::post('/update-quantity', [PosController::class, 'updateQuantity'])->name('updateQuantity');

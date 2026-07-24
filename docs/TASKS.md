@@ -76,7 +76,7 @@
 ## Milestone 9: Phase 2 Post-MVP Advanced Modules — PARTIAL
 - [x] **TASK-901** [Est: 0.5 day]: Table reservation list/booking management, status tracking, and table locking.
 - [x] **TASK-902** [Est: 0.5 day]: Guest QR Table ordering, modifier selection, and instant KDS ticket creation.
-- [x] **TASK-903** [Est: 0.5 day]: Customer Display Screen (CDS) 2nd screen with live `BroadcastChannel` cart sync.
+- [ ] ~~**TASK-903**: Customer Display Screen (CDS)~~ — removed from scope.
 - [x] **TASK-904** [Est: 0.5 day]: Customer loyalty balances, displayed reward tiers, and manual point adjustments.
 - [ ] **TASK-905**: Complete gift-card POS redemption. Issuance, expiry-aware verification, and balance display are implemented.
 - [ ] ~~**TASK-906**: Delivery Orders management~~ — removed with the online storefront because no order-creation path remains.
