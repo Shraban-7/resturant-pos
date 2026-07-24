@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
 use App\Http\Requests\PlaceQrOrderRequest;
 use App\Models\DiningTable;
@@ -17,7 +18,8 @@ class MenuController extends Controller
 {
     public function __construct(
         protected StockService $stockService,
-        protected DeductRecipeStockAction $deductRecipeStock
+        protected DeductRecipeStockAction $deductRecipeStock,
+        protected CreateKitchenTicketAction $createKitchenTicket
     ) {
     }
 
@@ -99,6 +101,9 @@ class MenuController extends Controller
                     ->lockForUpdate()
                     ->firstOrFail()
                     ->update(['status' => DiningTable::OCCUPIED]);
+
+                $sale->load(['items', 'table']);
+                $this->createKitchenTicket->execute($sale);
 
                 return response()->json([
                     'status' => true,

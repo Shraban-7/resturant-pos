@@ -14,7 +14,9 @@
 
 <div x-data="{ open: false }" class="contents">
     <button type="button"
-            class="dining-table-card {{ $statusStyles }}"
+            class="dining-table-card dining-table-chip {{ $statusStyles }}"
+            data-table-id="{{ $table->id }}"
+            data-status="{{ $table->status }}"
             @click="open = true">
         <i class="{{ $statusIcon }} text-base"></i>
         <span class="font-semibold">{{ $table->name }}</span>

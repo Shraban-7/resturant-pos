@@ -24,6 +24,7 @@
 
             <div class="sidebar-section">Operations</div>
             <x-sidebar-list-item :title="'Sales'" :icon="'ri-file-paper-2-line'" :route="'seller.sales.index'" />
+            <x-sidebar-list-item :title="'Kitchen Display'" :icon="'ri-tablet-line'" :route="'seller.kds.index'" />
             <x-sidebar-list-item :title="'Dining Tables'" :icon="'ri-reserved-line'" :route="'seller.diningTables.index'" />
             <x-sidebar-list-item :title="'Customers'" :icon="'ri-team-line'" :route="'seller.customers.index'" />
             <x-sidebar-list-item :title="'Employees'" :icon="'ri-user-star-line'" :route="'seller.employees.index'" />

@@ -12,13 +12,24 @@ class KitchenTicketItem extends Model
 
     protected $guarded = ['id'];
 
+    public const PENDING = 'pending';
+    public const PREPARING = 'preparing';
+    public const READY = 'ready';
+    public const CANCELLED = 'cancelled';
+
     protected $casts = [
         'modifiers_json' => 'array',
+        'quantity' => 'decimal:2',
     ];
+
+    public function kitchenTicket(): BelongsTo
+    {
+        return $this->belongsTo(KitchenTicket::class, 'kitchen_ticket_id');
+    }
 
     public function ticket(): BelongsTo
     {
-        return $this->belongsTo(KitchenTicket::class, 'ticket_id');
+        return $this->kitchenTicket();
     }
 
     public function saleItem(): BelongsTo

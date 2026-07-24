@@ -42,11 +42,11 @@
 ---
 
 ## Milestone 5: Real-Time Kitchen Display System (KDS) & WebSockets
-- [ ] **TASK-501** [Est: 0.5 day]: Install `laravel/reverb` package and configure WebSocket settings in `.env`.
-- [ ] **TASK-502** [Est: 0.5 day]: Create broadcast event classes (`OrderPlacedEvent`, `KitchenStatusUpdatedEvent`, `TableStatusChangedEvent`).
-- [ ] **TASK-503** [Est: 0.5 day]: Configure channel authorization rules in `routes/channels.php`.
-- [ ] **TASK-504** [Est: 1.0 day]: Build touch-screen Kitchen Display System (KDS) view (`resources/views/seller/kds/index.blade.php`).
-- [ ] **TASK-505** [Est: 0.5 day]: Wire Alpine.js WebSocket Echo listeners in KDS view and Cashier POS navbar.
+- [x] **TASK-501** [Est: 0.5 day]: Install `laravel/reverb` package and configure WebSocket settings in `.env`.
+- [x] **TASK-502** [Est: 0.5 day]: Create broadcast event classes (`OrderPlacedEvent`, `KitchenStatusUpdatedEvent`, `TableStatusChangedEvent`).
+- [x] **TASK-503** [Est: 0.5 day]: Configure channel authorization rules in `routes/channels.php`.
+- [x] **TASK-504** [Est: 1.0 day]: Build touch-screen Kitchen Display System (KDS) view (`resources/views/seller/kds/index.blade.php`).
+- [x] **TASK-505** [Est: 0.5 day]: Wire Alpine.js WebSocket Echo listeners in KDS view and Cashier POS navbar.
 
 ---
 

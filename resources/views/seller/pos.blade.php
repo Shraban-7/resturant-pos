@@ -43,6 +43,14 @@
         </div>
 
         <div class="flex items-center gap-1">
+            <a href="{{ route('seller.kds.index') }}"
+               class="relative btn btn-ghost btn-icon"
+               title="Kitchen Display"
+               id="posKitchenBadgeLink">
+                <i class="ri-tablet-line text-lg"></i>
+                <span id="posKitchenReadyBadge"
+                      class="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold leading-[1.1rem] text-center hidden">0</span>
+            </a>
             <button type="button" id="productCodeBtn" class="btn btn-ghost btn-icon" title="Scan barcode" @click="barcodeOpen = true">
                 <i class="ri-barcode-line text-lg"></i>
             </button>
@@ -697,6 +705,47 @@
 
         // --- Refresh ---
         document.getElementById('refresh-btn')?.addEventListener('click', () => location.reload());
+
+        // --- Real-time kitchen / order updates ---
+        (function subscribePosEcho() {
+            if (!window.Echo) return;
+            const sellerId = {{ (int) auth()->id() }};
+            const readyBadge = document.getElementById('posKitchenReadyBadge');
+            let readyCount = 0;
+
+            function setReadyCount(n) {
+                readyCount = Math.max(0, n);
+                if (!readyBadge) return;
+                if (readyCount > 0) {
+                    readyBadge.textContent = String(readyCount);
+                    readyBadge.classList.remove('hidden');
+                } else {
+                    readyBadge.classList.add('hidden');
+                }
+            }
+
+            window.Echo.private(`seller.${sellerId}.pos`)
+                .listen('.OrderPlaced', (e) => {
+                    if (window.toast) {
+                        window.toast.info(`Sent to kitchen: ${e.table_name || e.ticket_number}`);
+                    }
+                })
+                .listen('.KitchenStatusUpdated', (e) => {
+                    if (e.status === 'ready') {
+                        setReadyCount(readyCount + 1);
+                        if (window.toast) {
+                            window.toast.success(`Ready: ${e.table_name || e.ticket_number}`);
+                        }
+                    }
+                })
+                .listen('.TableStatusChanged', (e) => {
+                    const chip = document.querySelector(`.dining-table-chip[data-table-id="${e.table_id}"]`);
+                    if (!chip || !e.status) return;
+                    chip.dataset.status = e.status;
+                    const statusEl = chip.querySelector('.dining-table-card-status');
+                    if (statusEl) statusEl.textContent = e.status.charAt(0).toUpperCase() + e.status.slice(1);
+                });
+        })();
 
         // Initial
         updateCartTotals();

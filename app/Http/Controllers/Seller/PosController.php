@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Seller;
 
+use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Seller\CheckoutPosRequest;
@@ -25,7 +26,8 @@ class PosController extends Controller
 {
     public function __construct(
         protected StockService $stockService,
-        protected DeductRecipeStockAction $deductRecipeStock
+        protected DeductRecipeStockAction $deductRecipeStock,
+        protected CreateKitchenTicketAction $createKitchenTicket
     ) {
     }
 
@@ -331,6 +333,9 @@ class PosController extends Controller
                     }
                 }
 
+                $sale->load(['items', 'table']);
+                $this->createKitchenTicket->execute($sale);
+
                 return successResponse('Sale complete');
             });
         } catch (RuntimeException|InvalidArgumentException $e) {
@@ -392,6 +397,9 @@ class PosController extends Controller
 
             $cart->items()->delete();
             $cart->delete();
+
+            $sale->load(['items', 'table']);
+            $this->createKitchenTicket->execute($sale);
 
             return successResponse('Sale held successfully');
         });

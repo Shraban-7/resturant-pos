@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Seller;
 
+use App\Events\TableStatusChangedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\DiningTable;
 use Illuminate\Http\Request;
@@ -43,6 +44,8 @@ class DiningTableController extends Controller
             'status' => $request->status,
         ]);
 
+        event(new TableStatusChangedEvent($table->fresh()));
+
         return redirect()->back()->with('success', 'Table updated successfully.');
     }
 
@@ -50,6 +53,6 @@ class DiningTableController extends Controller
     {
         $table->delete();
 
-        return redirect()->route('seller.dining-tables.index')->with('success', 'Table deleted successfully.');
+        return redirect()->route('seller.diningTables.index')->with('success', 'Table deleted successfully.');
     }
 }

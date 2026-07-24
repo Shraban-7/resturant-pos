@@ -53,12 +53,13 @@ Each milestone is **independently deployable**, ensuring zero disruption to exis
 
 ## Milestone 5: Real-Time Kitchen Display System (KDS) & WebSockets
 - **Goal**: Deploy Laravel Reverb WebSocket server and touch-screen Kitchen Display System.
+- **Status**: COMPLETE (TASK-501–505)
 - **Deployable Value**: Eliminates paper kitchen tickets with instant touch-screen order cards and prep timers.
 - **Key Deliverables**:
   - Installed and configured Laravel Reverb server.
   - Domain broadcast events (`OrderPlacedEvent`, `KitchenStatusUpdatedEvent`, `TableStatusChangedEvent`).
   - Touch-friendly KDS Blade view (`/seller/kds`) with status controls (Start Prep, Ready, Served).
-
+  - Echo listeners on KDS and POS for live ticket and ready-status updates.
 ---
 
 ## Milestone 6: Enhanced Digital QR Code Menu & Customer Tracker

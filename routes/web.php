@@ -7,6 +7,7 @@ use App\Http\Controllers\Seller\CustomerController;
 use App\Http\Controllers\Seller\DashboardController;
 use App\Http\Controllers\Seller\DiningTableController;
 use App\Http\Controllers\Seller\EmployeeController;
+use App\Http\Controllers\Seller\KdsController;
 use App\Http\Controllers\Seller\PosController;
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Controllers\Seller\ProductModifierController;
@@ -56,6 +57,11 @@ Route::middleware('seller')->prefix('seller')->as('seller.')->group(function () 
             Route::post('/remove', [SaleController::class, 'removeSaleItem'])->name('remove');
             Route::post('/update-qty', [SaleController::class, 'updateSaleItemQuantity'])->name('updateQuantity');
         });
+    });
+
+    Route::prefix('kds')->as('kds.')->group(function () {
+        Route::get('/', [KdsController::class, 'index'])->name('index');
+        Route::post('/{ticket}/status', [KdsController::class, 'updateStatus'])->name('updateStatus');
     });
 
     Route::prefix('sales')->as('sales.')->group(function () {
