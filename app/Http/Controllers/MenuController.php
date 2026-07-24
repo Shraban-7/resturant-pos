@@ -2,74 +2,85 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PlaceQrOrderRequest;
 use App\Models\DiningTable;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Sale;
-use Illuminate\Http\Request;
+use App\Services\StockService;
+use Illuminate\Support\Facades\DB;
 
 class MenuController extends Controller
 {
-        public function index(DiningTable $table)
+    protected StockService $stockService;
+
+    public function __construct(StockService $stockService)
+    {
+        $this->stockService = $stockService;
+    }
+
+    public function index(DiningTable $table)
     {
         $categories = ProductCategory::with(['products' => function ($q) {
-            $q->where('is_active', 1);
+            $q->where('is_active', 1)->with('unit');
         }])->get();
 
         return view('digital-menu', compact('table', 'categories'));
     }
 
-    public function placeOrder(Request $request, DiningTable $table)
+    public function placeOrder(PlaceQrOrderRequest $request, DiningTable $table)
     {
-        $request->validate([
-            'items' => 'required|array|min:1',
-            'items.*.id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|numeric|min:1',
-        ]);
+        return DB::transaction(function () use ($request, $table) {
+            $subtotal = 0;
+            $saleItems = [];
 
-        $subtotal = 0;
-        $saleItems = [];
+            foreach ($request->items as $item) {
+                $product = Product::with('unit')->findOrFail($item['id']);
 
-        foreach ($request->items as $item) {
-            $product = Product::find($item['id']);
+                if (!$this->stockService->hasAvailableStock($product, $item['quantity'])) {
+                    return errorResponse("Insufficient stock for item: {$product->name}");
+                }
 
-            $total = $product->selling_price * $item['quantity'];
-            $subtotal += $total;
+                $total = $product->selling_price * $item['quantity'];
+                $subtotal += $total;
 
-            $saleItems[] = [
+                $saleItems[] = [
+                    'seller_id' => $table->seller_id,
+                    'item_id' => $product->id,
+                    'item_name' => $product->name,
+                    'buying_price' => $product->buying_price,
+                    'unit_price' => $product->selling_price,
+                    'unit' => $product->unit ? $product->unit->short_name : 'pcs',
+                    'quantity' => $item['quantity'],
+                    'total_price' => $total,
+                ];
+
+                $this->stockService->deductStock($product, $item['quantity']);
+            }
+
+            $sale = Sale::create([
                 'seller_id' => $table->seller_id,
-                'item_id' => $product->id,
-                'item_name' => $product->name,
-                'buying_price' => $product->buying_price,
-                'unit_price' => $product->selling_price,
-                'unit' => $product->unit->short_name,
-                'quantity' => $item['quantity'],
-                'total_price' => $total,
-            ];
+                'order_id' => generateOrderId(),
+                'sale_date' => now(),
+                'subtotal' => $subtotal,
+                'payable' => $subtotal,
+                'paid' => 0,
+                'due' => $subtotal,
+                'dining_table_id' => $table->id,
+                'status' => 'pending',
+            ]);
 
-            $product->increment('stock_out', $item['quantity']);
-        }
+            foreach ($saleItems as $saleItem) {
+                $sale->items()->create($saleItem);
+            }
 
-        $sale = Sale::create([
-            'seller_id' => $table->seller_id,
-            'order_id' => generateOrderId(),
-            'sale_date' => now(),
-            'subtotal' => $subtotal,
-            'payable' => $subtotal,
-            'paid' => 0,
-            'due' => $subtotal,
-            'dining_table_id' => $table->id,
-            'status' => 'pending',
-        ]);
+            $table->update(['status' => DiningTable::OCCUPIED]);
 
-        foreach ($saleItems as $saleItem) {
-            $sale->items()->create($saleItem);
-        }
-
-        $table->update(['status' => DiningTable::OCCUPIED]);
-
-        return response()->json([
-            'order_id' => $sale->order_id
-        ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Order placed successfully',
+                'order_id' => $sale->order_id
+            ]);
+        });
     }
 }

@@ -16,7 +16,7 @@ class SaleController extends Controller
 {
     public function index(Request $request)
     {
-        $sales = Sale::self()->with('customer', 'items.product')->latest('id')->paginate(20)->withQueryString();
+        $sales = Sale::self()->with(['customer', 'items.product', 'table', 'waiter'])->latest('id')->paginate(20)->withQueryString();
         $totalSales = Sale::self()->sum('payable');
 
         return view('seller.sales.index', compact('sales', 'totalSales'));

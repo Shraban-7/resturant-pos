@@ -154,7 +154,7 @@ if(!function_exists('is_seller')) {
             return false;
         }
         
-        return Auth::user()->role == 'seller' ? true : false;
+        return Auth::user()->role === 'seller';
     }
 }
 if(!function_exists('is_supplier')) {
@@ -163,7 +163,7 @@ if(!function_exists('is_supplier')) {
         if (!Auth::user()) {
             return false;
         }
-        return Auth::user()->role == 'supplier' ? true : false;
+        return Auth::user()->role === 'supplier';
     }
 }
 

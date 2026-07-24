@@ -103,10 +103,4 @@ Route::middleware('seller')->prefix('seller')->as('seller.')->group(function () 
         Route::post('/{employee}/update', [EmployeeController::class, 'update'])->name('update');
     });
 
-    // Route::get('/carts/add/{product_id}', [SaleController::class, 'addToCart'])->name('add_to_cart');
-    // Route::get('/carts/delete/{sale_item_id}', [SaleController::class, 'deleteFromCart'])->name('delete_from_cart');
-    // Route::get('/carts/update/{sale_item_id}', [SaleController::class, 'updateCart'])->name('update_cart');
-    // Route::post('checkout/{sale_id}', [SaleController::class, 'checkout'])->name('chekout');
-
-
 });
