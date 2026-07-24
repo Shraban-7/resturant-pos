@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('total_price');
 
             $table->text('note')->nullable();
+            $table->json('modifiers_json')->nullable();
             $table->timestamps();
         });
     }

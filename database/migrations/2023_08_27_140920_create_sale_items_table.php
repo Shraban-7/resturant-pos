@@ -20,7 +20,11 @@ return new class extends Migration
             $table->integer('quantity');
             $table->decimal('total_price');
             $table->text('note')->nullable();
+            $table->json('modifiers_json')->nullable();
             $table->timestamps();
+
+            $table->index('sale_id');
+            $table->index(['seller_id', 'item_id']);
         });
     }
 

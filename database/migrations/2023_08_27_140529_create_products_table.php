@@ -14,12 +14,16 @@ return new class extends Migration
             $table->unsignedBigInteger('category_id');
             $table->string('name');
             $table->string('image');
+            $table->unsignedBigInteger('unit_id');
             $table->integer('buying_price');
             $table->integer('selling_price');
             $table->integer('stock_in')->default(0);
             $table->integer('stock_out')->default(0);
             $table->boolean('is_active')->default(1);
             $table->timestamps();
+
+            $table->index(['seller_id', 'category_id']);
+            $table->index(['seller_id', 'is_active']);
         });
     }
 
