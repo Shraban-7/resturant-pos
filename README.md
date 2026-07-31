@@ -1,162 +1,187 @@
-# 🍽️ Restaurant POS & Enterprise Management System
+# Restaurant POS
 
-[![Laravel](https://img.shields.io/badge/Laravel-v10.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-v8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v3.x-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Alpine.js](https://img.shields.io/badge/Alpine.js-v3.x-8BC0D0?style=for-the-badge&logo=alpine.js&logoColor=white)](https://alpinejs.dev)
-[![Laravel Reverb](https://img.shields.io/badge/WebSockets-Reverb-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com/docs/11.x/reverb)
-[![Offline PWA](https://img.shields.io/badge/PWA-IndexedDB_Sync-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
-[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+A full-stack restaurant Point of Sale and operations platform for dine-in service, kitchen workflows, inventory, and multi-branch reporting.
 
-A production-grade, full-featured **Restaurant Point-of-Sale (POS) & Operational Management System** built with **Laravel, Blade, Alpine.js, TailwindCSS, WebSockets (Laravel Reverb), and Service Worker PWA with IndexedDB offline sync**.
+Built for restaurants that need a fast cashier terminal, live kitchen tickets, table management, and resilient checkout when the network drops.
 
 ---
 
-## 🌟 Core Features & Module Highlights
+## Table of Contents
 
-### ⚡ Cashier POS Terminal
-- **Compact & High-Density Grid**: Responsive multi-column layout (6–8 cards per row on large displays) optimized for rapid order taking.
-- **Product Modifiers & Add-ons**: Choose dish variants, extra toppings, exclusions, and custom cooking notes directly from Alpine.js modals.
-- **Order Hold & Multi-Cart**: Hold active orders for dine-in tables or takeaway guests and resume instantly.
-- **Split Payments & Invoice Printing**: Cash, card, mobile banking, and due management with auto-generated receipt formats.
-
-### 🍳 Touchscreen Kitchen Display System (KDS)
-- **Real-Time WebSockets Sync**: Instant kitchen order ticket (KOT) card dispatch powered by **Laravel Reverb**.
-- **Bump-Bar Status Workflow**: Interactive ticket status transitions (`Pending` ➔ `Preparing` ➔ `Ready` ➔ `Served`).
-- **Prep Time Alerts**: Dynamic timer indicators highlighting overdue orders for kitchen staff.
-
-### 🗺️ Visual Floor Plan & Table Manager
-- **Multi-Floor Zoning**: Organize tables across custom floor zones (e.g., Main Hall, Rooftop, Patio, VIP Section).
-- **Interactive Visual Floor Map**: HTML5 drag-and-drop table layout designer with real-time coordinate saving.
-- **Occupancy Status Locking**: Automatic status synchronization (`Available`, `Occupied`, `Reserved`).
-
-### 📦 Bill of Materials (BOM) & Inventory Auto-Deduction
-- **Recipe BOM Management**: Associate raw ingredients (e.g., flour, cheese, meat) with menu items and portion sizes.
-- **Automatic Stock Deductor (`DeductRecipeStockAction`)**: Automatically deducts raw ingredients from inventory upon completed or held POS sales.
-
-### 📲 Digital QR Code Menu & Customer Tracker
-- **Table Tent QR Generator**: Instant downloadable/printable QR code cards (PDF & SVG) per dining table.
-- **Contactless Guest Ordering**: Digital menu allowing guests to select item modifiers and submit orders from their smartphones.
-- **Real-Time Order Status Tracker**: Live guest tracking page (`/order-status/{order}`) displaying dish preparation status.
-
-### 📴 Offline-First PWA & IndexedDB Reconciliation
-- **Zero-Downtime Service Worker**: Service Worker caching static assets and POS web application shell (`public/sw.js`).
-- **IndexedDB Transaction Queue (`pos-idb.js`)**: Queue offline sales safely during internet outages.
-- **Idempotent Background Sync**: Server reconciliation endpoint (`POST /api/seller/pos/offline-sync`) syncs offline orders automatically upon reconnection.
-
-### 📅 Table Reservations Engine
-- **Booking Calendar**: Manage table bookings with date, time slot, guest counts, and customer details.
-- **Auto-Table Locking**: Automatically reserves designated tables and releases them upon checkout or cancellation.
-
-### 🎁 Loyalty Program & Gift Cards
-- **Customer Loyalty Points**: Accumulated reward points balance per purchase, reward tier calculations (Bronze, Silver, Gold), and manual point adjustments.
-- **Digital Gift Cards**: Issue gift cards with unique codes (`GC-XXXXX`), track balance, verify expiry, and redeem at checkout.
-
-### 🛵 Delivery & Driver Dispatch Management
-- **Courier Assignment**: Assign delivery orders to drivers with contact information (`driver_name`, `driver_phone`).
-- **Dispatch Lifecycle**: Track delivery progress (`Pending` ➔ `Assigned` ➔ `Out for Delivery` ➔ `Delivered`).
-
-### 🚚 Supplier & Wholesale Module
-- **Supplier Portal & Invoicing**: Dedicated supplier interface for managing raw material supplies, supply invoices, and wholesale stock intake.
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Demo Accounts](#demo-accounts)
+- [Project Structure](#project-structure)
+- [Testing](#testing)
+- [Docker](#docker)
+- [Contributing](#contributing)
+- [License](#license)
+- [Author](#author)
 
 ---
 
-## 🛠️ Technology Stack & Architecture
+## Features
 
-| Layer | Technologies Used |
-| :--- | :--- |
-| **Backend Framework** | Laravel 10.x, PHP 8.2+ |
-| **Database & ORM** | MySQL / MariaDB, Eloquent ORM with Composite Performance Indexes |
-| **Real-Time Engine** | Laravel Reverb (WebSockets), Laravel Echo, Event Broadcasting |
-| **Frontend UI** | Laravel Blade, TailwindCSS 3.x, Alpine.js 3.x, Remix Icons |
-| **Offline Architecture** | Service Worker PWA API, IndexedDB API (`pos-idb.js`) |
-| **Testing & Quality** | PHPUnit Unit & Feature Test Suite, FormRequest Validation |
-| **DevOps & Container** | Docker, Docker Compose, Nginx, PHP-FPM 8.2 |
-
----
-
-## 🚀 Quick Start & Installation Guide
-
-### Prerequisites
-- **PHP** >= 8.2 (with `pdo`, `mbstring`, `openssl`, `tokenizer`, `xml`, `cURL` extensions)
-- **Composer** >= 2.x
-- **Node.js** >= 18.x & **npm**
-- **MySQL** >= 8.0 or **MariaDB** >= 10.4
-
-### Step-by-Step Installation
-
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/Shraban-7/restaurant_pos.git
-   cd restaurant_pos
-   ```
-
-2. **Install PHP & Node Dependencies**:
-   ```bash
-   composer install
-   npm install
-   ```
-
-3. **Configure Environment File**:
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
-   *Set your MySQL database credentials in `.env`:*
-   ```ini
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=restaurant_pos
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
-
-4. **Run Database Migrations & Seeders**:
-   ```bash
-   php artisan migrate --seed
-   ```
-
-5. **Create Storage Symbolic Link**:
-   ```bash
-   php artisan storage:link
-   ```
-
-6. **Start Laravel Reverb WebSocket Server**:
-   ```bash
-   php artisan reverb:start
-   ```
-
-7. **Compile Frontend Assets & Run Local Server**:
-   ```bash
-   npm run dev
-   php artisan serve
-   ```
-   *Access POS at:* `http://localhost:8000`
+- **POS terminal** — product grid, modifiers/add-ons, hold orders, table assignment, checkout, and receipts
+- **Kitchen Display (KDS)** — real-time KOTs over Laravel Reverb with pending → preparing → ready → served workflow
+- **Floors & tables** — multi-floor layout, floor map, occupancy status (`free` / `occupied` / `reserved`)
+- **Recipe BOM** — ingredients linked to menu items with automatic stock deduction on sale
+- **QR table ordering** — guest menu from table QR codes with live order status tracking
+- **Offline PWA** — service worker + IndexedDB queue with idempotent sync when back online
+- **Reservations** — bookings with guest count and table locking
+- **Loyalty & gift cards** — points/tiers and gift-card issue + verify (POS redemption still evolving)
+- **Multi-branch** — branch CRUD, active-branch switcher, scoped operations, comparative reports
+- **Supplier portal** — wholesale supply intake and supplier invoices
 
 ---
 
-## 🐳 Production Docker Deployment
+## Tech Stack
 
-Deploy with zero hassle using the multi-stage production Docker setup:
+| Layer | Stack |
+| --- | --- |
+| Backend | PHP 8.2+, Laravel 11, Eloquent |
+| Frontend | Blade, Alpine.js 3, Tailwind CSS 4, Vite |
+| Realtime | Laravel Reverb, Laravel Echo, Pusher protocol |
+| Offline | Service Worker (`public/sw.js`), IndexedDB (`public/js/pos-idb.js`) |
+| Database | MySQL 8+ / MariaDB |
+| Tests | PHPUnit |
+| Deploy | Docker / Docker Compose (production compose included) |
+
+---
+
+## Requirements
+
+- PHP 8.2+ (`pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `curl`, `bcmath`)
+- Composer 2.x
+- Node.js 18+ and npm
+- MySQL 8.0+ or MariaDB 10.4+
+
+---
+
+## Installation
 
 ```bash
-# Build and start Docker containers in detached mode
-docker-compose up -d --build
+git clone https://github.com/Shraban-7/resturant-pos.git
+cd resturant-pos
+
+composer install
+npm install
+
+cp .env.example .env
+php artisan key:generate
 ```
 
-The Docker stack includes:
-- **Nginx Web Server** (Port 80 / 443)
-- **PHP-FPM App Server** (Laravel Core)
-- **Laravel Reverb WebSocket Server** (Port 8080)
-- **MySQL Database Server**
-- **Redis Cache & Queue Worker**
+Configure the database (and optionally Reverb) in `.env`:
+
+```ini
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=restaurant_pos
+DB_USERNAME=root
+DB_PASSWORD=
+
+BROADCAST_DRIVER=reverb
+REVERB_APP_ID=local
+REVERB_APP_KEY=local-key
+REVERB_APP_SECRET=local-secret
+REVERB_HOST=localhost
+REVERB_PORT=8080
+REVERB_SCHEME=http
+```
+
+Then:
+
+```bash
+php artisan migrate --seed
+php artisan storage:link
+npm run build
+```
 
 ---
 
-## 🧪 Automated Testing
+## Usage
 
-Execute the comprehensive PHPUnit test suite covering stock calculations, POS checkout transaction safety, KDS event dispatch, and QR table ordering:
+Run the app (three processes in development):
+
+```bash
+# Terminal 1 — Laravel
+php artisan serve
+
+# Terminal 2 — Vite
+npm run dev
+
+# Terminal 3 — WebSockets (KDS / order status)
+php artisan reverb:start
+```
+
+Open `http://localhost:8000` (or your Valet/Herd domain).
+
+Useful paths after login as seller:
+
+| Area | Path |
+| --- | --- |
+| Dashboard | `/seller/dashboard` |
+| POS | `/seller/pos` |
+| Kitchen Display | `/seller/kds` |
+| Sales / invoices | `/seller/sales` |
+| Branches | `/seller/branches` |
+
+Fresh migrate + seed anytime:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+---
+
+## Demo Accounts
+
+Seeded by `UserSeeder` (password for all: `12345678`):
+
+| Role | Email |
+| --- | --- |
+| Admin | `admin@gmail.com` |
+| Seller | `seller@gmail.com` |
+| Supplier | `supplier@gmail.com` |
+
+Change these credentials before any shared or production environment.
+
+---
+
+## Project Structure
+
+```text
+app/
+  Actions/          # Domain actions (KOT, BOM deduction, modifiers)
+  Events/           # Broadcast events (KDS, table status)
+  Http/Controllers/ # Auth, Seller, Supplier, Menu/QR
+  Models/
+  Services/         # StockService and shared services
+database/
+  migrations/
+  seeders/
+public/
+  sw.js             # Service worker
+  js/pos-idb.js     # Offline IndexedDB helpers
+resources/
+  views/            # Blade UI (POS, KDS, admin, supplier)
+  js/               # Alpine / Echo bootstrap
+  css/
+routes/
+  web.php
+  api.php           # Offline sync API
+  supplier.php
+docker/             # Nginx / PHP images
+tests/
+```
+
+---
+
+## Testing
 
 ```bash
 php artisan test
@@ -164,29 +189,44 @@ php artisan test
 
 ---
 
-## 🗺️ Project Roadmap Milestones
+## Docker
 
-- [x] **Milestone 1**: Technical Debt Remediation & Baseline Safety (`StockService`, `DB::transaction()`, Composite Indexes).
-- [x] **Milestone 2**: Restaurant Database Schema Extensions (Floors, Tables, Reservations, Recipes, Modifiers, KOT).
-- [x] **Milestone 3**: Multi-Floor & Interactive Drag-and-Drop Table Floor Map Manager.
-- [x] **Milestone 4**: Product Modifiers & Recipe BOM Auto-Stock Deductor.
-- [x] **Milestone 5**: Real-Time Kitchen Display System (KDS) & WebSockets (Laravel Reverb).
-- [x] **Milestone 6**: Enhanced Digital QR Code Menu & Customer Order Status Tracker.
-- [x] **Milestone 7**: Offline-First Service Worker PWA & IndexedDB Sync Reconciliation.
-- [x] **Milestone 8**: Automated Test Suite & Production Docker Deployment Infrastructure.
-- [x] **Milestone 9**: Phase 2 Post-MVP Modules (Reservations, Loyalty, Gift Cards, Deliveries).
-- [ ] **Milestone 10**: Phase 3 Multi-Branch Enterprise Scaling & API Framework (Planned).
+Production-oriented compose file:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Typical services: app (PHP-FPM), Nginx, Reverb, MySQL, and related workers as defined in the compose file.
 
 ---
 
-## 👨‍💻 Author & Maintainer
+## Contributing
 
-**Shraban-7**  
-- **Email**: [shakuatshraban@gmail.com](mailto:shakuatshraban@gmail.com)  
-- **GitHub**: [Shraban-7](https://github.com/Shraban-7)
+Contributions are welcome.
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-change`)
+3. Keep commits focused and readable
+4. Run `php artisan test` before opening a PR
+5. Open a pull request describing the change and how to verify it
+
+Please avoid committing `.env`, secrets, local docs, or generated IDE files.
 
 ---
 
-## 📄 License
+## License
 
-This project is open-sourced software licensed under the [MIT License](LICENSE).
+This project is open source under the [MIT License](LICENSE).
+
+> If a `LICENSE` file is not present in the repo root yet, treat the project as MIT unless stated otherwise by the maintainer.
+
+---
+
+## Author
+
+**Shraban-7**
+
+- GitHub: [Shraban-7](https://github.com/Shraban-7)
+- Repository: [resturant-pos](https://github.com/Shraban-7/resturant-pos)
+- Email: [shakuatshraban@gmail.com](mailto:shakuatshraban@gmail.com)
