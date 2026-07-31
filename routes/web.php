@@ -40,7 +40,7 @@ Route::get('/order-status/{order}', [OrderStatusController::class, 'show'])->nam
 
 // Guest authentication routes...
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [LoginController::class, 'index'])->name('login');
+    Route::get('/login', [LoginController::class, 'show'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 });
 
