@@ -20,20 +20,20 @@ class DeductRecipeStockActionTest extends TestCase
 
     private int $unitId;
 
-    private int $sellerId;
+    private int $ownerId;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->action = new DeductRecipeStockAction(new StockService());
         $this->unitId = ProductUnit::create(['name' => 'Piece', 'short_name' => 'pcs'])->id;
-        $this->sellerId = User::factory()->create(['role' => 'seller'])->id;
+        $this->ownerId = User::factory()->create(['role' => 'admin'])->id;
     }
 
     private function product(string $name, int $stockIn = 100, int $stockOut = 0): Product
     {
         return Product::create([
-            'seller_id' => $this->sellerId,
+            'admin_id' => $this->ownerId,
             'category_id' => 1,
             'unit_id' => $this->unitId,
             'name' => $name,
@@ -63,7 +63,7 @@ class DeductRecipeStockActionTest extends TestCase
         $patty = $this->product('Patty', stockIn: 100);
 
         $recipe = Recipe::create([
-            'seller_id' => $this->sellerId,
+            'admin_id' => $this->ownerId,
             'product_id' => $burger->id,
             'preparation_time_minutes' => 10,
             'is_active' => true,
@@ -97,7 +97,7 @@ class DeductRecipeStockActionTest extends TestCase
         $patty = $this->product('Patty', stockIn: 100, stockOut: 3);
 
         $recipe = Recipe::create([
-            'seller_id' => $this->sellerId,
+            'admin_id' => $this->ownerId,
             'product_id' => $burger->id,
             'is_active' => true,
         ]);
@@ -128,4 +128,7 @@ class DeductRecipeStockActionTest extends TestCase
         $this->assertSame(0, (int) $product->fresh()->stock_out);
     }
 }
+
+
+
 

@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\MealSlot;
+use App\Enums\ProductType;
 use App\Traits\BelongsToBranch;
 use App\Traits\HasCommonScopes;
+use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,13 +22,20 @@ class Product extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
-        'meal_times' => 'array',
+        'type' => ProductType::class,
+        'meal_times' => AsEnumCollection::class.':'.MealSlot::class,
     ];
 
-    public const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner'];
+    public const MEAL_SLOTS = [
+        MealSlot::BREAKFAST->value,
+        MealSlot::LUNCH->value,
+        MealSlot::DINNER->value,
+    ];
 
-    public const TYPE_DISH = 'dish';
-    public const TYPE_BUFFET = 'buffet';
+    public static function types(): array
+    {
+        return ProductType::values();
+    }
 
     /**
      * Buffet = fixed per-person price, unlimited seats (capacity is managed
@@ -33,7 +43,32 @@ class Product extends Model
      */
     public function isBuffet(): bool
     {
-        return ($this->type ?? self::TYPE_DISH) === self::TYPE_BUFFET;
+        return ($this->type ?? ProductType::DISH) === ProductType::BUFFET;
+    }
+
+    /** Raw material: usable in recipes, never sold directly. */
+    public function isIngredient(): bool
+    {
+        return ($this->type ?? ProductType::DISH) === ProductType::INGREDIENT;
+    }
+
+    public function isDish(): bool
+    {
+        return ($this->type ?? ProductType::DISH) === ProductType::DISH;
+    }
+
+    /** Sellable items only (dishes + buffets) for POS / menus / storefront. */
+    public function scopeSellable($query)
+    {
+        return $query->whereIn(
+            $query->getModel()->getTable().'.type',
+            [ProductType::DISH, ProductType::BUFFET]
+        );
+    }
+
+    public function scopeRawIngredients($query)
+    {
+        return $query->where($query->getModel()->getTable().'.type', ProductType::INGREDIENT);
     }
 
     /**
@@ -62,14 +97,16 @@ class Product extends Model
         return null; // late night: everything shows
     }
 
-    /** NULL meal_times = served all day. */
-    public function availableAt(string $slot): bool
+    /** Empty meal_times = served all day. */
+    public function availableAt(string|MealSlot $slot): bool
     {
-        if (empty($this->meal_times)) {
+        $slot = $slot instanceof MealSlot ? $slot->value : $slot;
+
+        if (! $this->meal_times || $this->meal_times->isEmpty()) {
             return true;
         }
 
-        return in_array($slot, $this->meal_times, true);
+        return $this->meal_times->contains(fn (MealSlot $m) => $m->value === $slot);
     }
 
     public function scopeForMealSlot($query, ?string $slot)
@@ -102,14 +139,9 @@ class Product extends Model
         return $query;
     }
 
-    public function scopeSeller($query)
-    {
-        return $query->where('seller_id', panel_owner_id());
-    }
-
     public function scopeSelf($query)
     {
-        return $query->where('seller_id', panel_owner_id());
+        return $query->where('admin_id', panel_owner_id());
     }
 
     public function unit(): BelongsTo
@@ -153,3 +185,4 @@ class Product extends Model
             ->first();
     }
 }
+

@@ -14,18 +14,18 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
-class SellerSaleSeeder extends Seeder
+class SaleSeeder extends Seeder
 {
     public function run()
     {
-        $sellers = User::seller()->get();
+        $admins = User::admin()->get();
         $products = Product::all();
 
         for ($i = 0; $i < 10; $i++) {
-            $seller = $sellers->random();
-            $customer = Customer::where('seller_id', $seller->id)->inRandomOrder()->first()
+            $admin = $admins->random();
+            $customer = Customer::where('admin_id', $admin->id)->inRandomOrder()->first()
                 ?? Customer::create([
-                    'seller_id' => $seller->id,
+                    'admin_id' => $admin->id,
                     'name' => 'Walk-in Customer',
                     'phone' => '0180000000' . rand(10, 99),
                     'address' => 'Dhaka, Bangladesh',
@@ -52,7 +52,7 @@ class SellerSaleSeeder extends Seeder
 
                 ProductStock::create([
                     'product_id' => $product->id,
-                    'seller_id' => $seller->id,
+                    'admin_id' => $admin->id,
                     'type' => 'decrement',
                     'quantity' => $quantity,
                     'old_stock' => $currentStock,
@@ -79,7 +79,7 @@ class SellerSaleSeeder extends Seeder
             $due = $payable - $paid;
 
             $sale = Sale::create([
-                'seller_id' => $seller->id,
+                'admin_id' => $admin->id,
                 'customer_id' => $customer->id,
                 'order_id' => $orderId,
                 'sale_date' => now()->subDays(rand(0, 30)),
@@ -94,10 +94,13 @@ class SellerSaleSeeder extends Seeder
             ]);
 
             foreach ($saleItems as $item) {
-                $item['seller_id'] = $seller->id;
+                $item['admin_id'] = $admin->id;
                 $item['sale_id'] = $sale->id;
                 SaleItem::create($item);
             }
         }
     }
 }
+
+
+

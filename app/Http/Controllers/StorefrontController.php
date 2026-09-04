@@ -2,6 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ReservationStatus;
+
+use App\Enums\TableStatus;
+
+use App\Enums\ProductType;
+
 use App\Models\Branch;
 use App\Models\BusinessSetting;
 use App\Models\DiningTable;
@@ -37,9 +43,10 @@ class StorefrontController extends Controller
         static::ensureDemoMenu($owner);
 
         $categories = ProductCategory::query()
-            ->where('seller_id', $owner->id)
+            ->where('admin_id', $owner->id)
             ->with(['products' => function ($q) use ($owner) {
-                $q->where('seller_id', $owner->id)
+                $q->where('admin_id', $owner->id)
+                    ->sellable()
                     ->where('is_active', 1)
                     ->orderBy('name');
             }])
@@ -48,22 +55,23 @@ class StorefrontController extends Controller
             ->filter(fn ($c) => $c->products->isNotEmpty());
 
         $popular = Product::query()
-            ->where('seller_id', $owner->id)
+            ->where('admin_id', $owner->id)
+            ->sellable()
             ->where('is_active', 1)
             ->orderByDesc('stock_out')
             ->take(8)
             ->get();
 
         $branches = Branch::query()
-            ->where('seller_id', $owner->id)
+            ->where('admin_id', $owner->id)
             ->where('is_active', true)
             ->orderByDesc('is_default')
             ->orderBy('name')
             ->get();
 
         $tables = DiningTable::query()
-            ->where('seller_id', $owner->id)
-            ->where('status', DiningTable::FREE)
+            ->where('admin_id', $owner->id)
+            ->where('status', TableStatus::FREE)
             ->orderBy('name')
             ->get(['id', 'name', 'branch_id']);
 
@@ -80,8 +88,8 @@ class StorefrontController extends Controller
      */
     protected static function ensureDemoMenu(User $owner): void
     {
-        if (ProductCategory::where('seller_id', $owner->id)->exists()
-            || Product::where('seller_id', $owner->id)->exists()) {
+        if (ProductCategory::where('admin_id', $owner->id)->exists()
+            || Product::where('admin_id', $owner->id)->exists()) {
             return;
         }
 
@@ -94,12 +102,12 @@ class StorefrontController extends Controller
             return;
         }
 
-        $branchIds = \App\Models\Branch::where('seller_id', $owner->id)->orderBy('id')->pluck('id')->all();
+        $branchIds = \App\Models\Branch::where('admin_id', $owner->id)->orderBy('id')->pluck('id')->all();
 
         foreach (array_values($items) as $index => $item) {
             $category = ProductCategory::firstOrCreate(
-                ['seller_id' => $owner->id, 'name' => $item['category']],
-                ['seller_id' => $owner->id, 'name' => $item['category']]
+                ['admin_id' => $owner->id, 'name' => $item['category']],
+                ['admin_id' => $owner->id, 'name' => $item['category']]
             );
 
             $unit = \App\Models\ProductUnit::firstOrCreate(
@@ -114,11 +122,11 @@ class StorefrontController extends Controller
             $mealTimes = ($item['meal'] ?? 'all') === 'all' ? null : array_values($item['meal']);
 
             $product = Product::firstOrCreate(
-                ['seller_id' => $owner->id, 'name' => $item['name']],
+                ['admin_id' => $owner->id, 'name' => $item['name']],
                 [
-                    'seller_id' => $owner->id,
+                    'admin_id' => $owner->id,
                     'branch_id' => $branchId,
-                    'type' => $item['type'] ?? Product::TYPE_DISH,
+                    'type' => $item['type'] ?? ProductType::DISH,
                     'meal_times' => $mealTimes,
                     'category_id' => $category->id,
                     'unit_id' => $unit->id,
@@ -133,10 +141,10 @@ class StorefrontController extends Controller
             );
 
             \App\Models\ProductStock::firstOrCreate(
-                ['product_id' => $product->id, 'seller_id' => $owner->id, 'type' => 'increment'],
+                ['product_id' => $product->id, 'admin_id' => $owner->id, 'type' => 'increment'],
                 [
                     'product_id' => $product->id,
-                    'seller_id' => $owner->id,
+                    'admin_id' => $owner->id,
                     'type' => 'increment',
                     'quantity' => $product->stock_in,
                     'old_stock' => 0,
@@ -163,17 +171,17 @@ class StorefrontController extends Controller
             'reservation_time' => 'required|date|after:now',
             'branch_id' => [
                 'nullable',
-                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', $owner->id)),
+                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('admin_id', $owner->id)),
             ],
             'table_id' => [
                 'required',
-                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('seller_id', $owner->id)),
+                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('admin_id', $owner->id)),
             ],
             'notes' => 'nullable|string|max:1000',
         ]);
 
         $table = DiningTable::query()
-            ->where('seller_id', $owner->id)
+            ->where('admin_id', $owner->id)
             ->whereKey($data['table_id'])
             ->firstOrFail();
 
@@ -184,7 +192,7 @@ class StorefrontController extends Controller
         }
 
         $reservation = Reservation::create([
-            'seller_id' => $owner->id,
+            'admin_id' => $owner->id,
             'branch_id' => $data['branch_id'] ?? $table->branch_id,
             'table_id' => $table->id,
             'customer_name' => $data['customer_name'],
@@ -192,7 +200,7 @@ class StorefrontController extends Controller
             'guest_count' => $data['guest_count'],
             'reservation_time' => $data['reservation_time'],
             'notes' => $data['notes'] ?? null,
-            'status' => Reservation::PENDING,
+            'status' => ReservationStatus::PENDING,
         ]);
 
         // Persist for the bell dropdown + live ping to every staff screen.
@@ -218,3 +226,11 @@ class StorefrontController extends Controller
             ->with('success', 'Table reservation requested. We will confirm shortly.');
     }
 }
+
+
+
+
+
+
+
+

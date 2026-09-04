@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Middleware\CheckPermission;
-use App\Http\Middleware\Seller;
+use App\Http\Middleware\Admin;
 use App\Providers\AppServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,8 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withProviders([AppServiceProvider::class])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'seller' => Seller::class,
-            'admin' => Seller::class,
+            'seller' => Admin::class,
+            'admin' => Admin::class,
             'permission' => CheckPermission::class,
         ]);
 

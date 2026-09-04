@@ -20,7 +20,7 @@ class ReservationPlaced implements ShouldBroadcastNow
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel("admin.{$this->reservation->seller_id}.reservations")];
+        return [new PrivateChannel("admin.{$this->reservation->admin_id}.reservations")];
     }
 
     public function broadcastAs(): string
@@ -45,4 +45,5 @@ class ReservationPlaced implements ShouldBroadcastNow
         ];
     }
 }
+
 

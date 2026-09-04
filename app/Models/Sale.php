@@ -32,7 +32,7 @@ class Sale extends Model
 
     public function waiter()
     {
-        return $this->belongsTo(SellerEmployee::class, 'seller_employee_id');
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
     public function items()
@@ -47,7 +47,8 @@ class Sale extends Model
 
     public function scopeSelf($query)
     {
-        return $query->where('seller_id', panel_owner_id());
+        return $query->where('admin_id', panel_owner_id());
     }
 }
+
 

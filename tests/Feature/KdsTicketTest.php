@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\KitchenStatus;
+
 use App\Actions\CreateKitchenTicketAction;
 use App\Models\KitchenTicket;
 use App\Models\KitchenTicketItem;
@@ -14,13 +16,13 @@ class KdsTicketTest extends TestCase
 {
     use RefreshDatabase, CreatesPosData;
 
-    private function makeSaleWithTicket(\App\Models\User $seller): KitchenTicket
+    private function makeSaleWithTicket(\App\Models\User $admin): KitchenTicket
     {
-        $product = $this->createProduct($seller);
-        $table = $this->createTable($seller);
+        $product = $this->createProduct($admin);
+        $table = $this->createTable($admin);
 
         $sale = Sale::create([
-            'seller_id' => $seller->id,
+            'admin_id' => $admin->id,
             'dining_table_id' => $table->id,
             'order_id' => generateOrderId(),
             'sale_date' => now()->toDateString(),
@@ -33,7 +35,7 @@ class KdsTicketTest extends TestCase
         ]);
 
         $sale->items()->create([
-            'seller_id' => $seller->id,
+            'admin_id' => $admin->id,
             'item_id' => $product->id,
             'item_name' => $product->name,
             'buying_price' => $product->buying_price,
@@ -48,77 +50,77 @@ class KdsTicketTest extends TestCase
 
     public function test_action_creates_ticket_with_line_items_from_sale(): void
     {
-        $seller = $this->createSeller();
-        $ticket = $this->makeSaleWithTicket($seller);
+        $admin = $this->createAdmin();
+        $ticket = $this->makeSaleWithTicket($admin);
 
         $this->assertInstanceOf(KitchenTicket::class, $ticket);
-        $this->assertSame(KitchenTicket::PENDING, $ticket->status);
-        $this->assertSame($seller->id, (int) $ticket->seller_id);
+        $this->assertSame(KitchenStatus::PENDING, $ticket->status);
+        $this->assertSame($admin->id, (int) $ticket->admin_id);
         $this->assertCount(1, $ticket->items);
-        $this->assertSame(KitchenTicketItem::PENDING, $ticket->items->first()->status);
+        $this->assertSame(KitchenStatus::PENDING, $ticket->items->first()->status);
         $this->assertNotNull($ticket->fired_at);
     }
 
-    public function test_seller_can_advance_ticket_to_preparing(): void
+    public function test_admin_can_advance_ticket_to_preparing(): void
     {
-        $seller = $this->createSeller();
-        $ticket = $this->makeSaleWithTicket($seller);
+        $admin = $this->createAdmin();
+        $ticket = $this->makeSaleWithTicket($admin);
 
-        $response = $this->actingAs($seller)->postJson(
+        $response = $this->actingAs($admin)->postJson(
             route('admin.kds.updateStatus', $ticket),
-            ['status' => KitchenTicket::PREPARING]
+            ['status' => KitchenStatus::PREPARING]
         );
 
         $response->assertOk()->assertJson(['status' => true]);
         $ticket->refresh();
-        $this->assertSame(KitchenTicket::PREPARING, $ticket->status);
+        $this->assertSame(KitchenStatus::PREPARING, $ticket->status);
         $this->assertNotNull($ticket->fired_at);
         $this->assertSame(
-            KitchenTicketItem::PREPARING,
+            KitchenStatus::PREPARING,
             $ticket->items()->first()->status
         );
     }
 
     public function test_marking_ready_sets_prepared_at_and_item_statuses(): void
     {
-        $seller = $this->createSeller();
-        $ticket = $this->makeSaleWithTicket($seller);
+        $admin = $this->createAdmin();
+        $ticket = $this->makeSaleWithTicket($admin);
 
-        $response = $this->actingAs($seller)->postJson(
+        $response = $this->actingAs($admin)->postJson(
             route('admin.kds.updateStatus', $ticket),
-            ['status' => KitchenTicket::READY]
+            ['status' => KitchenStatus::READY]
         );
 
         $response->assertOk();
         $ticket->refresh();
-        $this->assertSame(KitchenTicket::READY, $ticket->status);
+        $this->assertSame(KitchenStatus::READY, $ticket->status);
         $this->assertNotNull($ticket->prepared_at);
-        $this->assertSame(KitchenTicketItem::READY, $ticket->items()->first()->status);
+        $this->assertSame(KitchenStatus::READY, $ticket->items()->first()->status);
     }
 
     public function test_admins_share_single_store_dataset(): void
     {
         // Single restaurant = single dataset: every admin resolves to the
         // canonical (first) admin, so a second admin sees the same tickets.
-        $owner = $this->createSeller();
+        $owner = $this->createAdmin();
         $ticket = $this->makeSaleWithTicket($owner);
-        $coAdmin = $this->createSeller();
+        $coAdmin = $this->createAdmin();
 
         $response = $this->actingAs($coAdmin)->postJson(
             route('admin.kds.updateStatus', $ticket),
-            ['status' => KitchenTicket::READY]
+            ['status' => KitchenStatus::READY]
         );
 
         $response->assertOk();
-        $this->assertSame(KitchenTicket::READY, $ticket->fresh()->status);
+        $this->assertSame(KitchenStatus::READY, $ticket->fresh()->status);
     }
 
     public function test_update_status_rejects_invalid_status(): void
     {
-        $seller = $this->createSeller();
-        $ticket = $this->makeSaleWithTicket($seller);
+        $admin = $this->createAdmin();
+        $ticket = $this->makeSaleWithTicket($admin);
 
-        $response = $this->actingAs($seller)->postJson(
+        $response = $this->actingAs($admin)->postJson(
             route('admin.kds.updateStatus', $ticket),
             ['status' => 'flying']
         );
@@ -126,4 +128,9 @@ class KdsTicketTest extends TestCase
         $response->assertStatus(422);
     }
 }
+
+
+
+
+
 

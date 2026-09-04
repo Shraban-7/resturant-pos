@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\KitchenStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,14 +13,10 @@ class KitchenTicketItem extends Model
 
     protected $guarded = ['id'];
 
-    public const PENDING = 'pending';
-    public const PREPARING = 'preparing';
-    public const READY = 'ready';
-    public const CANCELLED = 'cancelled';
-
     protected $casts = [
         'modifiers_json' => 'array',
         'quantity' => 'decimal:2',
+        'status' => KitchenStatus::class,
     ];
 
     public function kitchenTicket(): BelongsTo

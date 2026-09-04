@@ -8,7 +8,7 @@ class OfflineSyncRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return is_seller();
+        return auth()->check();
     }
 
     public function rules(): array
@@ -23,7 +23,7 @@ class OfflineSyncRequest extends FormRequest
             'orders.*.customer_id' => 'nullable|integer|exists:customers,id',
             'orders.*.customer_name' => 'nullable|string|max:255',
             'orders.*.customer_phone' => 'nullable|string|max:50',
-            'orders.*.seller_employee_id' => 'nullable|integer|exists:seller_employees,id',
+            'orders.*.employee_id' => 'nullable|integer|exists:employees,id',
             'orders.*.items' => 'required|array|min:1',
             'orders.*.items.*.product_id' => 'required|integer|exists:products,id',
             'orders.*.items.*.quantity' => 'required|numeric|min:0.01',
@@ -48,4 +48,6 @@ class OfflineSyncRequest extends FormRequest
         ];
     }
 }
+
+
 

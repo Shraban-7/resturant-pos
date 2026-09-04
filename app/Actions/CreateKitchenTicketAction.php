@@ -2,6 +2,8 @@
 
 namespace App\Actions;
 
+use App\Enums\KitchenStatus;
+
 use App\Events\OrderPlacedEvent;
 use App\Events\TableStatusChangedEvent;
 use App\Models\KitchenTicket;
@@ -20,11 +22,11 @@ class CreateKitchenTicketAction
         }
 
         $ticket = KitchenTicket::create([
-            'seller_id' => $sale->seller_id,
+            'admin_id' => $sale->admin_id,
             'sale_id' => $sale->id,
             'dining_table_id' => $sale->dining_table_id,
             'ticket_number' => 'KOT-' . strtoupper(Str::random(6)),
-            'status' => KitchenTicket::PENDING,
+            'status' => KitchenStatus::PENDING,
             'fired_at' => now(),
         ]);
 
@@ -37,7 +39,7 @@ class CreateKitchenTicketAction
                 'quantity' => $saleItem->quantity,
                 'modifiers_json' => $saleItem->modifiers_json,
                 'special_instructions' => $saleItem->note,
-                'status' => KitchenTicketItem::PENDING,
+                'status' => KitchenStatus::PENDING,
             ]);
         }
 
@@ -73,11 +75,11 @@ class CreateKitchenTicketAction
         }
 
         $ticket = KitchenTicket::create([
-            'seller_id' => $sale->seller_id,
+            'admin_id' => $sale->admin_id,
             'sale_id' => $sale->id,
             'dining_table_id' => $sale->dining_table_id,
             'ticket_number' => 'KOT-' . strtoupper(Str::random(6)),
-            'status' => KitchenTicket::PENDING,
+            'status' => KitchenStatus::PENDING,
             'fired_at' => now(),
         ]);
 
@@ -90,7 +92,7 @@ class CreateKitchenTicketAction
                 'quantity' => $saleItem->quantity,
                 'modifiers_json' => $saleItem->modifiers_json,
                 'special_instructions' => $saleItem->note,
-                'status' => KitchenTicketItem::PENDING,
+                'status' => KitchenStatus::PENDING,
             ]);
         }
 
@@ -106,3 +108,6 @@ class CreateKitchenTicketAction
         return $ticket;
     }
 }
+
+
+

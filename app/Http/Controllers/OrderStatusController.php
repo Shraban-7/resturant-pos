@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\KitchenStatus;
+
 use App\Models\KitchenTicket;
 use App\Models\Sale;
 use Illuminate\Http\Request;
@@ -16,14 +18,14 @@ class OrderStatusController extends Controller
             ->firstOrFail();
 
         $ticket = $sale->kitchenTickets->sortByDesc('id')->first();
-        $status = $ticket?->status ?? KitchenTicket::PENDING;
+        $status = $ticket?->status ?? KitchenStatus::PENDING;
         $token = $sale->table?->qr_code_token;
 
         $steps = [
-            ['key' => 'received', 'label' => 'Order Received', 'statuses' => [KitchenTicket::PENDING]],
-            ['key' => 'preparing', 'label' => 'In Kitchen', 'statuses' => [KitchenTicket::PREPARING]],
-            ['key' => 'ready', 'label' => 'Food Ready', 'statuses' => [KitchenTicket::READY]],
-            ['key' => 'served', 'label' => 'Served', 'statuses' => [KitchenTicket::SERVED]],
+            ['key' => 'received', 'label' => 'Order Received', 'statuses' => [KitchenStatus::PENDING]],
+            ['key' => 'preparing', 'label' => 'In Kitchen', 'statuses' => [KitchenStatus::PREPARING]],
+            ['key' => 'ready', 'label' => 'Food Ready', 'statuses' => [KitchenStatus::READY]],
+            ['key' => 'served', 'label' => 'Served', 'statuses' => [KitchenStatus::SERVED]],
         ];
 
         return view('order-status', [
@@ -36,3 +38,5 @@ class OrderStatusController extends Controller
         ]);
     }
 }
+
+

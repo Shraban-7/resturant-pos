@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ReservationStatus;
 use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,23 +14,19 @@ class Reservation extends Model
 
     protected $guarded = ['id'];
 
-    public const PENDING = 'pending';
-    public const CONFIRMED = 'confirmed';
-    public const SEATED = 'seated';
-    public const CANCELLED = 'cancelled';
-
     protected $casts = [
         'reservation_time' => 'datetime',
+        'status' => ReservationStatus::class,
     ];
 
     public static function statuses(): array
     {
-        return [
-            self::PENDING,
-            self::CONFIRMED,
-            self::SEATED,
-            self::CANCELLED,
-        ];
+        return ReservationStatus::values();
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === ReservationStatus::CANCELLED;
     }
 
     /** Minimum gap between two bookings on the same table (minutes). */
@@ -46,7 +43,7 @@ class Reservation extends Model
 
         return static::query()
             ->where('table_id', $tableId)
-            ->where('status', '!=', self::CANCELLED)
+            ->where('status', '!=', ReservationStatus::CANCELLED)
             ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
             ->whereBetween('reservation_time', [
                 $time->copy()->subMinutes($window)->toDateTimeString(),
@@ -65,9 +62,9 @@ class Reservation extends Model
         return "Table {$conflict->table?->name} is already booked around {$when} ({$conflict->customer_name}). Please pick another table or time.";
     }
 
-    public function seller(): BelongsTo
+    public function admin(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'seller_id');
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     public function table(): BelongsTo
@@ -77,7 +74,9 @@ class Reservation extends Model
 
     public function scopeSelf($query)
     {
-        return $query->where('seller_id', panel_owner_id());
+        return $query->where('admin_id', panel_owner_id());
     }
 }
+
+
 

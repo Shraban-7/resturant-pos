@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\KitchenStatus;
 use App\Events\KitchenStatusUpdatedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\KitchenTicket;
 use App\Models\KitchenTicketItem;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class KdsController extends Controller
 {
@@ -21,36 +23,36 @@ class KdsController extends Controller
 
         return view('admin.kds.index', [
             'tickets' => $tickets,
-            'sellerId' => panel_owner_id(),
+            'ownerId' => panel_owner_id(),
         ]);
     }
 
     public function updateStatus(Request $request, KitchenTicket $ticket)
     {
-        abort_unless((int) $ticket->seller_id === (int) panel_owner_id(), 403);
+        abort_unless((int) $ticket->admin_id === (int) panel_owner_id(), 403);
 
         $request->validate([
-            'status' => 'required|in:' . implode(',', KitchenTicket::statuses()),
+            'status' => ['required', Rule::enum(KitchenStatus::class)],
         ]);
 
-        $status = $request->string('status')->toString();
+        $status = KitchenStatus::from($request->string('status')->toString());
         $data = ['status' => $status];
 
-        if ($status === KitchenTicket::PREPARING) {
+        if ($status === KitchenStatus::PREPARING) {
             $data['fired_at'] = $ticket->fired_at ?? now();
             $ticket->items()
-                ->where('status', KitchenTicketItem::PENDING)
-                ->update(['status' => KitchenTicketItem::PREPARING]);
+                ->where('status', KitchenStatus::PENDING)
+                ->update(['status' => KitchenStatus::PREPARING]);
         }
 
-        if ($status === KitchenTicket::READY) {
+        if ($status === KitchenStatus::READY) {
             $data['prepared_at'] = now();
             $ticket->items()
-                ->whereIn('status', [KitchenTicketItem::PENDING, KitchenTicketItem::PREPARING])
-                ->update(['status' => KitchenTicketItem::READY]);
+                ->whereIn('status', [KitchenStatus::PENDING, KitchenStatus::PREPARING])
+                ->update(['status' => KitchenStatus::READY]);
         }
 
-        if ($status === KitchenTicket::SERVED) {
+        if ($status === KitchenStatus::SERVED) {
             $data['served_at'] = now();
         }
 
@@ -96,6 +98,8 @@ class KdsController extends Controller
         ];
     }
 }
+
+
 
 
 

@@ -52,7 +52,7 @@
         .brand-logo span { color: #c9a962; }
 
         .table-badge {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: #1a1a2e;
             color: white;
             font-size: 0.75rem;
             font-weight: 600;
@@ -146,7 +146,7 @@
             content: '';
             flex: 1;
             height: 1px;
-            background: linear-gradient(to right, rgba(0, 0, 0, 0.1), transparent);
+            background: rgba(0, 0, 0, 0.08);
         }
 
         .menu-card {
@@ -352,7 +352,7 @@
             font-size: 1rem;
             font-weight: 600;
             border-radius: 12px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: #1a1a2e;
             color: #fff;
             border: 0;
             margin-top: 1rem;
@@ -664,7 +664,7 @@
             <div class="absolute inset-0 bg-gray-900/60" @click="confirmOpen = false"></div>
             <div class="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center">
                 <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-                     style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                     style="background: #28a745;">
                     <i class="ri-check-line text-white" style="font-size: 2.5rem;"></i>
                 </div>
                 <h2 class="confirmation-title">Order Placed!</h2>
@@ -839,3 +839,4 @@
 </body>
 
 </html>
+

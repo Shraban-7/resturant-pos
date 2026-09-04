@@ -2,6 +2,8 @@
 
 namespace Tests\Concerns;
 
+use App\Enums\TableStatus;
+
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\DiningTable;
@@ -18,9 +20,9 @@ use Illuminate\Support\Str;
  */
 trait CreatesPosData
 {
-    protected function createSeller(array $attributes = []): User
+    protected function createAdmin(array $attributes = []): User
     {
-        return User::factory()->create(array_merge(['role' => 'seller'], $attributes));
+        return User::factory()->create(array_merge(['role' => 'admin'], $attributes));
     }
 
     protected function createUnit(string $short = 'pcs'): ProductUnit
@@ -31,19 +33,19 @@ trait CreatesPosData
         ]);
     }
 
-    protected function createCategory(User $seller): ProductCategory
+    protected function createCategory(User $admin): ProductCategory
     {
         return ProductCategory::create([
-            'seller_id' => $seller->id,
+            'admin_id' => $admin->id,
             'name' => 'Category '.Str::random(4),
         ]);
     }
 
-    protected function createProduct(User $seller, array $attributes = []): Product
+    protected function createProduct(User $admin, array $attributes = []): Product
     {
         return Product::create(array_merge([
-            'seller_id' => $seller->id,
-            'category_id' => $this->createCategory($seller)->id,
+            'admin_id' => $admin->id,
+            'category_id' => $this->createCategory($admin)->id,
             'unit_id' => $this->createUnit()->id,
             'name' => 'Product '.Str::random(5),
             'image' => '',
@@ -55,19 +57,19 @@ trait CreatesPosData
         ], $attributes));
     }
 
-    protected function createTable(User $seller, array $attributes = []): DiningTable
+    protected function createTable(User $admin, array $attributes = []): DiningTable
     {
         return DiningTable::create(array_merge([
-            'seller_id' => $seller->id,
+            'admin_id' => $admin->id,
             'name' => 'Table '.Str::random(3),
-            'status' => DiningTable::FREE,
+            'status' => TableStatus::FREE,
         ], $attributes));
     }
 
-    protected function createCart(User $seller, string $orderId = null): Cart
+    protected function createCart(User $admin, string $orderId = null): Cart
     {
         return Cart::create([
-            'seller_id' => $seller->id,
+            'admin_id' => $admin->id,
             'order_id' => $orderId ?? generateOrderId(),
         ]);
     }
@@ -90,7 +92,7 @@ trait CreatesPosData
     protected function attachRecipe(Product $product, array $ingredients): Recipe
     {
         $recipe = Recipe::create([
-            'seller_id' => $product->seller_id,
+            'admin_id' => $product->admin_id,
             'product_id' => $product->id,
             'is_active' => true,
         ]);
@@ -106,3 +108,9 @@ trait CreatesPosData
         return $recipe;
     }
 }
+
+
+
+
+
+

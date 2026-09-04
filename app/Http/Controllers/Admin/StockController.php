@@ -52,7 +52,7 @@ class StockController extends Controller
 
         ProductStock::create([
             'product_id' => $product->id,
-            'seller_id' => $product->seller_id,
+            'admin_id' => $product->admin_id,
             'type' => 'increment',
             'quantity' => $quantity,
             'old_stock' => $oldStock,
@@ -70,5 +70,6 @@ class StockController extends Controller
         return redirect()->back()->with('success', 'Stock Updated Sucessfully');
     }
 }
+
 
 

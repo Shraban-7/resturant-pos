@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Enums\ProductType;
+
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductStock;
@@ -24,7 +26,7 @@ class ProductSeeder extends Seeder
 
     public function run(): void
     {
-        $sellerId = User::admin()->orderBy('id')->first()->id;
+        $ownerId = User::admin()->orderBy('id')->first()->id;
 
         $items = json_decode(file_get_contents(database_path(self::JSON_PATH)), true);
 
@@ -35,7 +37,7 @@ class ProductSeeder extends Seeder
         }
 
         // Branch specials: every 6th item belongs to one branch, rest are chain-wide (NULL).
-        $branchIds = \App\Models\Branch::where('seller_id', $sellerId)->orderBy('id')->pluck('id')->all();
+        $branchIds = \App\Models\Branch::where('admin_id', $ownerId)->orderBy('id')->pluck('id')->all();
 
         foreach (array_values($items) as $index => $item) {
             $branchId = null;
@@ -44,8 +46,8 @@ class ProductSeeder extends Seeder
             }
 
             $category = ProductCategory::firstOrCreate(
-                ['seller_id' => $sellerId, 'name' => $item['category']],
-                ['seller_id' => $sellerId, 'name' => $item['category']]
+                ['admin_id' => $ownerId, 'name' => $item['category']],
+                ['admin_id' => $ownerId, 'name' => $item['category']]
             );
 
             $unit = ProductUnit::firstOrCreate(
@@ -54,12 +56,12 @@ class ProductSeeder extends Seeder
             );
 
             $mealTimes = ($item['meal'] ?? 'all') === 'all' ? null : array_values($item['meal']);
-            $type = $item['type'] ?? Product::TYPE_DISH;
+            $type = ProductType::from($item['type'] ?? ProductType::DISH->value);
 
             $product = Product::firstOrCreate(
-                ['seller_id' => $sellerId, 'name' => $item['name']],
+                ['admin_id' => $ownerId, 'name' => $item['name']],
                 [
-                    'seller_id' => $sellerId,
+                    'admin_id' => $ownerId,
                     'branch_id' => $branchId,
                     'type' => $type,
                     'meal_times' => $mealTimes,
@@ -80,7 +82,7 @@ class ProductSeeder extends Seeder
             if ($product->meal_times != $mealTimes) {
                 $backfill['meal_times'] = $mealTimes;
             }
-            if (($product->type ?? Product::TYPE_DISH) !== $type) {
+            if (($product->type ?? ProductType::DISH) !== $type) {
                 $backfill['type'] = $type;
             }
             if ($backfill) {
@@ -90,7 +92,7 @@ class ProductSeeder extends Seeder
             if (! ProductStock::where('product_id', $product->id)->exists()) {
                 ProductStock::create([
                     'product_id' => $product->id,
-                    'seller_id' => $sellerId,
+                    'admin_id' => $ownerId,
                     'type' => 'increment',
                     'quantity' => $product->stock_in,
                     'old_stock' => 0,
@@ -102,3 +104,7 @@ class ProductSeeder extends Seeder
         }
     }
 }
+
+
+
+

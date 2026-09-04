@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\DiningTable;
+use App\Enums\TableStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -22,7 +22,7 @@ return new class extends Migration
             // application layer nulls it on floor deletion.
             $table->unsignedBigInteger('floor_id')->nullable();
             $table->string('name');
-            $table->string('status')->default(DiningTable::FREE);
+            $table->string('status')->default(TableStatus::FREE->value);
             $table->string('qr_code_token', 64)->nullable()->unique();
             $table->integer('x_position')->default(0);
             $table->integer('y_position')->default(0);

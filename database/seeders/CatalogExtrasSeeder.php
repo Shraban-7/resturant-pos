@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Enums\ProductType;
+
 use App\Models\Customer;
 use App\Models\GiftCard;
 use App\Models\LoyaltyPoint;
@@ -29,8 +31,8 @@ class CatalogExtrasSeeder extends Seeder
         ];
         foreach ($customers as $data) {
             Customer::firstOrCreate(
-                ['seller_id' => $ownerId, 'phone' => $data['phone']],
-                $data + ['seller_id' => $ownerId]
+                ['admin_id' => $ownerId, 'phone' => $data['phone']],
+                $data + ['admin_id' => $ownerId]
             );
         }
 
@@ -43,14 +45,18 @@ class CatalogExtrasSeeder extends Seeder
         $modifierIds = [];
         foreach ($modifiers as $i => $data) {
             $m = Modifier::firstOrCreate(
-                ['seller_id' => $ownerId, 'name' => $data['name']],
-                $data + ['seller_id' => $ownerId, 'is_active' => true, 'sort_order' => $i]
+                ['admin_id' => $ownerId, 'name' => $data['name']],
+                $data + ['admin_id' => $ownerId, 'is_active' => true, 'sort_order' => $i]
             );
             $modifierIds[] = $m->id;
         }
 
-        $products = Product::where('seller_id', $ownerId)->take(10)->get();
-        foreach ($products as $product) {
+        // Demo recipes consume RAW ingredients (never other dishes).
+        // Round-robin so every raw gets used by at least one dish.
+        $dishes = Product::where('admin_id', $ownerId)->where('type', ProductType::DISH)->take(10)->get();
+        $raws = Product::where('admin_id', $ownerId)->rawIngredients()->orderBy('id')->get()->values();
+
+        foreach ($dishes->values() as $index => $product) {
             foreach ($modifierIds as $mid) {
                 ProductModifier::firstOrCreate(
                     ['product_id' => $product->id, 'modifier_id' => $mid],
@@ -59,21 +65,22 @@ class CatalogExtrasSeeder extends Seeder
             }
             $recipe = Recipe::firstOrCreate(
                 ['product_id' => $product->id],
-                ['product_id' => $product->id, 'seller_id' => $ownerId, 'instructions' => 'Cook fresh and serve hot.']
+                ['product_id' => $product->id, 'admin_id' => $ownerId, 'instructions' => 'Cook fresh and serve hot.']
             );
-            $ingredient = $products->where('id', '!=', $product->id)->first();
-            if ($ingredient) {
+            // 2 raw ingredients per demo dish, quantities per serving.
+            for ($k = 0; $k < min(2, $raws->count()); $k++) {
+                $ingredient = $raws[($index * 2 + $k) % $raws->count()];
                 RecipeIngredient::firstOrCreate(
                     ['recipe_id' => $recipe->id, 'ingredient_product_id' => $ingredient->id],
-                    ['recipe_id' => $recipe->id, 'ingredient_product_id' => $ingredient->id, 'quantity' => 1, 'unit_id' => $product->unit_id]
+                    ['recipe_id' => $recipe->id, 'ingredient_product_id' => $ingredient->id, 'quantity' => rand(1, 3) / 2, 'unit_id' => $ingredient->unit_id]
                 );
             }
         }
 
-        foreach (Customer::where('seller_id', $ownerId)->take(3)->get() as $customer) {
+        foreach (Customer::where('admin_id', $ownerId)->take(3)->get() as $customer) {
             LoyaltyPoint::firstOrCreate(
-                ['seller_id' => $ownerId, 'customer_id' => $customer->id, 'type' => 'earned'],
-                ['seller_id' => $ownerId, 'customer_id' => $customer->id, 'type' => 'earned', 'points' => 100, 'equivalent_amount' => 100, 'description' => 'Welcome bonus']
+                ['admin_id' => $ownerId, 'customer_id' => $customer->id, 'type' => 'earned'],
+                ['admin_id' => $ownerId, 'customer_id' => $customer->id, 'type' => 'earned', 'points' => 100, 'equivalent_amount' => 100, 'description' => 'Welcome bonus']
             );
         }
 
@@ -81,7 +88,7 @@ class CatalogExtrasSeeder extends Seeder
             GiftCard::firstOrCreate(
                 ['code' => $data['code']],
                 [
-                    'seller_id' => $ownerId,
+                    'admin_id' => $ownerId,
                     'code' => $data['code'],
                     'initial_value' => $data['value'],
                     'balance' => $data['value'],
@@ -91,15 +98,15 @@ class CatalogExtrasSeeder extends Seeder
             );
         }
 
-        $table = DiningTable::where('seller_id', $ownerId)->first();
+        $table = DiningTable::where('admin_id', $ownerId)->first();
         foreach ([1, 2] as $i) {
             if (! $table) {
                 break;
             }
             Reservation::firstOrCreate(
-                ['seller_id' => $ownerId, 'customer_phone' => "0190000000{$i}"],
+                ['admin_id' => $ownerId, 'customer_phone' => "0190000000{$i}"],
                 [
-                    'seller_id' => $ownerId,
+                    'admin_id' => $ownerId,
                     'table_id' => $table->id,
                     'customer_name' => "Guest {$i}",
                     'customer_phone' => "0190000000{$i}",
@@ -111,3 +118,6 @@ class CatalogExtrasSeeder extends Seeder
         }
     }
 }
+
+
+

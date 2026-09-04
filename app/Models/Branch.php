@@ -18,9 +18,9 @@ class Branch extends Model
         'is_default' => 'boolean',
     ];
 
-    public function seller(): BelongsTo
+    public function admin(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'seller_id');
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     public function floors(): HasMany
@@ -35,7 +35,7 @@ class Branch extends Model
 
     public function employees(): HasMany
     {
-        return $this->hasMany(SellerEmployee::class);
+        return $this->hasMany(Employee::class);
     }
 
     public function products(): HasMany
@@ -50,7 +50,7 @@ class Branch extends Model
 
     public function scopeSelf($query)
     {
-        return $query->where('seller_id', panel_owner_id());
+        return $query->where('admin_id', panel_owner_id());
     }
 
     public function scopeActive($query)
@@ -58,4 +58,6 @@ class Branch extends Model
         return $query->where('is_active', true);
     }
 }
+
+
 

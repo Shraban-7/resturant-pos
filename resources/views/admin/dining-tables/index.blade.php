@@ -27,9 +27,9 @@
     @forelse($tables as $table)
         @php
             $badgeClass = match ($table->status) {
-                \App\Models\DiningTable::FREE => 'badge-success',
-                \App\Models\DiningTable::RESERVED => 'badge-warning',
-                \App\Models\DiningTable::CLEANING => 'badge-primary',
+                \App\Enums\TableStatus::FREE => 'badge-success',
+                \App\Enums\TableStatus::RESERVED => 'badge-warning',
+                \App\Enums\TableStatus::CLEANING => 'badge-primary',
                 default => 'badge-danger',
             };
         @endphp
@@ -48,7 +48,7 @@
                         <i class="ri-edit-box-line text-base"></i>
                     </button>
                 </div>
-                <span class="{{ $badgeClass }}">{{ ucfirst($table->status) }}</span>
+                <span class="{{ $badgeClass }}">{{ $table->status->label() }}</span>
                 @if($table->floor)
                     <p class="text-xs text-slate-400 mt-1">{{ $table->floor->name }}</p>
                 @endif
@@ -186,4 +186,6 @@
 </div>
 
 @endsection
+
+
 

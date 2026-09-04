@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
-class Seller
+class Admin
 {
     /**
      * Handle an incoming request.
@@ -38,3 +38,4 @@ class Seller
         return $next($request);
     }
 }
+

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\MealSlot;
+use App\Enums\ProductType;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategory;
@@ -13,7 +15,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::self()->active()->latest('id')->paginate(20)->withQueryString();
+        $products = Product::self()->with(['category', 'recipe.ingredients'])->active()->latest('id')->paginate(20)->withQueryString();
 
         return view('admin.products.index', compact('products'));
     }
@@ -38,14 +40,14 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
             'meal_times' => 'nullable|array',
             'meal_times.*' => 'in:breakfast,lunch,dinner',
-            'type' => 'nullable|in:dish,buffet',
+            'type' => 'nullable|in:dish,buffet,ingredient',
         ]);
 
-        $input['seller_id'] = panel_owner_id();
+        $input['admin_id'] = panel_owner_id();
         $input['meal_times'] = $this->normalizeMealTimes($request->input('meal_times'));
 
         if (empty($input['type'])) {
-            $input['type'] = Product::TYPE_DISH;
+            $input['type'] = ProductType::DISH;
         }
 
         if ($request->hasFile('image')) {
@@ -57,7 +59,7 @@ class ProductController extends Controller
 
         ProductStock::create([
             'product_id' => $product->id,
-            'seller_id' => $product->seller_id,
+            'admin_id' => $product->admin_id,
             'type' => 'increment',
             'quantity' => $request->stock_in,
             'old_stock' => 0,
@@ -89,7 +91,7 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
             'meal_times' => 'nullable|array',
             'meal_times.*' => 'in:breakfast,lunch,dinner',
-            'type' => 'nullable|in:dish,buffet',
+            'type' => 'nullable|in:dish,buffet,ingredient',
         ]);
 
         $input['meal_times'] = $this->normalizeMealTimes($request->input('meal_times'));
@@ -118,9 +120,9 @@ class ProductController extends Controller
      */
     private function normalizeMealTimes(?array $slots): ?array
     {
-        $slots = array_values(array_intersect($slots ?? [], Product::MEAL_SLOTS));
+        $slots = array_values(array_intersect($slots ?? [], MealSlot::values()));
 
-        if (empty($slots) || count($slots) === count(Product::MEAL_SLOTS)) {
+        if (empty($slots) || count($slots) === count(MealSlot::values())) {
             return null;
         }
 
@@ -137,7 +139,7 @@ class ProductController extends Controller
         }
 
         $productStock = new ProductStock;
-        $productStock->seller_id = $product->seller_id;
+        $productStock->admin_id = $product->admin_id;
         $productStock->product_id = $product->id;
         $productStock->old_stock = $oldStockQuantity;
         $productStock->buying_price = $request->buying_price;
@@ -165,6 +167,10 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Product Deleted');
     }
 }
+
+
+
+
 
 
 

@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\KitchenStatus;
+
+use App\Enums\TableStatus;
+
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
 use App\Actions\ResolveProductModifiersAction;
@@ -32,9 +36,10 @@ class MenuController extends Controller
         $table->ensureQrToken();
 
         $categories = ProductCategory::query()
-            ->where('seller_id', $table->seller_id)
+            ->where('admin_id', $table->admin_id)
             ->with(['products' => function ($q) use ($table) {
-                $q->where('seller_id', $table->seller_id)
+                $q->where('admin_id', $table->admin_id)
+                    ->sellable()
                     ->where('is_active', 1)
                     ->with([
                         'unit',
@@ -60,7 +65,7 @@ class MenuController extends Controller
         }
 
         $business = \App\Models\BusinessSetting::query()
-            ->where('user_id', $table->seller_id)
+            ->where('user_id', $table->admin_id)
             ->first();
 
         return view('digital-menu', compact('table', 'categories', 'productModifiersMap', 'business'));
@@ -80,9 +85,13 @@ class MenuController extends Controller
                     $product = Product::query()
                         ->with(['unit', 'recipe.ingredients.ingredientProduct', 'modifiers'])
                         ->whereKey($item['id'])
-                        ->where('seller_id', $table->seller_id)
+                        ->where('admin_id', $table->admin_id)
                         ->lockForUpdate()
                         ->firstOrFail();
+
+                    if ($product->isIngredient()) {
+                        throw new RuntimeException("Item not for direct sale: {$product->name}");
+                    }
 
                     if (! $this->deductRecipeStock->usesRecipe($product)
                         && ! $this->stockService->hasAvailableStock($product, $item['quantity'])) {
@@ -96,7 +105,7 @@ class MenuController extends Controller
                     $subtotal += $total;
 
                     $saleItems[] = [
-                        'seller_id' => $table->seller_id,
+                        'admin_id' => $table->admin_id,
                         'item_id' => $product->id,
                         'item_name' => $product->name,
                         'buying_price' => $product->buying_price,
@@ -119,7 +128,7 @@ class MenuController extends Controller
                 }
 
                 $sale = Sale::create([
-                    'seller_id' => $table->seller_id,
+                    'admin_id' => $table->admin_id,
                     'branch_id' => $table->branch_id,
                     'order_id' => generateOrderId(),
                     'sale_date' => now(),
@@ -138,7 +147,7 @@ class MenuController extends Controller
                     ->whereKey($table->id)
                     ->lockForUpdate()
                     ->firstOrFail()
-                    ->update(['status' => DiningTable::OCCUPIED]);
+                    ->update(['status' => TableStatus::OCCUPIED]);
 
                 $sale->load(['items', 'table']);
                 $this->createKitchenTicket->execute($sale);
@@ -178,13 +187,13 @@ class MenuController extends Controller
         }
 
         $ticket = $sale?->kitchenTickets->sortByDesc('id')->first();
-        $status = $ticket?->status ?? ($sale ? KitchenTicket::PENDING : null);
+        $status = $ticket?->status ?? ($sale ? KitchenStatus::PENDING : null);
 
         $steps = [
-            ['key' => 'received', 'label' => 'Order Received', 'statuses' => [KitchenTicket::PENDING]],
-            ['key' => 'preparing', 'label' => 'In Kitchen', 'statuses' => [KitchenTicket::PREPARING]],
-            ['key' => 'ready', 'label' => 'Food Ready', 'statuses' => [KitchenTicket::READY]],
-            ['key' => 'served', 'label' => 'Served', 'statuses' => [KitchenTicket::SERVED]],
+            ['key' => 'received', 'label' => 'Order Received', 'statuses' => [KitchenStatus::PENDING]],
+            ['key' => 'preparing', 'label' => 'In Kitchen', 'statuses' => [KitchenStatus::PREPARING]],
+            ['key' => 'ready', 'label' => 'Food Ready', 'statuses' => [KitchenStatus::READY]],
+            ['key' => 'served', 'label' => 'Served', 'statuses' => [KitchenStatus::SERVED]],
         ];
 
         return view('order-status', [
@@ -197,3 +206,9 @@ class MenuController extends Controller
         ]);
     }
 }
+
+
+
+
+
+

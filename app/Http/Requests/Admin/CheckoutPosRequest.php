@@ -8,7 +8,7 @@ class CheckoutPosRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return is_seller();
+        return auth()->check();
     }
 
     public function rules(): array
@@ -20,11 +20,13 @@ class CheckoutPosRequest extends FormRequest
             'discount_amount' => 'nullable|numeric|min:0',
             'customer_id' => 'nullable|exists:customers,id',
             'dining_table_id' => 'nullable|exists:dining_tables,id',
-            'seller_employee_id' => 'nullable|exists:seller_employees,id',
+            'employee_id' => 'nullable|exists:employees,id',
             'client_order_id' => 'nullable|uuid',
             'device_id' => 'nullable|uuid',
             'created_at_client' => 'nullable|date',
         ];
     }
 }
+
+
 

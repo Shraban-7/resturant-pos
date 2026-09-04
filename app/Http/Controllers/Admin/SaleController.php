@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\TableStatus;
+
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
 use App\Actions\ResolveProductModifiersAction;
@@ -41,18 +43,18 @@ class SaleController extends Controller
 
     public function invoice(Sale $sale)
     {
-        abort_unless((int) $sale->seller_id === (int) panel_owner_id(), 403);
+        abort_unless((int) $sale->admin_id === (int) panel_owner_id(), 403);
 
         $sale->load('items', 'customer');
 
-        $settings = BusinessSetting::where('user_id', $sale->seller_id)->first();
+        $settings = BusinessSetting::where('user_id', $sale->admin_id)->first();
 
         return view('admin.sales.pos_receipt', compact('sale', 'settings'));
     }
 
     public function markPaid(Sale $sale)
     {
-        abort_unless((int) $sale->seller_id === (int) panel_owner_id(), 403);
+        abort_unless((int) $sale->admin_id === (int) panel_owner_id(), 403);
 
         DB::transaction(function () use ($sale) {
             $sale->paid = $sale->payable;
@@ -66,7 +68,7 @@ class SaleController extends Controller
                     ->first();
 
                 if ($table) {
-                    $table->update(['status' => DiningTable::FREE]);
+                    $table->update(['status' => TableStatus::FREE]);
                     event(new TableStatusChangedEvent($table->fresh()));
                 }
             }
@@ -115,7 +117,7 @@ class SaleController extends Controller
 
                 $saleItem = SaleItem::create([
                     'sale_id' => $sale->id,
-                    'seller_id' => $sale->seller_id,
+                    'admin_id' => $sale->admin_id,
                     'item_id' => $product->id,
                     'item_name' => $product->name,
                     'buying_price' => $product->buying_price,
@@ -159,7 +161,7 @@ class SaleController extends Controller
     {
         return DB::transaction(function () use ($request) {
             $saleItem = SaleItem::query()
-                ->whereHas('sale', fn ($q) => $q->where('seller_id', panel_owner_id()))
+                ->whereHas('sale', fn ($q) => $q->where('admin_id', panel_owner_id()))
                 ->with(['product.recipe.ingredients.ingredientProduct'])
                 ->findOrFail($request->sale_item_id);
 
@@ -190,7 +192,7 @@ class SaleController extends Controller
         try {
             return DB::transaction(function () use ($request) {
                 $saleItem = SaleItem::query()
-                    ->whereHas('sale', fn ($q) => $q->where('seller_id', panel_owner_id()))
+                    ->whereHas('sale', fn ($q) => $q->where('admin_id', panel_owner_id()))
                     ->with(['product.recipe.ingredients.ingredientProduct'])
                     ->findOrFail($request->sale_item_id);
 
@@ -252,7 +254,7 @@ class SaleController extends Controller
 
         if ($customer_name != '' && $customer_phone != '') {
             $newCustomer = Customer::create([
-                'seller_id' => panel_owner_id(),
+                'admin_id' => panel_owner_id(),
                 'name' => $customer_name,
                 'phone' => $customer_phone,
             ]);
@@ -290,7 +292,7 @@ class SaleController extends Controller
                 $saleData['dining_table_id'] = $request->table_id;
             }
             if ($request->employee_id) {
-                $saleData['seller_employee_id'] = $request->employee_id;
+                $saleData['employee_id'] = $request->employee_id;
             }
 
             $sale->update($saleData);
@@ -302,7 +304,7 @@ class SaleController extends Controller
                     ->first();
 
                 if ($table) {
-                    $table->update(['status' => DiningTable::OCCUPIED]);
+                    $table->update(['status' => TableStatus::OCCUPIED]);
                     event(new TableStatusChangedEvent($table->fresh(), $sale->id));
                 }
             }
@@ -311,6 +313,10 @@ class SaleController extends Controller
         });
     }
 }
+
+
+
+
 
 
 

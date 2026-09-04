@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\TableStatus;
+
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
 use App\Actions\ResolveProductModifiersAction;
@@ -15,7 +17,7 @@ use App\Models\DiningTable;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Sale;
-use App\Models\SellerEmployee;
+use App\Models\Employee;
 use App\Services\StockService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -36,6 +38,7 @@ class PosController extends Controller
     public function index(Request $request)
     {
         $products = Product::self()
+            ->sellable()
             ->with([
                 'category',
                 'unit',
@@ -61,18 +64,18 @@ class PosController extends Controller
             ->get();
 
         $cart = Cart::query()->firstOrCreate(
-            ['seller_id' => panel_owner_id()],
+            ['admin_id' => panel_owner_id()],
             ['order_id' => generateOrderId()]
         );
         $cart->load(['items.item.unit']);
 
         $categories = ProductCategory::query()
-            ->where('seller_id', panel_owner_id())
-            ->withCount(['products' => fn ($q) => $q->where('seller_id', panel_owner_id())])
+            ->where('admin_id', panel_owner_id())
+            ->withCount(['products' => fn ($q) => $q->where('admin_id', panel_owner_id())])
             ->get();
         $diningTables = DiningTable::self()->forActiveBranch()->with('floor')->get();
-        $employees = SellerEmployee::self()->forActiveBranch()->get();
-        $branches = seller_branches();
+        $employees = Employee::self()->forActiveBranch()->get();
+        $branches = admin_branches();
         $activeBranch = active_branch();
         $cartItems = $cart->items;
         $saleItems = null;
@@ -81,7 +84,7 @@ class PosController extends Controller
         if ($request->has('sale')) {
             $sale = Sale::query()
                 ->where('order_id', request('sale'))
-                ->where('seller_id', panel_owner_id())
+                ->where('admin_id', panel_owner_id())
                 ->with(['items.product.unit', 'customer', 'table', 'waiter'])
                 ->first();
             if ($sale) {
@@ -172,12 +175,12 @@ class PosController extends Controller
                 $product = Product::query()
                     ->with(['recipe.ingredients.ingredientProduct', 'modifiers'])
                     ->whereKey($request->product_id)
-                    ->where('seller_id', panel_owner_id())
+                    ->where('admin_id', panel_owner_id())
                     ->lockForUpdate()
                     ->firstOrFail();
 
                 $cart = Cart::where('order_id', $request->order_id)
-                    ->where('seller_id', panel_owner_id())
+                    ->where('admin_id', panel_owner_id())
                     ->firstOrFail();
 
                 $modifiers = collect($request->input('modifiers', []));
@@ -189,6 +192,10 @@ class PosController extends Controller
                 $qty = (float) $request->quantity;
                 $discount = (float) $request->discount;
                 $totalPrice = ($qty * $lineUnit) - $discount;
+
+                if ($product->isIngredient()) {
+                    throw new RuntimeException('Raw ingredients are not for direct sale.');
+                }
 
                 // Availability: finished goods when no recipe; otherwise ingredients checked inside action.
                 if (! $this->deductRecipeStock->usesRecipe($product)
@@ -236,7 +243,7 @@ class PosController extends Controller
         try {
             return DB::transaction(function () use ($request) {
                 $cart_item = CartItem::whereHas('cart', function ($q) {
-                    $q->where('seller_id', panel_owner_id());
+                    $q->where('admin_id', panel_owner_id());
                 })->with(['item.recipe.ingredients.ingredientProduct'])->findOrFail($request->cart_item_id);
 
                 $item = $cart_item->item;
@@ -263,7 +270,7 @@ class PosController extends Controller
         try {
             return DB::transaction(function () use ($request) {
                 $cart_item = CartItem::whereHas('cart', function ($q) {
-                    $q->where('seller_id', panel_owner_id());
+                    $q->where('admin_id', panel_owner_id());
                 })->with(['item.recipe.ingredients.ingredientProduct'])->findOrFail($request->cart_item_id);
 
                 $item = $cart_item->item;
@@ -303,7 +310,7 @@ class PosController extends Controller
 
                 if ($customer_name != '' && $customer_phone != '') {
                     $newCustomer = Customer::create([
-                        'seller_id' => panel_owner_id(),
+                        'admin_id' => panel_owner_id(),
                         'name' => $customer_name,
                         'phone' => $customer_phone,
                     ]);
@@ -311,7 +318,7 @@ class PosController extends Controller
                 }
 
                 $cart = Cart::where('order_id', $request->order_id)
-                    ->where('seller_id', panel_owner_id())
+                    ->where('admin_id', panel_owner_id())
                     ->with('items.item.unit')
                     ->lockForUpdate()
                     ->first();
@@ -326,7 +333,7 @@ class PosController extends Controller
                 foreach ($cart->items as $item) {
                     $subTotal += $item->total_price;
                     $saleItems[] = [
-                        'seller_id' => $cart->seller_id,
+                        'admin_id' => $cart->admin_id,
                         'item_id' => $item->item_id,
                         'item_name' => $item->item->name,
                         'buying_price' => $item->item->buying_price,
@@ -345,11 +352,11 @@ class PosController extends Controller
 
                 // Prefer request aliases used by POS UI (table_id / employee_id) with dining_* fallbacks.
                 $tableId = $request->dining_table_id ?? $request->table_id;
-                $employeeId = $request->seller_employee_id ?? $request->employee_id;
+                $employeeId = $request->employee_id ?? $request->employee_id;
 
                 if ($request->client_order_id) {
                     $existingSale = Sale::query()
-                        ->where('seller_id', $cart->seller_id)
+                        ->where('admin_id', $cart->admin_id)
                         ->where('client_order_id', $request->client_order_id)
                         ->first();
 
@@ -359,7 +366,7 @@ class PosController extends Controller
                 }
 
                 $saleData = [
-                    'seller_id' => $cart->seller_id,
+                    'admin_id' => $cart->admin_id,
                     'customer_id' => $customer_id,
                     'order_id' => $cart->order_id,
                     'client_order_id' => $request->client_order_id,
@@ -387,7 +394,7 @@ class PosController extends Controller
                     }
                 }
                 if ($employeeId) {
-                    $saleData['seller_employee_id'] = $employeeId;
+                    $saleData['employee_id'] = $employeeId;
                 }
 
                 $sale = Sale::create($saleData);
@@ -402,7 +409,7 @@ class PosController extends Controller
                 if ($tableId) {
                     $table = DiningTable::self()->where('id', $tableId)->lockForUpdate()->first();
                     if ($table) {
-                        $table->update(['status' => DiningTable::OCCUPIED]);
+                        $table->update(['status' => TableStatus::OCCUPIED]);
                     }
                 }
 
@@ -421,7 +428,7 @@ class PosController extends Controller
         try {
             return DB::transaction(function () use ($request) {
                 $cart = Cart::where('order_id', $request->order_id)
-                    ->where('seller_id', panel_owner_id())
+                    ->where('admin_id', panel_owner_id())
                     ->with('items.item.unit')
                     ->lockForUpdate()
                     ->first();
@@ -436,7 +443,7 @@ class PosController extends Controller
 
                 if ($customer_name != '' && $customer_phone != '') {
                     $newCustomer = Customer::create([
-                        'seller_id' => panel_owner_id(),
+                        'admin_id' => panel_owner_id(),
                         'name' => $customer_name,
                         'phone' => $customer_phone,
                     ]);
@@ -449,7 +456,7 @@ class PosController extends Controller
                 foreach ($cart->items as $item) {
                     $subTotal += $item->total_price;
                     $saleItems[] = [
-                        'seller_id' => $cart->seller_id,
+                        'admin_id' => $cart->admin_id,
                         'item_id' => $item->item_id,
                         'item_name' => $item->item->name,
                         'buying_price' => $item->item->buying_price,
@@ -463,11 +470,11 @@ class PosController extends Controller
                 }
 
                 $tableId = $request->dining_table_id ?? $request->table_id;
-                $employeeId = $request->seller_employee_id ?? $request->employee_id;
+                $employeeId = $request->employee_id ?? $request->employee_id;
                 $payable = $subTotal;
 
                 $saleData = [
-                    'seller_id' => $cart->seller_id,
+                    'admin_id' => $cart->admin_id,
                     'customer_id' => $customer_id,
                     'is_hold' => 1,
                     'order_id' => $cart->order_id,
@@ -489,7 +496,7 @@ class PosController extends Controller
                     }
                 }
                 if ($employeeId) {
-                    $saleData['seller_employee_id'] = $employeeId;
+                    $saleData['employee_id'] = $employeeId;
                 }
 
                 $sale = Sale::create($saleData);
@@ -504,7 +511,7 @@ class PosController extends Controller
                 if ($tableId) {
                     $table = DiningTable::self()->where('id', $tableId)->lockForUpdate()->first();
                     if ($table) {
-                        $table->update(['status' => DiningTable::OCCUPIED]);
+                        $table->update(['status' => TableStatus::OCCUPIED]);
                     }
                 }
 
@@ -518,6 +525,11 @@ class PosController extends Controller
         }
     }
 }
+
+
+
+
+
 
 
 

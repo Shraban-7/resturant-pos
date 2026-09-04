@@ -2,6 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Enums\KitchenStatus;
+
+use App\Enums\TableStatus;
+
 use App\Models\DiningTable;
 use App\Models\KitchenTicket;
 use App\Models\Sale;
@@ -16,13 +20,13 @@ class PosCheckoutTest extends TestCase
 
     public function test_checkout_creates_sale_items_and_kitchen_ticket(): void
     {
-        $seller = $this->createSeller();
-        $product = $this->createProduct($seller, ['selling_price' => 100, 'stock_in' => 50]);
-        $table = $this->createTable($seller);
-        $cart = $this->createCart($seller);
+        $admin = $this->createAdmin();
+        $product = $this->createProduct($admin, ['selling_price' => 100, 'stock_in' => 50]);
+        $table = $this->createTable($admin);
+        $cart = $this->createCart($admin);
         $this->addCartItem($cart, $product, 2, ['unit_price' => 100]);
 
-        $response = $this->actingAs($seller)->postJson(route('admin.pos.checkout'), [
+        $response = $this->actingAs($admin)->postJson(route('admin.pos.checkout'), [
             'order_id' => $cart->order_id,
             'payment_type' => 'cash',
             'paid_amount' => 200,
@@ -33,7 +37,7 @@ class PosCheckoutTest extends TestCase
 
         $sale = Sale::where('order_id', $cart->order_id)->first();
         $this->assertNotNull($sale);
-        $this->assertSame($seller->id, (int) $sale->seller_id);
+        $this->assertSame($admin->id, (int) $sale->admin_id);
         $this->assertEquals(200, (float) $sale->payable);
         $this->assertSame('cash', $sale->payment_option);
         $this->assertSame($table->id, (int) $sale->dining_table_id);
@@ -48,20 +52,20 @@ class PosCheckoutTest extends TestCase
         // A kitchen ticket + line items are routed for the sale.
         $ticket = KitchenTicket::where('sale_id', $sale->id)->first();
         $this->assertNotNull($ticket);
-        $this->assertSame(KitchenTicket::PENDING, $ticket->status);
-        $this->assertSame($seller->id, (int) $ticket->seller_id);
+        $this->assertSame(KitchenStatus::PENDING, $ticket->status);
+        $this->assertSame($admin->id, (int) $ticket->admin_id);
         $this->assertCount(1, $ticket->items->all());
 
         // Table is locked to occupied.
-        $this->assertSame(DiningTable::OCCUPIED, $table->fresh()->status);
+        $this->assertSame(TableStatus::OCCUPIED, $table->fresh()->status);
     }
 
     public function test_checkout_fails_when_cart_is_empty(): void
     {
-        $seller = $this->createSeller();
-        $cart = $this->createCart($seller);
+        $admin = $this->createAdmin();
+        $cart = $this->createCart($admin);
 
-        $response = $this->actingAs($seller)->postJson(route('admin.pos.checkout'), [
+        $response = $this->actingAs($admin)->postJson(route('admin.pos.checkout'), [
             'order_id' => $cart->order_id,
             'payment_type' => 'cash',
             'paid_amount' => 0,
@@ -73,13 +77,13 @@ class PosCheckoutTest extends TestCase
 
     public function test_checkout_is_idempotent_for_repeated_client_order_id(): void
     {
-        $seller = $this->createSeller();
-        $product = $this->createProduct($seller);
+        $admin = $this->createAdmin();
+        $product = $this->createProduct($admin);
         $clientOrderId = (string) Str::uuid();
 
         // Simulate an already-synced sale for this client order id.
         Sale::create([
-            'seller_id' => $seller->id,
+            'admin_id' => $admin->id,
             'order_id' => generateOrderId(),
             'client_order_id' => $clientOrderId,
             'sale_date' => now()->toDateString(),
@@ -91,10 +95,10 @@ class PosCheckoutTest extends TestCase
             'payment_option' => 'cash',
         ]);
 
-        $cart = $this->createCart($seller);
+        $cart = $this->createCart($admin);
         $this->addCartItem($cart, $product, 1, ['unit_price' => 100]);
 
-        $response = $this->actingAs($seller)->postJson(route('admin.pos.checkout'), [
+        $response = $this->actingAs($admin)->postJson(route('admin.pos.checkout'), [
             'order_id' => $cart->order_id,
             'payment_type' => 'cash',
             'paid_amount' => 100,
@@ -108,7 +112,7 @@ class PosCheckoutTest extends TestCase
         $this->assertDatabaseHas('carts', ['id' => $cart->id]);
     }
 
-    public function test_checkout_requires_seller_authentication(): void
+    public function test_checkout_requires_authentication(): void
     {
         $response = $this->postJson(route('admin.pos.checkout'), [
             'order_id' => 'missing',
@@ -121,4 +125,12 @@ class PosCheckoutTest extends TestCase
         $this->assertDatabaseCount('sales', 0);
     }
 }
+
+
+
+
+
+
+
+
 

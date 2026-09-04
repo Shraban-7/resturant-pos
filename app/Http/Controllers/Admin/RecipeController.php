@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ProductType;
+
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Recipe;
@@ -15,11 +17,14 @@ class RecipeController extends Controller
 {
     public function edit(Product $product)
     {
-        abort_unless((int) $product->seller_id === (int) panel_owner_id(), 403);
+        abort_unless((int) $product->admin_id === (int) panel_owner_id(), 403);
+        abort_if($product->isBuffet() || $product->isIngredient(), 404, 'Only dishes use recipes.');
 
         $product->load(['recipe.ingredients.ingredientProduct', 'unit']);
 
+        // Raw ingredients only — never prepared meals.
         $ingredients = Product::self()
+            ->rawIngredients()
             ->where('id', '!=', $product->id)
             ->orderBy('name')
             ->get(['id', 'name', 'stock_in', 'stock_out']);
@@ -29,7 +34,8 @@ class RecipeController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        abort_unless((int) $product->seller_id === (int) panel_owner_id(), 403);
+        abort_unless((int) $product->admin_id === (int) panel_owner_id(), 403);
+        abort_if($product->isBuffet() || $product->isIngredient(), 404, 'Only dishes use recipes.');
 
         $data = $request->validate([
             'is_active' => 'nullable|boolean',
@@ -39,14 +45,16 @@ class RecipeController extends Controller
             'ingredients.*.ingredient_product_id' => [
                 'required',
                 'integer',
-                Rule::exists('products', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
+                Rule::exists('products', 'id')->where(fn ($q) => $q
+                    ->where('admin_id', panel_owner_id())
+                    ->where('type', ProductType::INGREDIENT)),
             ],
             'ingredients.*.quantity' => 'required|numeric|min:0.001',
         ]);
 
         DB::transaction(function () use ($product, $data, $request) {
             $recipe = Recipe::withTrashed()->firstOrNew(['product_id' => $product->id]);
-            $recipe->seller_id = panel_owner_id();
+            $recipe->admin_id = panel_owner_id();
             $recipe->is_active = $request->boolean('is_active', true);
             $recipe->preparation_time_minutes = $data['preparation_time_minutes'] ?? 15;
             $recipe->instructions = $data['instructions'] ?? null;
@@ -71,7 +79,7 @@ class RecipeController extends Controller
                     'recipe_id' => $recipe->id,
                     'ingredient_product_id' => $ingredientId,
                     'quantity' => $line['quantity'],
-                    'unit_id' => Product::query()->whereKey($ingredientId)->value('unit_id'),
+                    'unit_id' => Product::self()->whereKey($ingredientId)->value('unit_id'),
                 ]);
             }
         });
@@ -83,7 +91,7 @@ class RecipeController extends Controller
 
     public function destroy(Product $product)
     {
-        abort_unless((int) $product->seller_id === (int) panel_owner_id(), 403);
+        abort_unless((int) $product->admin_id === (int) panel_owner_id(), 403);
 
         $recipe = $product->recipe;
         if ($recipe) {
@@ -96,6 +104,9 @@ class RecipeController extends Controller
             ->with('success', 'Recipe removed. Product will deduct finished-goods stock.');
     }
 }
+
+
+
 
 
 

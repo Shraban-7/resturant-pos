@@ -2,6 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Enums\KitchenStatus;
+
+use App\Enums\TableStatus;
+
 use App\Models\DiningTable;
 use App\Models\KitchenTicket;
 use App\Models\Modifier;
@@ -16,9 +20,9 @@ class QrOrderTest extends TestCase
 
     public function test_guest_can_place_qr_order_and_table_is_locked(): void
     {
-        $seller = $this->createSeller();
-        $product = $this->createProduct($seller, ['selling_price' => 120, 'stock_in' => 10]);
-        $table = $this->createTable($seller);
+        $admin = $this->createAdmin();
+        $product = $this->createProduct($admin, ['selling_price' => 120, 'stock_in' => 10]);
+        $table = $this->createTable($admin);
 
         $response = $this->postJson(route('menu.placeOrder', $table), [
             'items' => [
@@ -36,24 +40,24 @@ class QrOrderTest extends TestCase
 
         // Stock is deducted on commit and the table becomes occupied.
         $this->assertSame(2, (int) $product->fresh()->stock_out);
-        $this->assertSame(DiningTable::OCCUPIED, $table->fresh()->status);
+        $this->assertSame(TableStatus::OCCUPIED, $table->fresh()->status);
 
         // A kitchen ticket is generated for the kitchen display.
         $this->assertDatabaseHas('kitchen_tickets', [
             'sale_id' => $sale->id,
-            'seller_id' => $seller->id,
-            'status' => KitchenTicket::PENDING,
+            'admin_id' => $admin->id,
+            'status' => KitchenStatus::PENDING,
         ]);
     }
 
     public function test_qr_order_applies_selected_modifier_prices(): void
     {
-        $seller = $this->createSeller();
-        $product = $this->createProduct($seller, ['selling_price' => 100, 'stock_in' => 10]);
-        $table = $this->createTable($seller);
+        $admin = $this->createAdmin();
+        $product = $this->createProduct($admin, ['selling_price' => 100, 'stock_in' => 10]);
+        $table = $this->createTable($admin);
 
         $modifier = Modifier::create([
-            'seller_id' => $seller->id,
+            'admin_id' => $admin->id,
             'group_name' => 'Extras',
             'name' => 'Extra Cheese',
             'price' => 20,
@@ -85,9 +89,9 @@ class QrOrderTest extends TestCase
 
     public function test_qr_order_rejects_quantity_exceeding_stock(): void
     {
-        $seller = $this->createSeller();
-        $product = $this->createProduct($seller, ['selling_price' => 100, 'stock_in' => 3]);
-        $table = $this->createTable($seller);
+        $admin = $this->createAdmin();
+        $product = $this->createProduct($admin, ['selling_price' => 100, 'stock_in' => 3]);
+        $table = $this->createTable($admin);
 
         $response = $this->postJson(route('menu.placeOrder', $table), [
             'items' => [
@@ -100,13 +104,13 @@ class QrOrderTest extends TestCase
         // Nothing is persisted and the table stays free when the order is rejected.
         $this->assertDatabaseCount('sales', 0);
         $this->assertSame(0, (int) $product->fresh()->stock_out);
-        $this->assertSame(DiningTable::FREE, $table->fresh()->status);
+        $this->assertSame(TableStatus::FREE, $table->fresh()->status);
     }
 
     public function test_qr_order_requires_at_least_one_item(): void
     {
-        $seller = $this->createSeller();
-        $table = $this->createTable($seller);
+        $admin = $this->createAdmin();
+        $table = $this->createTable($admin);
 
         $response = $this->postJson(route('menu.placeOrder', $table), [
             'items' => [],
@@ -115,3 +119,10 @@ class QrOrderTest extends TestCase
         $response->assertStatus(422);
     }
 }
+
+
+
+
+
+
+

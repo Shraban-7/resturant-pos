@@ -19,14 +19,14 @@ class SupplierSaleSeeder extends Seeder
     public function run()
     {
         $supplier = User::admin()->first();
-        $sellers = User::admin()->get();
+        $admins = User::admin()->get();
 
         $products = SupplierProduct::all();
 
         for ($i = 0; $i < 10; $i++) {
             $orderId = generateOrderId('SU');
 
-            $seller = $sellers->random();
+            $admin = $admins->random();
 
             $subtotal = 0;
             $saleItems = [];
@@ -75,7 +75,7 @@ class SupplierSaleSeeder extends Seeder
 
             $sale = SupplierSale::create([
                 'supplier_id' => $supplier->id,
-                'customer_id' => $seller->id,
+                'customer_id' => $admin->id,
                 'order_id' => $orderId,
                 'sale_date' => now()->subDays(rand(0, 30)),
                 'subtotal' => $subtotal,
@@ -83,7 +83,7 @@ class SupplierSaleSeeder extends Seeder
                 'payable' => $payable,
                 'paid' => $paid,
                 'due' => $due,
-                'note' => 'Seeded sale to ' . $seller->name,
+                'note' => 'Seeded sale to ' . $admin->name,
                 'payment_option' => 'cash',
             ]);
 
@@ -96,3 +96,4 @@ class SupplierSaleSeeder extends Seeder
         }
     }
 }
+

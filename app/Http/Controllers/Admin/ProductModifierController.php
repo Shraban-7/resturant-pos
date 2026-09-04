@@ -14,7 +14,7 @@ class ProductModifierController extends Controller
 {
     public function index(Product $product)
     {
-        abort_unless($product->seller_id === panel_owner_id(), 403);
+        abort_unless($product->admin_id === panel_owner_id(), 403);
 
         $product->load(['productModifiers.modifier']);
 
@@ -39,13 +39,13 @@ class ProductModifierController extends Controller
 
     public function store(Request $request, Product $product)
     {
-        abort_unless($product->seller_id === panel_owner_id(), 403);
+        abort_unless($product->admin_id === panel_owner_id(), 403);
 
         if ($request->filled('modifier_id')) {
             $data = $request->validate([
                 'modifier_id' => [
                     'required',
-                    Rule::exists('modifiers', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
+                    Rule::exists('modifiers', 'id')->where(fn ($q) => $q->where('admin_id', panel_owner_id())),
                 ],
                 'is_required' => 'nullable|boolean',
             ]);
@@ -74,7 +74,7 @@ class ProductModifierController extends Controller
         ]);
 
         $modifier = Modifier::create([
-            'seller_id' => panel_owner_id(),
+            'admin_id' => panel_owner_id(),
             'group_name' => $data['group_name'],
             'name' => $data['name'],
             'price' => $data['price'] ?? 0,
@@ -95,7 +95,7 @@ class ProductModifierController extends Controller
 
     public function update(Request $request, Product $product, ProductModifier $productModifier)
     {
-        abort_unless($product->seller_id === panel_owner_id(), 403);
+        abort_unless($product->admin_id === panel_owner_id(), 403);
         abort_unless($productModifier->product_id === $product->id, 404);
 
         $data = $request->validate([
@@ -113,7 +113,7 @@ class ProductModifierController extends Controller
 
     public function destroy(Product $product, ProductModifier $productModifier)
     {
-        abort_unless($product->seller_id === panel_owner_id(), 403);
+        abort_unless($product->admin_id === panel_owner_id(), 403);
         abort_unless($productModifier->product_id === $product->id, 404);
 
         $productModifier->delete();
@@ -123,6 +123,7 @@ class ProductModifierController extends Controller
             ->with('success', 'Modifier removed from product.');
     }
 }
+
 
 
 

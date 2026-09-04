@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ReservationStatus;
+
+use App\Enums\TableStatus;
+
 use App\Events\TableStatusChangedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\DiningTable;
@@ -29,7 +33,7 @@ class ReservationController extends Controller
 
         $tables = DiningTable::self()->forActiveBranch()->orderBy('name')->get();
         $statuses = Reservation::statuses();
-        $branches = seller_branches();
+        $branches = admin_branches();
 
         return view('admin.reservations.index', compact('reservations', 'tables', 'statuses', 'branches', 'branchFilter'));
     }
@@ -39,7 +43,7 @@ class ReservationController extends Controller
         $data = $request->validate([
             'table_id' => [
                 'required',
-                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
+                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('admin_id', panel_owner_id())),
             ],
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:50',
@@ -49,13 +53,15 @@ class ReservationController extends Controller
             'status' => 'nullable|in:'.implode(',', Reservation::statuses()),
             'branch_id' => [
                 'nullable',
-                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
+                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('admin_id', panel_owner_id())),
             ],
         ]);
 
-        $status = $data['status'] ?? Reservation::CONFIRMED;
+        $status = isset($data['status'])
+            ? ReservationStatus::from($data['status'])
+            : ReservationStatus::CONFIRMED;
 
-        if ($status !== Reservation::CANCELLED
+        if ($status !== ReservationStatus::CANCELLED
             && $conflict = Reservation::conflictingBooking((int) $data['table_id'], $data['reservation_time'])) {
             return redirect()->back()
                 ->withInput()
@@ -66,7 +72,7 @@ class ReservationController extends Controller
             $table = DiningTable::self()->whereKey($data['table_id'])->firstOrFail();
 
             $reservation = Reservation::create([
-                'seller_id' => panel_owner_id(),
+                'admin_id' => panel_owner_id(),
                 'branch_id' => $data['branch_id'] ?? $table->branch_id ?? active_branch_id(),
                 'table_id' => $data['table_id'],
                 'customer_name' => $data['customer_name'],
@@ -87,12 +93,12 @@ class ReservationController extends Controller
 
     public function update(Request $request, Reservation $reservation)
     {
-        abort_unless((int) $reservation->seller_id === (int) panel_owner_id(), 403);
+        abort_unless((int) $reservation->admin_id === (int) panel_owner_id(), 403);
 
         $data = $request->validate([
             'table_id' => [
                 'required',
-                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
+                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('admin_id', panel_owner_id())),
             ],
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:50',
@@ -102,7 +108,7 @@ class ReservationController extends Controller
             'status' => 'required|in:'.implode(',', Reservation::statuses()),
         ]);
 
-        if ($data['status'] !== Reservation::CANCELLED
+        if ($data['status'] !== ReservationStatus::CANCELLED
             && $conflict = Reservation::conflictingBooking((int) $data['table_id'], $data['reservation_time'], (int) $reservation->id)) {
             return redirect()->back()
                 ->withInput()
@@ -136,7 +142,7 @@ class ReservationController extends Controller
 
     public function destroy(Reservation $reservation)
     {
-        abort_unless((int) $reservation->seller_id === (int) panel_owner_id(), 403);
+        abort_unless((int) $reservation->admin_id === (int) panel_owner_id(), 403);
 
         DB::transaction(function () use ($reservation) {
             $tableId = (int) $reservation->table_id;
@@ -161,14 +167,14 @@ class ReservationController extends Controller
         }
 
         // Never override an occupied table from a reservation update.
-        if ($table->status === DiningTable::OCCUPIED) {
+        if ($table->status === TableStatus::OCCUPIED) {
             return;
         }
 
         $nextStatus = match ($reservation->status) {
-            Reservation::CONFIRMED, Reservation::PENDING => DiningTable::RESERVED,
-            Reservation::SEATED => DiningTable::OCCUPIED,
-            Reservation::CANCELLED => DiningTable::FREE,
+            ReservationStatus::CONFIRMED, ReservationStatus::PENDING => TableStatus::RESERVED,
+            ReservationStatus::SEATED => TableStatus::OCCUPIED,
+            ReservationStatus::CANCELLED => TableStatus::FREE,
             default => $table->status,
         };
 
@@ -181,21 +187,28 @@ class ReservationController extends Controller
     private function releaseTableIfIdle(int $tableId): void
     {
         $table = DiningTable::self()->whereKey($tableId)->lockForUpdate()->first();
-        if (! $table || $table->status === DiningTable::OCCUPIED) {
+        if (! $table || $table->status === TableStatus::OCCUPIED) {
             return;
         }
 
         $hasActive = Reservation::self()
             ->where('table_id', $tableId)
-            ->whereIn('status', [Reservation::PENDING, Reservation::CONFIRMED, Reservation::SEATED])
+            ->whereIn('status', [ReservationStatus::PENDING, ReservationStatus::CONFIRMED, ReservationStatus::SEATED])
             ->exists();
 
-        if (! $hasActive && $table->status === DiningTable::RESERVED) {
-            $table->update(['status' => DiningTable::FREE]);
+        if (! $hasActive && $table->status === TableStatus::RESERVED) {
+            $table->update(['status' => TableStatus::FREE]);
             event(new TableStatusChangedEvent($table->fresh()));
         }
     }
 }
+
+
+
+
+
+
+
 
 
 

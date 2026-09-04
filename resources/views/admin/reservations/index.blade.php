@@ -59,13 +59,13 @@
                         <td>
                             @php
                                 $badge = match ($reservation->status) {
-                                    'confirmed' => 'badge-success',
-                                    'pending' => 'badge-warning',
-                                    'seated' => 'badge-primary',
+                                    \App\Enums\ReservationStatus::CONFIRMED => 'badge-success',
+                                    \App\Enums\ReservationStatus::PENDING => 'badge-warning',
+                                    \App\Enums\ReservationStatus::SEATED => 'badge-primary',
                                     default => 'badge-light',
                                 };
                             @endphp
-                            <span class="{{ $badge }}">{{ ucfirst($reservation->status) }}</span>
+                            <span class="{{ $badge }}">{{ $reservation->status->label() }}</span>
                         </td>
                         <td class="text-right space-x-1">
                             <button class="btn btn-primary btn-sm"
@@ -76,7 +76,7 @@
                                         customer_phone: @js($reservation->customer_phone),
                                         guest_count: {{ $reservation->guest_count }},
                                         reservation_time: @js(optional($reservation->reservation_time)->format('Y-m-d\TH:i')),
-                                        status: @js($reservation->status),
+                                        status: @js($reservation->status->value),
                                         notes: @js($reservation->notes)
                                     } })">
                                 <i class="ri-edit-box-line"></i>

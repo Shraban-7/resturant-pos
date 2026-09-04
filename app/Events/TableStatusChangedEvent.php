@@ -23,8 +23,8 @@ class TableStatusChangedEvent implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel("admin.{$this->table->seller_id}.tables"),
-            new PrivateChannel("admin.{$this->table->seller_id}.pos"),
+            new PrivateChannel("admin.{$this->table->admin_id}.tables"),
+            new PrivateChannel("admin.{$this->table->admin_id}.pos"),
         ];
     }
 
@@ -45,4 +45,5 @@ class TableStatusChangedEvent implements ShouldBroadcastNow
         ];
     }
 }
+
 

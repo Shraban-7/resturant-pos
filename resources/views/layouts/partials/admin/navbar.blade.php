@@ -16,12 +16,12 @@
 </div>
 
 <div class="flex items-center gap-2">
-    @if (is_seller() && seller_branches()->isNotEmpty())
+    @if (auth()->check() && admin_branches()->isNotEmpty())
         <form action="{{ route('admin.branches.switch') }}" method="post" class="hidden sm:block">
             @csrf
             <select name="branch_id" class="form-control form-control-sm min-w-[10rem]" onchange="this.form.submit()">
                 <option value="" @selected(is_all_branches_mode())>All branches</option>
-                @foreach (seller_branches() as $branch)
+                @foreach (admin_branches() as $branch)
                     <option value="{{ $branch->id }}" @selected((int) active_branch_id() === (int) $branch->id && ! is_all_branches_mode())>
                         {{ $branch->name }}
                     </option>
@@ -87,4 +87,5 @@
         </div>
     </div>
 </div>
+
 

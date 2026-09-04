@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Enums\TableStatus;
+
 use App\Models\Branch;
 use App\Models\DiningTable;
 use App\Models\Floor;
@@ -15,25 +17,25 @@ class BranchFloorSeeder extends Seeder
         $ownerId = User::admin()->first()->id;
 
         // Branches come from BranchSeeder; here we only add floors + tables.
-        $branches = Branch::where('seller_id', $ownerId)->orderBy('id')->get();
+        $branches = Branch::where('admin_id', $ownerId)->orderBy('id')->get();
 
         foreach ($branches as $branch) {
 
             foreach (['Ground Floor' => 1, 'First Floor' => 2] as $floorName => $priority) {
                 $floor = Floor::firstOrCreate(
-                    ['seller_id' => $ownerId, 'name' => "{$branch->code} - {$floorName}"],
-                    ['seller_id' => $ownerId, 'name' => "{$branch->code} - {$floorName}", 'priority' => $priority]
+                    ['admin_id' => $ownerId, 'name' => "{$branch->code} - {$floorName}"],
+                    ['admin_id' => $ownerId, 'name' => "{$branch->code} - {$floorName}", 'priority' => $priority]
                 );
 
                 for ($i = 1; $i <= 5; $i++) {
                     DiningTable::firstOrCreate(
-                        ['seller_id' => $ownerId, 'branch_id' => $branch->id, 'name' => "T-{$branch->code}-{$floorName[0]}{$i}"],
+                        ['admin_id' => $ownerId, 'branch_id' => $branch->id, 'name' => "T-{$branch->code}-{$floorName[0]}{$i}"],
                         [
-                            'seller_id' => $ownerId,
+                            'admin_id' => $ownerId,
                             'branch_id' => $branch->id,
                             'floor_id' => $floor->id,
                             'name' => "T-{$branch->code}-{$floorName[0]}{$i}",
-                            'status' => DiningTable::FREE,
+                            'status' => TableStatus::FREE,
                         ]
                     );
                 }
@@ -41,3 +43,7 @@ class BranchFloorSeeder extends Seeder
         }
     }
 }
+
+
+
+

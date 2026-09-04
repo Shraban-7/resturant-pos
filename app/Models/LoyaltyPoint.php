@@ -12,9 +12,9 @@ class LoyaltyPoint extends Model
 
     protected $guarded = ['id'];
 
-    public function seller(): BelongsTo
+    public function admin(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'seller_id');
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     public function customer(): BelongsTo
@@ -27,3 +27,5 @@ class LoyaltyPoint extends Model
         return $this->belongsTo(Sale::class, 'sale_id');
     }
 }
+
+

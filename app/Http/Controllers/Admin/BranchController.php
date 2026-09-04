@@ -8,7 +8,7 @@ use App\Models\DiningTable;
 use App\Models\Floor;
 use App\Models\Reservation;
 use App\Models\Sale;
-use App\Models\SellerEmployee;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +34,7 @@ class BranchController extends Controller
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('branches', 'name')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
+                Rule::unique('branches', 'name')->where(fn ($q) => $q->where('admin_id', panel_owner_id())),
             ],
             'code' => 'nullable|string|max:32',
             'address' => 'nullable|string|max:255',
@@ -52,7 +52,7 @@ class BranchController extends Controller
             }
 
             $branch = Branch::create([
-                'seller_id' => panel_owner_id(),
+                'admin_id' => panel_owner_id(),
                 'name' => $data['name'],
                 'code' => $data['code'] ?? null,
                 'address' => $data['address'] ?? null,
@@ -73,7 +73,7 @@ class BranchController extends Controller
 
     public function update(Request $request, Branch $branch)
     {
-        abort_unless((int) $branch->seller_id === (int) panel_owner_id(), 403);
+        abort_unless((int) $branch->admin_id === (int) panel_owner_id(), 403);
 
         $data = $request->validate([
             'name' => [
@@ -81,7 +81,7 @@ class BranchController extends Controller
                 'string',
                 'max:100',
                 Rule::unique('branches', 'name')
-                    ->where(fn ($q) => $q->where('seller_id', panel_owner_id()))
+                    ->where(fn ($q) => $q->where('admin_id', panel_owner_id()))
                     ->ignore($branch->id),
             ],
             'code' => 'nullable|string|max:32',
@@ -114,12 +114,12 @@ class BranchController extends Controller
 
     public function destroy(Branch $branch)
     {
-        abort_unless((int) $branch->seller_id === (int) panel_owner_id(), 403);
+        abort_unless((int) $branch->admin_id === (int) panel_owner_id(), 403);
 
         DB::transaction(function () use ($branch) {
             DiningTable::self()->where('branch_id', $branch->id)->update(['branch_id' => null]);
             Floor::self()->where('branch_id', $branch->id)->update(['branch_id' => null]);
-            SellerEmployee::self()->where('branch_id', $branch->id)->update(['branch_id' => null]);
+            Employee::self()->where('branch_id', $branch->id)->update(['branch_id' => null]);
             Reservation::self()->where('branch_id', $branch->id)->update(['branch_id' => null]);
             // Keep historical sales.branch_id for reporting; do not null them.
 
@@ -151,7 +151,7 @@ class BranchController extends Controller
             'branch_id' => [
                 'nullable',
                 Rule::exists('branches', 'id')->where(fn ($q) => $q
-                    ->where('seller_id', panel_owner_id())
+                    ->where('admin_id', panel_owner_id())
                     ->where('is_active', true)),
             ],
         ]);
@@ -165,6 +165,7 @@ class BranchController extends Controller
         return back()->with('success', 'Active branch updated.');
     }
 }
+
 
 
 

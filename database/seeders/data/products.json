@@ -561,5 +561,105 @@
             "dinner"
         ],
         "type": "buffet"
+    },
+    {
+        "name": "Miniket Rice",
+        "category": "Raw Ingredients",
+        "buying_price": 72,
+        "selling_price": 78,
+        "stock_in": 200,
+        "unit": "KILOGRAMS",
+        "meal": "all",
+        "type": "ingredient"
+    },
+    {
+        "name": "Boiler Chicken",
+        "category": "Raw Ingredients",
+        "buying_price": 175,
+        "selling_price": 185,
+        "stock_in": 150,
+        "unit": "KILOGRAMS",
+        "meal": "all",
+        "type": "ingredient"
+    },
+    {
+        "name": "Beef (Bone-in)",
+        "category": "Raw Ingredients",
+        "buying_price": 680,
+        "selling_price": 700,
+        "stock_in": 80,
+        "unit": "KILOGRAMS",
+        "meal": "all",
+        "type": "ingredient"
+    },
+    {
+        "name": "Farm Eggs",
+        "category": "Raw Ingredients",
+        "buying_price": 130,
+        "selling_price": 140,
+        "stock_in": 100,
+        "unit": "DOZENS",
+        "meal": "all",
+        "type": "ingredient"
+    },
+    {
+        "name": "Soybean Oil",
+        "category": "Raw Ingredients",
+        "buying_price": 165,
+        "selling_price": 175,
+        "stock_in": 100,
+        "unit": "LITRE",
+        "meal": "all",
+        "type": "ingredient"
+    },
+    {
+        "name": "Onion (Deshi)",
+        "category": "Raw Ingredients",
+        "buying_price": 85,
+        "selling_price": 95,
+        "stock_in": 120,
+        "unit": "KILOGRAMS",
+        "meal": "all",
+        "type": "ingredient"
+    },
+    {
+        "name": "Mixed Spices (Garam Masala)",
+        "category": "Raw Ingredients",
+        "buying_price": 850,
+        "selling_price": 900,
+        "stock_in": 30,
+        "unit": "KILOGRAMS",
+        "meal": "all",
+        "type": "ingredient"
+    },
+    {
+        "name": "Flour (Maida)",
+        "category": "Raw Ingredients",
+        "buying_price": 70,
+        "selling_price": 78,
+        "stock_in": 120,
+        "unit": "KILOGRAMS",
+        "meal": "all",
+        "type": "ingredient"
+    },
+    {
+        "name": "Sugar",
+        "category": "Raw Ingredients",
+        "buying_price": 125,
+        "selling_price": 135,
+        "stock_in": 100,
+        "unit": "KILOGRAMS",
+        "meal": "all",
+        "type": "ingredient"
+    },
+    {
+        "name": "Fresh Milk",
+        "category": "Raw Ingredients",
+        "buying_price": 85,
+        "selling_price": 95,
+        "stock_in": 100,
+        "unit": "LITRE",
+        "meal": "all",
+        "type": "ingredient"
     }
 ]

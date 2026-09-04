@@ -44,9 +44,9 @@
         @forelse($tables as $table)
             @php
                 $color = match ($table->status) {
-                    \App\Models\DiningTable::FREE => 'bg-emerald-500',
-                    \App\Models\DiningTable::RESERVED => 'bg-amber-500',
-                    \App\Models\DiningTable::CLEANING => 'bg-sky-500',
+                    \App\Enums\TableStatus::FREE => 'bg-emerald-500',
+                    \App\Enums\TableStatus::RESERVED => 'bg-amber-500',
+                    \App\Enums\TableStatus::CLEANING => 'bg-sky-500',
                     default => 'bg-rose-500',
                 };
             @endphp
@@ -54,7 +54,7 @@
                  data-id="{{ $table->id }}"
                  style="left: {{ (int) $table->x_position }}px; top: {{ (int) $table->y_position }}px;">
                 <span class="font-semibold text-sm">{{ $table->name }}</span>
-                <span class="text-[10px] uppercase opacity-90">{{ $table->status }}</span>
+                <span class="text-[10px] uppercase opacity-90">{{ $table->status->value }}</span>
             </div>
         @empty
             <div class="absolute inset-0 flex items-center justify-center text-slate-400">
@@ -132,4 +132,6 @@
 })();
 </script>
 @endpush
+
+
 

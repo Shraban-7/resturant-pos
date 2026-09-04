@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\GiftCardController;
 use App\Http\Controllers\Admin\KdsController;
 use App\Http\Controllers\Admin\LoyaltyController;
 use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\PurchaseController;
+use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\OfflineSyncController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ProductController;
@@ -52,7 +54,7 @@ Route::middleware('guest')->group(function () {
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Admin panel routes (single panel: admin + employees via RBAC)...
-Route::middleware(['auth', 'seller'])->prefix('admin')->as('admin.')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:dashboard');
 
@@ -85,6 +87,18 @@ Route::middleware(['auth', 'seller'])->prefix('admin')->as('admin.')->group(func
         Route::get('/', [SaleController::class, 'index'])->name('index');
         Route::get('/invoice/{sale:order_id}', [SaleController::class, 'invoice'])->name('invoice');
         Route::get('/{sale}/mark-paid', [SaleController::class, 'markPaid'])->name('mark-paid');
+    });
+
+    Route::prefix('suppliers')->as('suppliers.')->middleware('permission:products')->group(function () {
+        Route::get('/', [SupplierController::class, 'index'])->name('index');
+        Route::post('/', [SupplierController::class, 'store'])->name('store');
+        Route::put('/{supplier}', [SupplierController::class, 'update'])->name('update');
+        Route::delete('/{supplier}', [SupplierController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('purchases')->as('purchases.')->middleware('permission:products')->group(function () {
+        Route::get('/', [PurchaseController::class, 'index'])->name('index');
+        Route::post('/', [PurchaseController::class, 'store'])->name('store');
     });
 
     Route::prefix('products')->as('products.')->middleware('permission:products')->group(function () {
@@ -187,4 +201,5 @@ Route::prefix('seller')->group(function () {
         return redirect('/'.$path.$query, 301);
     })->where('any', '.*');
 });
+
 

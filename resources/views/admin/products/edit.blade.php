@@ -39,8 +39,9 @@
                         <div>
                             <label class="form-label">Type</label>
                             <select name="type" class="form-select">
-                                <option value="dish" @selected(($product->type ?? 'dish') === 'dish')>Dish (per item, stock tracked)</option>
-                                <option value="buffet" @selected(($product->type ?? 'dish') === 'buffet')>Buffet (per person, unlimited)</option>
+                                <option value="dish" @selected($product->type === \App\Enums\ProductType::DISH)>Dish (sellable, stock tracked)</option>
+                                <option value="buffet" @selected($product->type === \App\Enums\ProductType::BUFFET)>Buffet (per person, unlimited)</option>
+                                <option value="ingredient" @selected($product->type === \App\Enums\ProductType::INGREDIENT)>Raw ingredient (recipe use only, never sold)</option>
                             </select>
                         </div>
 
@@ -77,7 +78,7 @@
                         <div class="md:col-span-2">
                             <label class="form-label">Served at <span class="text-slate-500 text-xs">(all ticked or unticked = all day)</span></label>
                             <div class="flex flex-wrap gap-4">
-                                @foreach (\App\Models\Product::MEAL_SLOTS as $slot)
+                                @foreach (\App\Enums\MealSlot::values() as $slot)
                                     <label class="flex items-center gap-1.5 text-sm text-slate-700">
                                         <input type="checkbox" name="meal_times[]" value="{{ $slot }}" class="rounded"
                                             @checked(empty($product->meal_times) || in_array($slot, $product->meal_times ?? []))>
@@ -118,4 +119,7 @@
 </form>
 
 @endsection
+
+
+
 

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\TableStatus;
+
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
 use App\Actions\ResolveProductModifiersAction;
@@ -12,7 +14,7 @@ use App\Models\Customer;
 use App\Models\DiningTable;
 use App\Models\Product;
 use App\Models\Sale;
-use App\Models\SellerEmployee;
+use App\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -60,10 +62,10 @@ class OfflineSyncController extends Controller
 
     private function reconcile(array $order): array
     {
-        $sellerId = (int) panel_owner_id();
+        $ownerId = (int) panel_owner_id();
 
         $existing = Sale::query()
-            ->where('seller_id', $sellerId)
+            ->where('admin_id', $ownerId)
             ->where('client_order_id', $order['client_order_id'])
             ->first();
 
@@ -71,10 +73,10 @@ class OfflineSyncController extends Controller
             return $this->ack($existing, $order['client_order_id'], true);
         }
 
-        $sale = DB::transaction(function () use ($order, $sellerId) {
+        $sale = DB::transaction(function () use ($order, $ownerId) {
             // The unique index is the final protection against concurrent replay.
             $existing = Sale::query()
-                ->where('seller_id', $sellerId)
+                ->where('admin_id', $ownerId)
                 ->where('client_order_id', $order['client_order_id'])
                 ->lockForUpdate()
                 ->first();
@@ -86,7 +88,7 @@ class OfflineSyncController extends Controller
             $tableId = $order['dining_table_id'] ?? null;
             if ($tableId) {
                 DiningTable::query()
-                    ->where('seller_id', $sellerId)
+                    ->where('admin_id', $ownerId)
                     ->whereKey($tableId)
                     ->lockForUpdate()
                     ->firstOrFail();
@@ -95,7 +97,7 @@ class OfflineSyncController extends Controller
             $cart = null;
             if (! empty($order['source_order_id'])) {
                 $cart = Cart::query()
-                    ->where('seller_id', $sellerId)
+                    ->where('admin_id', $ownerId)
                     ->where('order_id', $order['source_order_id'])
                     ->with(['items.item.unit', 'items.item.recipe.ingredients.ingredientProduct'])
                     ->lockForUpdate()
@@ -103,24 +105,24 @@ class OfflineSyncController extends Controller
             }
 
             $customerId = $order['customer_id'] ?? null;
-            if ($customerId && ! Customer::query()->where('seller_id', $sellerId)->whereKey($customerId)->exists()) {
+            if ($customerId && ! Customer::query()->where('admin_id', $ownerId)->whereKey($customerId)->exists()) {
                 throw ValidationException::withMessages([
-                    'customer_id' => 'The selected customer does not belong to this seller.',
+                    'customer_id' => 'The selected customer does not belong to the store.',
                 ]);
             }
 
             if (! $customerId && ! empty($order['customer_name']) && ! empty($order['customer_phone'])) {
                 $customerId = Customer::create([
-                    'seller_id' => $sellerId,
+                    'admin_id' => $ownerId,
                     'name' => $order['customer_name'],
                     'phone' => $order['customer_phone'],
                 ])->id;
             }
 
-            $employeeId = $order['seller_employee_id'] ?? null;
-            if ($employeeId && ! SellerEmployee::query()->where('seller_id', $sellerId)->whereKey($employeeId)->exists()) {
+            $employeeId = $order['employee_id'] ?? null;
+            if ($employeeId && ! Employee::query()->where('admin_id', $ownerId)->whereKey($employeeId)->exists()) {
                 throw ValidationException::withMessages([
-                    'seller_employee_id' => 'The selected employee does not belong to this seller.',
+                    'employee_id' => 'The selected employee does not belong to the store.',
                 ]);
             }
 
@@ -129,7 +131,7 @@ class OfflineSyncController extends Controller
 
             foreach ($order['items'] as $line) {
                 $product = Product::query()
-                    ->where('seller_id', $sellerId)
+                    ->where('admin_id', $ownerId)
                     ->whereKey($line['product_id'])
                     ->with(['unit', 'modifiers', 'recipe.ingredients.ingredientProduct'])
                     ->lockForUpdate()
@@ -155,7 +157,7 @@ class OfflineSyncController extends Controller
                 $subtotal += $total;
 
                 $saleItems[] = [
-                    'seller_id' => $sellerId,
+                    'admin_id' => $ownerId,
                     'item_id' => $product->id,
                     'item_name' => $product->name,
                     'buying_price' => $product->buying_price,
@@ -187,17 +189,17 @@ class OfflineSyncController extends Controller
             $branchId = null;
             if ($tableId) {
                 $branchId = DiningTable::query()
-                    ->where('seller_id', $sellerId)
+                    ->where('admin_id', $ownerId)
                     ->whereKey($tableId)
                     ->value('branch_id');
             }
 
             $sale = Sale::create([
-                'seller_id' => $sellerId,
+                'admin_id' => $ownerId,
                 'branch_id' => $branchId,
                 'customer_id' => $customerId,
                 'dining_table_id' => $tableId,
-                'seller_employee_id' => $employeeId,
+                'employee_id' => $employeeId,
                 'order_id' => generateOrderId(),
                 'client_order_id' => $order['client_order_id'],
                 'device_id' => $order['device_id'],
@@ -224,9 +226,9 @@ class OfflineSyncController extends Controller
 
             if ($tableId) {
                 DiningTable::query()
-                    ->where('seller_id', $sellerId)
+                    ->where('admin_id', $ownerId)
                     ->whereKey($tableId)
-                    ->update(['status' => DiningTable::OCCUPIED]);
+                    ->update(['status' => TableStatus::OCCUPIED]);
             }
 
             $sale->load(['items', 'table']);
@@ -260,5 +262,10 @@ class OfflineSyncController extends Controller
         ];
     }
 }
+
+
+
+
+
 
 

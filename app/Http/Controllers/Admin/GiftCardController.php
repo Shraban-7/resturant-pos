@@ -27,7 +27,7 @@ class GiftCardController extends Controller
         $code = 'GC-' . strtoupper(Str::random(10));
 
         GiftCard::create([
-            'seller_id' => panel_owner_id(),
+            'admin_id' => panel_owner_id(),
             'code' => $code,
             'initial_value' => $request->initial_value,
             'balance' => $request->initial_value,
@@ -65,6 +65,7 @@ class GiftCardController extends Controller
         ], 'Gift card verified');
     }
 }
+
 
 
 

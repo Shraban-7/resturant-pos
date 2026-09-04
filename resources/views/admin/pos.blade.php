@@ -232,7 +232,7 @@
 @push('footer')
 <script>
     window.POS_OFFLINE_CONFIG = {
-        seller_id: {{ (int) auth()->id() }},
+        admin_id: {{ (int) auth()->id() }},
         currency: 'BDT',
         products: {!! json_encode($offlineProducts ?? []) !!},
         categories: {!! json_encode($offlineCategories ?? []) !!},
@@ -301,14 +301,14 @@
             return {
                 client_order_id: clientOrderId,
                 device_id: deviceId,
-                seller_id: {{ (int) auth()->id() }},
+                admin_id: {{ (int) auth()->id() }},
                 source_order_id: orderId,
                 channel: tableId ? 'dine_in' : 'retail',
                 dining_table_id: tableId,
                 customer_id: Number($customerSelect?.value || 0) || null,
                 customer_name: $customerName?.value || null,
                 customer_phone: $customerPhone?.value || null,
-                seller_employee_id: Number($employeeSelect?.value || 0) || null,
+                employee_id: Number($employeeSelect?.value || 0) || null,
                 items: offlineCartItems(),
                 amounts: {
                     subtotal,
@@ -967,7 +967,7 @@
         // --- Real-time kitchen / order updates ---
         (function subscribePosEcho() {
             if (!window.Echo) return;
-            const sellerId = {{ (int) panel_owner_id() }};
+            const ownerId = {{ (int) panel_owner_id() }};
             const readyBadge = document.getElementById('posKitchenReadyBadge');
             let readyCount = 0;
 
@@ -982,7 +982,7 @@
                 }
             }
 
-            window.Echo.private(`admin.${sellerId}.pos`)
+            window.Echo.private(`admin.${ownerId}.pos`)
                 .listen('.OrderPlaced', (e) => {
                     if (window.toast) {
                         window.toast.info(`Sent to kitchen: ${e.table_name || e.ticket_number}`);
@@ -1049,6 +1049,8 @@
 @endpush
 
 @endsection
+
+
 
 
 

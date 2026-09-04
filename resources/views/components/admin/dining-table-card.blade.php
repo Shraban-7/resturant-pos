@@ -1,13 +1,13 @@
 @php
-    use \App\Models\DiningTable;
+    use \App\Enums\TableStatus;
     $statusStyles = match ($table->status) {
-        DiningTable::OCCUPIED => 'bg-red-50 text-red-700 border-red-200 hover:border-red-300',
-        DiningTable::RESERVED => 'bg-amber-50 text-amber-800 border-amber-200 hover:border-amber-300',
+        TableStatus::OCCUPIED => 'bg-red-50 text-red-700 border-red-200 hover:border-red-300',
+        TableStatus::RESERVED => 'bg-amber-50 text-amber-800 border-amber-200 hover:border-amber-300',
         default              => 'bg-white text-slate-700 border-slate-200 hover:border-slate-300',
     };
     $statusIcon = match ($table->status) {
-        DiningTable::OCCUPIED => 'ri-sofa-fill',
-        DiningTable::RESERVED => 'ri-time-line',
+        TableStatus::OCCUPIED => 'ri-sofa-fill',
+        TableStatus::RESERVED => 'ri-time-line',
         default               => 'ri-sofa-line',
     };
 @endphp
@@ -16,11 +16,11 @@
     <button type="button"
             class="dining-table-card dining-table-chip {{ $statusStyles }}"
             data-table-id="{{ $table->id }}"
-            data-status="{{ $table->status }}"
+            data-status="{{ $table->status->value }}"
             @click="open = true">
         <i class="{{ $statusIcon }} text-base"></i>
         <span class="font-semibold">{{ $table->name }}</span>
-        <span class="dining-table-card-status">{{ ucfirst($table->status) }}</span>
+        <span class="dining-table-card-status">{{ $table->status->label() }}</span>
     </button>
 
     <template x-teleport="body">
@@ -65,4 +65,6 @@
         </div>
     </template>
 </div>
+
+
 

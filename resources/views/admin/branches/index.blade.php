@@ -144,7 +144,7 @@
      x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-5" @click.outside="open = false">
         <h3 class="text-lg font-semibold mb-4">Edit Branch</h3>
-        <form method="post" :action="`{{ url('seller/branches') }}/${branch.id}`" class="space-y-3">
+        <form method="post" :action="`{{ url('admin/branches') }}/${branch.id}`" class="space-y-3">
             @csrf
             @method('PUT')
             <div>

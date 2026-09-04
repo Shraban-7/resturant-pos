@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TableStatus;
 use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,24 +16,23 @@ class DiningTable extends Model
 
     protected $guarded = ['id'];
 
-    const FREE = 'free';
-    const OCCUPIED = 'occupied';
-    const RESERVED = 'reserved';
-    const CLEANING = 'cleaning';
+    protected $casts = [
+        'status' => TableStatus::class,
+    ];
 
     public static function statuses(): array
     {
-        return [
-            self::FREE,
-            self::OCCUPIED,
-            self::RESERVED,
-            self::CLEANING,
-        ];
+        return TableStatus::values();
     }
 
-    public function seller(): BelongsTo
+    public function isFree(): bool
     {
-        return $this->belongsTo(User::class, 'seller_id');
+        return $this->status === TableStatus::FREE;
+    }
+
+    public function admin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     public function floor(): BelongsTo
@@ -68,7 +68,9 @@ class DiningTable extends Model
 
     public function scopeSelf($query)
     {
-        return $query->where('seller_id', panel_owner_id());
+        return $query->where('admin_id', panel_owner_id());
     }
 }
+
+
 

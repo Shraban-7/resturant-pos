@@ -21,10 +21,10 @@ class OrderPlacedEvent implements ShouldBroadcastNow
 
     public function broadcastOn(): array
     {
-        $sellerId = $this->ticket->seller_id;
+        $ownerId = $this->ticket->admin_id;
         $channels = [
-            new PrivateChannel("admin.{$sellerId}.kds"),
-            new PrivateChannel("admin.{$sellerId}.pos"),
+            new PrivateChannel("admin.{$ownerId}.kds"),
+            new PrivateChannel("admin.{$ownerId}.pos"),
         ];
 
         $token = $this->ticket->diningTable?->qr_code_token;
@@ -71,4 +71,6 @@ class OrderPlacedEvent implements ShouldBroadcastNow
         ];
     }
 }
+
+
 

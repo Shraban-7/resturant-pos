@@ -55,7 +55,7 @@
                 <option value="{{ $sale->table->id }}" selected>{{ $sale->table->name }}</option>
             @endif
             @foreach ($diningTables as $table)
-                @if ($table->status !== 'occupied')
+                @if ($table->status !== \App\Enums\TableStatus::OCCUPIED)
                     <option value="{{ $table->id }}">{{ $table->name }}</option>
                 @endif
             @endforeach

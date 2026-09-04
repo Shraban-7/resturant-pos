@@ -37,7 +37,7 @@
     </script>
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .hero-bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+        .hero-bg { background: #131c33; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { scrollbar-width: none; }
         [x-cloak] { display: none !important; }
@@ -140,7 +140,7 @@
             <h3 class="font-bold text-slate-900 flex items-center gap-2"><span class="h-5 w-1 rounded bg-orange-600 inline-block"></span>{{ $cat->name }}</h3>
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mt-3">
                 @foreach ($cat->products as $product)
-                    <div x-show="'{{ strtolower($product->name) }}'.includes(query.toLowerCase()) && (slot === 'all' || {{ empty($product->meal_times) ? 'true' : 'false' }} || @js($product->meal_times ?? []).includes(slot))"
+                    <div x-show="'{{ strtolower($product->name) }}'.includes(query.toLowerCase()) && (slot === 'all' || {{ (!$product->meal_times || $product->meal_times->isEmpty()) ? 'true' : 'false' }} || @js($product->meal_times?->map(fn ($m) => $m->value)->all() ?? []).includes(slot))"
                          class="bg-white border border-slate-200/70 rounded-2xl overflow-hidden hover:shadow-md hover:border-orange-200 transition">
                         @if ($product->image)
                             <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="h-32 md:h-40 w-full object-cover" loading="lazy">
@@ -150,19 +150,19 @@
                         <div class="p-3">
                             <p class="font-semibold text-sm text-slate-900 truncate">{{ $product->name }}</p>
                             <p class="mt-1 flex flex-wrap gap-1">
-                                @if (empty($product->meal_times))
+                                @if (!$product->meal_times || $product->meal_times->isEmpty())
                                     <span class="text-[10px] font-semibold text-sky-700 bg-sky-50 rounded-full px-2 py-0.5">All day</span>
                                 @else
                                     @foreach ($product->meal_times as $slot)
-                                        <span class="text-[10px] font-semibold text-amber-700 bg-amber-50 rounded-full px-2 py-0.5">{{ ucfirst($slot) }}</span>
+                                        <span class="text-[10px] font-semibold text-amber-700 bg-amber-50 rounded-full px-2 py-0.5">{{ $slot->label() }}</span>
                                     @endforeach
                                 @endif
                             </p>
-                            @if (($product->type ?? 'dish') === 'buffet')
+                            @if ($product->type === \App\Enums\ProductType::BUFFET)
                                 <p class="mt-1"><span class="text-[10px] font-bold text-white bg-emerald-600 rounded-full px-2 py-0.5">BUFFET · per person</span></p>
                             @endif
                             <div class="flex items-center justify-between mt-1.5">
-                                <p class="font-bold text-orange-700 text-sm">{{ money($product->selling_price) }}@if (($product->type ?? 'dish') === 'buffet')<span class="font-medium text-slate-500">/person</span>@endif</p>
+                                <p class="font-bold text-orange-700 text-sm">{{ money($product->selling_price) }}@if ($product->type === \App\Enums\ProductType::BUFFET)<span class="font-medium text-slate-500">/person</span>@endif</p>
                                 @if (($product->stock_in - $product->stock_out) > 0)
                                     <span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 rounded-full px-2 py-0.5">Available</span>
                                 @else
@@ -350,3 +350,4 @@ function storefront() {
 </script>
 </body>
 </html>
+

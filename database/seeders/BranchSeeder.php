@@ -46,9 +46,10 @@ class BranchSeeder extends Seeder
 
         foreach ($branches as $data) {
             Branch::firstOrCreate(
-                ['seller_id' => $ownerId, 'code' => $data['code']],
-                $data + ['seller_id' => $ownerId]
+                ['admin_id' => $ownerId, 'code' => $data['code']],
+                $data + ['admin_id' => $ownerId]
             );
         }
     }
 }
+

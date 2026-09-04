@@ -26,7 +26,7 @@
         ])->values()->all(),
         'created_at' => optional($t->created_at)?->toIso8601String(),
         'fired_at' => optional($t->fired_at ?? $t->created_at)?->toIso8601String(),
-    ])->values()), {{ (int) $sellerId }})"
+    ])->values()), {{ (int) $ownerId }})"
     x-cloak
 >
     <div class="sticky top-0 z-20 bg-slate-900 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 shadow-md">
@@ -143,10 +143,10 @@
 
 @push('footer')
 <script>
-function kdsApp(initialTickets, sellerId) {
+function kdsApp(initialTickets, ownerId) {
     return {
         tickets: initialTickets || [],
-        sellerId,
+        ownerId,
         connected: false,
         soundEnabled: true,
         busyId: null,
@@ -175,7 +175,7 @@ function kdsApp(initialTickets, sellerId) {
                 console.warn('Echo not available');
                 return;
             }
-            const channel = window.Echo.private(`admin.${this.sellerId}.kds`);
+            const channel = window.Echo.private(`admin.${this.ownerId}.kds`);
             channel
                 .subscribed(() => { this.connected = true; })
                 .error(() => { this.connected = false; })
@@ -267,5 +267,6 @@ function kdsApp(initialTickets, sellerId) {
 }
 </script>
 @endpush
+
 
 

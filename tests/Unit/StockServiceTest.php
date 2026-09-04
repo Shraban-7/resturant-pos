@@ -27,7 +27,7 @@ class StockServiceTest extends TestCase
     private function product(int $stockIn = 100, int $stockOut = 0): Product
     {
         return Product::create([
-            'seller_id' => 1,
+            'admin_id' => 1,
             'category_id' => 1,
             'unit_id' => $this->unitId,
             'name' => 'Test Product',
@@ -123,3 +123,4 @@ class StockServiceTest extends TestCase
         $this->assertSame(20, (int) $product->fresh()->stock_out);
     }
 }
+

@@ -54,7 +54,7 @@
                             @if ($sale->dining_table_id)
                                 <span class="badge badge-light">Table {{ $sale->dining_table_id }}</span>
                             @endif
-                            @if ($sale->seller_employee_id && $sale->waiter)
+                            @if ($sale->employee_id && $sale->waiter)
                                 <span class="text-xs text-slate-500 ml-1">W: {{ $sale->waiter->name }}</span>
                             @endif
                         </td>
@@ -93,4 +93,5 @@
 </div>
 
 @endsection
+
 

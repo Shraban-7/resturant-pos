@@ -44,18 +44,20 @@
                                     <span class="flex items-center justify-center h-12 w-12 rounded-lg bg-slate-100 text-slate-400 text-xl"><i class="ri-bowl-line"></i></span>
                                 @endif
                                 <span class="font-medium text-slate-800">{{ $product->name }}</span>
-                                @if (($product->type ?? 'dish') === 'buffet')
+                                @if ($product->type === \App\Enums\ProductType::BUFFET)
                                     <span class="badge badge-success" title="Per-person buffet, unlimited">Buffet</span>
+                                @elseif ($product->type === \App\Enums\ProductType::INGREDIENT)
+                                    <span class="badge badge-light" title="Raw material for recipes, never sold">Raw</span>
                                 @endif
                             </div>
                         </td>
                         <td>
                             <span class="badge badge-light">{{ $product->category->name }}</span>
-                            @if (empty($product->meal_times))
+                            @if (!$product->meal_times || $product->meal_times->isEmpty())
                                 <span class="badge badge-success" title="Served all day">All day</span>
                             @else
                                 @foreach ($product->meal_times as $slot)
-                                    <span class="badge badge-light" title="Served at {{ $slot }}">{{ ucfirst(substr($slot, 0, 5)) }}</span>
+                                    <span class="badge badge-light" title="Served at {{ $slot->value }}">{{ $slot->label() }}</span>
                                 @endforeach
                             @endif
                         </td>
@@ -64,9 +66,17 @@
                         <td>{{ $product->stock_out }}</td>
                         <td class="text-right">
                             <div class="inline-flex items-center gap-1">
-                                <a href="{{ route('admin.products.recipe.edit', $product) }}" class="btn btn-secondary btn-sm" title="Recipe BOM">
-                                    <i class="ri-flask-line"></i>
-                                </a>
+                                @if ($product->type === \App\Enums\ProductType::DISH)
+                                    @php $ingredientCount = $product->recipe ? $product->recipe->ingredients->count() : 0; @endphp
+                                    <a href="{{ route('admin.products.recipe.edit', $product) }}"
+                                       class="btn {{ $product->recipe ? 'btn-success' : 'btn-secondary' }} btn-sm"
+                                       title="{{ $product->recipe ? "Recipe BOM ({$ingredientCount} ingredients)" : 'Add recipe BOM' }}">
+                                        <i class="ri-flask-line"></i>
+                                        @if ($product->recipe)
+                                            <span class="text-[10px] font-bold">{{ $ingredientCount }}</span>
+                                        @endif
+                                    </a>
+                                @endif
                                 <a href="{{ route('admin.products.modifiers.index', $product) }}" class="btn btn-secondary btn-sm" title="Modifiers">
                                     <i class="ri-list-settings-line"></i>
                                 </a>
@@ -105,4 +115,5 @@
 </div>
 
 @endsection
+
 

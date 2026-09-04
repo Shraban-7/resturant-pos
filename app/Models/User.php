@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -29,6 +30,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'permissions' => 'array',
+        'role' => UserRole::class,
     ];
 
     public function parent()
@@ -49,7 +51,7 @@ class User extends Authenticatable
      */
     public function ownerId(): int
     {
-        if ($this->role === 'employee' && $this->parent_id) {
+        if ($this->role === UserRole::EMPLOYEE && $this->parent_id) {
             $parent = static::query()->find($this->parent_id);
 
             return $parent ? $parent->ownerId() : (int) $this->parent_id;
@@ -57,7 +59,7 @@ class User extends Authenticatable
 
         if ($this->isAdmin()) {
             $first = static::query()
-                ->whereIn('role', ['admin', 'seller', 'supplier'])
+                ->whereIn('role', [UserRole::ADMIN, 'seller', 'supplier'])
                 ->orderBy('id')
                 ->value('id');
 
@@ -75,13 +77,13 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        // Legacy `seller` / `supplier` accounts are admins of the single panel.
-        return in_array($this->role, ['admin', 'seller', 'supplier'], true);
+        // Legacy seller/supplier accounts are admins of the single panel.
+        return in_array($this->role, [UserRole::ADMIN, UserRole::SELLER, UserRole::SUPPLIER], true);
     }
 
     public function isEmployee(): bool
     {
-        return $this->role === 'employee';
+        return $this->role === UserRole::EMPLOYEE;
     }
 
     public function hasPermission(string $permission): bool
@@ -95,18 +97,7 @@ class User extends Authenticatable
 
     public function scopeAdmin($query)
     {
-        return $query->whereIn('role', ['admin', 'seller', 'supplier']);
-    }
-
-    /** Back-compat: old `seller` role is now `admin`. */
-    public function scopeSeller($query)
-    {
-        return $query->whereIn('role', ['admin', 'seller']);
-    }
-
-    /** Back-compat: old `supplier` role data now owned by admin. */
-    public function scopeSupplier($query)
-    {
-        return $query->whereIn('role', ['admin', 'supplier']);
+        // Legacy roles from before the single-panel RBAC still map to admin.
+        return $query->whereIn('role', [UserRole::ADMIN, 'seller', 'supplier']);
     }
 }

@@ -25,6 +25,8 @@
             <ul class="sidebar-list">
                 @can('products')
                     <x-sidebar-list-item :title="'Products'" :icon="'ri-box-3-line'" :route="'admin.products.index'" />
+                    <x-sidebar-list-item :title="'Suppliers'" :icon="'ri-truck-line'" :route="'admin.suppliers.index'" />
+                    <x-sidebar-list-item :title="'Purchases'" :icon="'ri-shopping-basket-line'" :route="'admin.purchases.index'" />
                 @endcan
                 @can('stocks')
                     <x-sidebar-list-item :title="'Stock History'" :icon="'ri-stock-line'" :route="'admin.stocks.index'" />

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\KitchenStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,32 +14,26 @@ class KitchenTicket extends Model
 
     protected $guarded = ['id'];
 
-    public const PENDING = 'pending';
-    public const PREPARING = 'preparing';
-    public const READY = 'ready';
-    public const SERVED = 'served';
-    public const CANCELLED = 'cancelled';
-
     protected $casts = [
         'fired_at' => 'datetime',
         'prepared_at' => 'datetime',
         'served_at' => 'datetime',
+        'status' => KitchenStatus::class,
     ];
 
     public static function statuses(): array
     {
-        return [
-            self::PENDING,
-            self::PREPARING,
-            self::READY,
-            self::SERVED,
-            self::CANCELLED,
-        ];
+        return KitchenStatus::values();
     }
 
-    public function seller(): BelongsTo
+    public function isOpen(): bool
     {
-        return $this->belongsTo(User::class, 'seller_id');
+        return in_array($this->status, [KitchenStatus::PENDING, KitchenStatus::PREPARING, KitchenStatus::READY], true);
+    }
+
+    public function admin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     public function sale(): BelongsTo
@@ -64,12 +59,14 @@ class KitchenTicket extends Model
 
     public function scopeSelf($query)
     {
-        return $query->where('seller_id', panel_owner_id());
+        return $query->where('admin_id', panel_owner_id());
     }
 
     public function scopeActiveQueue($query)
     {
-        return $query->whereIn('status', [self::PENDING, self::PREPARING, self::READY]);
+        return $query->whereIn('status', [KitchenStatus::PENDING, KitchenStatus::PREPARING, KitchenStatus::READY]);
     }
 }
+
+
 

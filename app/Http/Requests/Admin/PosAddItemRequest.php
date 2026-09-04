@@ -8,7 +8,7 @@ class PosAddItemRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return is_seller();
+        return auth()->check();
     }
 
     public function rules(): array
@@ -28,4 +28,5 @@ class PosAddItemRequest extends FormRequest
         ];
     }
 }
+
 

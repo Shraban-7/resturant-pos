@@ -14,9 +14,9 @@ class Floor extends Model
 
     protected $guarded = ['id'];
 
-    public function seller(): BelongsTo
+    public function admin(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'seller_id');
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     public function tables(): HasMany
@@ -26,7 +26,9 @@ class Floor extends Model
 
     public function scopeSelf($query)
     {
-        return $query->where('seller_id', panel_owner_id());
+        return $query->where('admin_id', panel_owner_id());
     }
 }
+
+
 

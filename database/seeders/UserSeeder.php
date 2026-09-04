@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // Previous seller login kept as full admin (all permissions via isAdmin).
+        // Legacy login kept as full admin (all permissions via isAdmin).
         User::firstOrCreate(
             ['email' => 'seller@gmail.com'],
             [
@@ -56,9 +56,10 @@ class UserSeeder extends Seeder
 
         foreach ($customers as $data) {
             Customer::firstOrCreate(
-                ['seller_id' => $admin->id, 'phone' => $data['phone']],
-                $data + ['seller_id' => $admin->id]
+                ['admin_id' => $admin->id, 'phone' => $data['phone']],
+                $data + ['admin_id' => $admin->id]
             );
         }
     }
 }
+
