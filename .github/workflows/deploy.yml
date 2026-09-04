@@ -1,0 +1,26 @@
+name: Deploy to shared hosting
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: shared-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.PROJECT_PATH }}"
+            export PHP_BIN="${{ secrets.PHP_BIN }}"
+            ./deploy-shared.sh
