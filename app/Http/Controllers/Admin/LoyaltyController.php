@@ -12,7 +12,7 @@ class LoyaltyController extends Controller
     public function index()
     {
         $customers = Customer::self()->latest('id')->paginate(15);
-        $logs = LoyaltyPoint::where('seller_id', auth()->id())->with('customer', 'sale')->latest('id')->limit(20)->get();
+        $logs = LoyaltyPoint::where('seller_id', panel_owner_id())->with('customer', 'sale')->latest('id')->limit(20)->get();
 
         return view('admin.loyalty.index', compact('customers', 'logs'));
     }
@@ -28,7 +28,7 @@ class LoyaltyController extends Controller
         $customer = Customer::self()->findOrFail($request->customer_id);
 
         LoyaltyPoint::create([
-            'seller_id' => auth()->id(),
+            'seller_id' => panel_owner_id(),
             'customer_id' => $customer->id,
             'type' => 'adjusted',
             'points' => $request->points,
@@ -40,5 +40,6 @@ class LoyaltyController extends Controller
         return back()->with('success', 'Loyalty points adjusted successfully');
     }
 }
+
 
 

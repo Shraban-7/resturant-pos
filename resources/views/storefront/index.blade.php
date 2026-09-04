@@ -43,7 +43,7 @@
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800" x-data="storefront()" x-cloak>
+<body class="bg-slate-50 text-slate-800 antialiased" style="scroll-behavior:smooth" x-data="storefront()" x-cloak>
 
 <!-- Navbar -->
 <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
@@ -112,8 +112,24 @@
         </div>
     </div>
 
+    @if ($currentSlot)
+        <div class="flex items-center gap-2 mt-4 bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-2.5 text-sm">
+            <span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span></span>
+            <p class="text-emerald-800">Serving <span class="font-bold">{{ $mealSlots[$currentSlot]['label'] }} now</span>
+                <button @click="slot = 'all'" x-show="slot !== 'all'" class="underline font-semibold ml-1">Show full menu</button>
+            </p>
+        </div>
+    @endif
+
     <div class="flex gap-2 overflow-x-auto no-scrollbar py-4">
-        <button @click="category = ''" :class="category === '' ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 border border-slate-200'" class="shrink-0 text-sm font-medium px-4 py-1.5 rounded-full transition">All</button>
+        <button @click="slot = 'all'" :class="slot === 'all' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-slate-600 border-slate-200'" class="shrink-0 text-sm font-medium px-4 py-1.5 rounded-full border transition">🕐 All Day</button>
+        @foreach ($mealSlots as $key => $meta)
+            <button @click="slot = '{{ $key }}'" :class="slot === '{{ $key }}' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-slate-600 border-slate-200'" class="shrink-0 text-sm font-medium px-4 py-1.5 rounded-full border transition">{{ $meta['label'] }} ({{ human_slot_range($meta['from'], $meta['to']) }})</button>
+        @endforeach
+    </div>
+
+    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-4">
+        <button @click="category = ''" :class="category === '' ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 border border-slate-200'" class="shrink-0 text-sm font-medium px-4 py-1.5 rounded-full transition">All cuisines</button>
         @foreach ($categories as $cat)
             <button @click="category = '{{ $cat->id }}'" :class="category === '{{ $cat->id }}' ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 border border-slate-200'" class="shrink-0 text-sm font-medium px-4 py-1.5 rounded-full transition">{{ $cat->name }}</button>
         @endforeach
@@ -124,7 +140,7 @@
             <h3 class="font-bold text-slate-900 flex items-center gap-2"><span class="h-5 w-1 rounded bg-orange-600 inline-block"></span>{{ $cat->name }}</h3>
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mt-3">
                 @foreach ($cat->products as $product)
-                    <div x-show="'{{ strtolower($product->name) }}'.includes(query.toLowerCase())"
+                    <div x-show="'{{ strtolower($product->name) }}'.includes(query.toLowerCase()) && (slot === 'all' || {{ empty($product->meal_times) ? 'true' : 'false' }} || @js($product->meal_times ?? []).includes(slot))"
                          class="bg-white border border-slate-200/70 rounded-2xl overflow-hidden hover:shadow-md hover:border-orange-200 transition">
                         @if ($product->image)
                             <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="h-32 md:h-40 w-full object-cover" loading="lazy">
@@ -133,8 +149,20 @@
                         @endif
                         <div class="p-3">
                             <p class="font-semibold text-sm text-slate-900 truncate">{{ $product->name }}</p>
+                            <p class="mt-1 flex flex-wrap gap-1">
+                                @if (empty($product->meal_times))
+                                    <span class="text-[10px] font-semibold text-sky-700 bg-sky-50 rounded-full px-2 py-0.5">All day</span>
+                                @else
+                                    @foreach ($product->meal_times as $slot)
+                                        <span class="text-[10px] font-semibold text-amber-700 bg-amber-50 rounded-full px-2 py-0.5">{{ ucfirst($slot) }}</span>
+                                    @endforeach
+                                @endif
+                            </p>
+                            @if (($product->type ?? 'dish') === 'buffet')
+                                <p class="mt-1"><span class="text-[10px] font-bold text-white bg-emerald-600 rounded-full px-2 py-0.5">BUFFET · per person</span></p>
+                            @endif
                             <div class="flex items-center justify-between mt-1.5">
-                                <p class="font-bold text-orange-700 text-sm">{{ money($product->selling_price) }}</p>
+                                <p class="font-bold text-orange-700 text-sm">{{ money($product->selling_price) }}@if (($product->type ?? 'dish') === 'buffet')<span class="font-medium text-slate-500">/person</span>@endif</p>
                                 @if (($product->stock_in - $product->stock_out) > 0)
                                     <span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 rounded-full px-2 py-0.5">Available</span>
                                 @else
@@ -269,7 +297,7 @@
 
 <script>
 function storefront() {
-    return { query: '', category: '' };
+    return { query: '', category: '', slot: @js($currentSlot ?? 'all') };
 }
 (function () {
     const branchSel = document.getElementById('branch-select');

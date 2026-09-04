@@ -14,10 +14,10 @@ class BusinessSettingSeeder extends Seeder
 
         BusinessSetting::create([
             'user_id' => $admin->id,
-            'name' => 'KFC',
-            'email' => 'kfc@gmail.com',
+            'name' => 'Mezban Restaurant',
+            'email' => 'hello@mezban.com',
             'phone' => '01712345678',
-            'image' => 'images/kfc.png',
+            'image' => 'images/mezban.png',
             'signature' => 'images/signature.png',
         ]);
     }

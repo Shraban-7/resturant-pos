@@ -22,8 +22,8 @@ class KitchenStatusUpdatedEvent implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         $channels = [
-            new PrivateChannel("seller.{$this->ticket->seller_id}.pos"),
-            new PrivateChannel("seller.{$this->ticket->seller_id}.kds"),
+            new PrivateChannel("admin.{$this->ticket->seller_id}.pos"),
+            new PrivateChannel("admin.{$this->ticket->seller_id}.kds"),
         ];
 
         $token = $this->ticket->diningTable?->qr_code_token;
@@ -58,3 +58,4 @@ class KitchenStatusUpdatedEvent implements ShouldBroadcastNow
         ];
     }
 }
+

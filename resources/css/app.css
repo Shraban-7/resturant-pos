@@ -4,16 +4,17 @@
 @source "../../app";
 
 @theme {
-    --color-brand-50: #eef4ff;
-    --color-brand-100: #d9e6ff;
-    --color-brand-200: #b5cdff;
-    --color-brand-300: #86adff;
-    --color-brand-400: #5489ff;
-    --color-brand-500: #2f6bf9;
-    --color-brand-600: #1e51e0;
-    --color-brand-700: #1c43b8;
-    --color-brand-800: #1d3a8f;
-    --color-brand-900: #1d3472;
+    /* Warm restaurant brand (deep orange) — appetizing + modern. */
+    --color-brand-50: #fff7ed;
+    --color-brand-100: #ffedd5;
+    --color-brand-200: #fed7aa;
+    --color-brand-300: #fdba74;
+    --color-brand-400: #fb923c;
+    --color-brand-500: #f97316;
+    --color-brand-600: #ea580c;
+    --color-brand-700: #c2410c;
+    --color-brand-800: #9a3412;
+    --color-brand-900: #7c2d12;
 
     --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
@@ -26,7 +27,8 @@ html, body {
 }
 
 body {
-    @apply bg-slate-50 text-slate-800 font-sans antialiased;
+    @apply bg-slate-100 text-slate-800 font-sans antialiased;
+    letter-spacing: -0.006em;
 }
 
 /* ====== Component layer (utility classes) ====== */
@@ -37,10 +39,11 @@ body {
 
     /* ---------- App shell ---------- */
     .app-shell {
-        @apply flex min-h-screen bg-slate-50;
+        @apply flex min-h-screen bg-slate-100;
     }
     .app-sidebar {
-        @apply fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 flex flex-col transition-transform -translate-x-full lg:translate-x-0;
+        @apply fixed inset-y-0 left-0 z-40 w-[17rem] text-slate-300 flex flex-col transition-transform -translate-x-full lg:translate-x-0;
+        background: linear-gradient(180deg, #0c1222 0%, #111a30 60%, #131c33 100%);
     }
     .app-sidebar.open { @apply translate-x-0; }
     .app-sidebar-overlay {
@@ -56,27 +59,27 @@ body {
         @apply flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto;
     }
 
-    /* ---------- Sidebar nav ---------- */
+    /* ---------- Sidebar nav (dark) ---------- */
     .sidebar-brand {
-        @apply flex items-center gap-2.5 h-16 px-5 border-b border-slate-200 shrink-0;
+        @apply flex items-center gap-2.5 h-16 px-5 border-b border-white/10 shrink-0;
     }
     .sidebar-section {
-        @apply px-3 pt-5 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400;
+        @apply px-5 pt-5 pb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500;
     }
     .sidebar-link {
-        @apply flex items-center gap-3 px-3 py-2 mx-2 rounded-md text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition;
+        @apply flex items-center gap-3 px-3 py-[0.6rem] mx-3 rounded-lg text-[0.85rem] text-slate-300/90 hover:bg-white/[0.07] hover:text-white transition;
     }
     .sidebar-link i {
-        @apply text-lg text-slate-400;
+        @apply text-lg text-slate-500 transition;
     }
-    .sidebar-link:hover i { @apply text-slate-600; }
+    .sidebar-link:hover i { @apply text-orange-300; }
     .sidebar-link.active {
-        @apply bg-brand-50 text-brand-700 font-medium;
+        @apply bg-brand-600 text-white font-semibold shadow-lg shadow-brand-900/40;
     }
     .sidebar-link.active:hover {
-        @apply bg-brand-50 text-brand-700;
+        @apply bg-brand-600 text-white;
     }
-    .sidebar-link.active i { @apply text-brand-600; }
+    .sidebar-link.active i { @apply text-white; }
 
     /* ---------- Page header ---------- */
     .page-header {
@@ -100,7 +103,7 @@ body {
 
     /* ---------- Base button ---------- */
     .btn {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed;
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed;
     }
     .btn-sm { @apply px-2.5 py-1.5 text-xs; }
     .btn-lg { @apply px-4 py-2.5 text-base; }
@@ -108,46 +111,47 @@ body {
 
     /* ---------- Button variants (self-contained) ---------- */
     .btn-primary {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500 shadow-sm;
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500 shadow-sm;
     }
     .btn-secondary {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-300;
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-300;
     }
     .btn-success {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500 shadow-sm;
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500 shadow-sm;
     }
     .btn-danger {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm;
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm;
     }
     .btn-warning {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-400 shadow-sm;
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-400 shadow-sm;
     }
     .btn-info {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-cyan-500 text-white hover:bg-cyan-600 focus:ring-cyan-400 shadow-sm;
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-cyan-500 text-white hover:bg-cyan-600 focus:ring-cyan-400 shadow-sm;
     }
     .btn-dark {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-800 text-white hover:bg-slate-900 focus:ring-slate-700 shadow-sm;
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-800 text-white hover:bg-slate-900 focus:ring-slate-700 shadow-sm;
     }
     .btn-light {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 focus:ring-slate-200;
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 focus:ring-slate-200;
     }
     .btn-ghost {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 hover:bg-slate-100 focus:ring-slate-200;
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 hover:bg-slate-100 focus:ring-slate-200;
     }
     .btn-link {
         @apply inline-flex items-center justify-center gap-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed text-brand-600 hover:underline focus:ring-brand-400 px-0 py-0;
     }
     .btn-grad {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed text-white border-0 hover:opacity-95 focus:ring-brand-500 shadow-sm;
-        background-image: linear-gradient(90deg, hsla(241, 40%, 37%, 1) 0%, hsla(210, 100%, 60%, 1) 100%);
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed text-white border-0 hover:opacity-95 focus:ring-brand-500 shadow-md shadow-brand-600/25 active:scale-[0.98];
+        background-image: linear-gradient(120deg, #c2410c 0%, #ea580c 55%, #f59e0b 130%);
     }
     .btn-outline-primary {
-        @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed border border-brand-600 text-brand-600 hover:bg-brand-50 focus:ring-brand-400;
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed border border-brand-600 text-brand-600 hover:bg-brand-50 focus:ring-brand-400;
     }
 
     /* ---------- Card ---------- */
     .card {
-        @apply bg-white rounded-xl shadow-sm border border-slate-200/70;
+        @apply bg-white rounded-2xl border border-slate-200/60;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.12);
     }
     .card-body { @apply p-4 sm:p-6; }
     .card-header { @apply px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3; }
@@ -159,7 +163,7 @@ body {
     .form-group { @apply mb-4; }
     .form-label { @apply block text-sm font-medium text-slate-700 mb-1.5; }
     .form-control {
-        @apply block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none disabled:bg-slate-100 disabled:text-slate-500;
+        @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none disabled:bg-slate-100 disabled:text-slate-500;
     }
     .form-control-sm { @apply px-2.5 py-1.5 text-xs; }
     .form-select {
@@ -241,7 +245,7 @@ body {
     .modal-dialog.modal-lg { @apply max-w-2xl; }
     .modal-dialog.modal-xl { @apply max-w-4xl; }
     .modal-content {
-        @apply relative bg-white rounded-xl shadow-2xl border border-slate-200;
+        @apply relative bg-white rounded-2xl shadow-2xl border border-slate-200;
     }
     .modal-header { @apply flex items-center justify-between px-5 py-4 border-b border-slate-100; }
     .modal-title  { @apply text-base font-semibold text-slate-900; }
@@ -370,7 +374,7 @@ body {
 
     /* ---------- Gradient background (used by .btn-grad) ---------- */
     .bg-gradient-brand {
-        background-image: linear-gradient(90deg, hsla(241, 40%, 37%, 1) 0%, hsla(210, 100%, 60%, 1) 100%);
+        background-image: linear-gradient(120deg, #c2410c 0%, #ea580c 55%, #f59e0b 130%);
     }
 
     /* ---------- Misc utility-like helpers ---------- */

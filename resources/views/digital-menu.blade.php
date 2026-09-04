@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Slash Restora | Digital Menu</title>
+    <title>{{ ($business->name ?? config('app.name')) }} | Digital Menu</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -460,7 +460,7 @@
     @keydown.escape.window="cartOpen = false; confirmOpen = false; modifierOpen = false">
     <header class="header">
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="brand-logo">Slash<span>.</span>Restora</div>
+            <div class="brand-logo">{{ ($business->name ?? config('app.name')) }}</div>
             <div class="flex items-center gap-3">
                 <span class="table-badge">
                     <i class="ri-map-pin-line mr-1"></i> {{ $table->name ?? $table->id }}

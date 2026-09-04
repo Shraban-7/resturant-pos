@@ -41,12 +41,36 @@ class User extends Authenticatable
         return $this->hasMany(self::class, 'parent_id');
     }
 
-    /** Owner account id for scoping (admin owns data, employee inherits). */
+    /**
+     * Canonical owner id for scoping. Single restaurant = single dataset:
+     * every admin shares the first admin's data, employees inherit through
+     * their parent chain. This keeps the public storefront (which books
+     * under the first admin) visible to whichever admin is logged in.
+     */
     public function ownerId(): int
     {
-        return $this->role === 'employee' && $this->parent_id
-            ? (int) $this->parent_id
-            : (int) $this->id;
+        if ($this->role === 'employee' && $this->parent_id) {
+            $parent = static::query()->find($this->parent_id);
+
+            return $parent ? $parent->ownerId() : (int) $this->parent_id;
+        }
+
+        if ($this->isAdmin()) {
+            $first = static::query()
+                ->whereIn('role', ['admin', 'seller', 'supplier'])
+                ->orderBy('id')
+                ->value('id');
+
+            return $first ? (int) $first : (int) $this->id;
+        }
+
+        return (int) $this->id;
+    }
+
+    /** First admin = canonical store owner (used by the public storefront). */
+    public static function storeOwner(): ?self
+    {
+        return static::admin()->orderBy('id')->first();
     }
 
     public function isAdmin(): bool

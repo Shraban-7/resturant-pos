@@ -23,12 +23,13 @@ class CustomerController extends Controller
             'address' => 'nullable|string|max:500'
         ]);
 
-        $input['seller_id'] = auth()->id();
+        $input['seller_id'] = panel_owner_id();
 
         Customer::create($input);
 
         return redirect()->back()->with('success', 'Customer Added Successfully');
     }
 }
+
 
 

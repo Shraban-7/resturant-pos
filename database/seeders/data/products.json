@@ -1,0 +1,565 @@
+[
+    {
+        "name": "Chicken Kacchi Biryani",
+        "category": "Bengali Food",
+        "buying_price": 180,
+        "selling_price": 280,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Morog Polao",
+        "category": "Bengali Food",
+        "buying_price": 170,
+        "selling_price": 260,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Shorshe Ilish with Rice",
+        "category": "Bengali Food",
+        "buying_price": 320,
+        "selling_price": 450,
+        "stock_in": 50,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Beef Bhuna with Paratha (3 pcs)",
+        "category": "Bengali Food",
+        "buying_price": 200,
+        "selling_price": 300,
+        "stock_in": 80,
+        "unit": "PIECES",
+        "meal": [
+            "breakfast",
+            "lunch"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Dal Bhaat Set (Veg)",
+        "category": "Bengali Food",
+        "buying_price": 90,
+        "selling_price": 150,
+        "stock_in": 120,
+        "unit": "PIECES",
+        "meal": [
+            "lunch"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Chingri Malai Curry with Rice",
+        "category": "Bengali Food",
+        "buying_price": 280,
+        "selling_price": 400,
+        "stock_in": 50,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Chicken Roast with Polao",
+        "category": "Bengali Food",
+        "buying_price": 160,
+        "selling_price": 240,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Beef Tehari",
+        "category": "Bengali Food",
+        "buying_price": 170,
+        "selling_price": 250,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": [
+            "breakfast",
+            "lunch"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Butter Chicken with Naan (2 pcs)",
+        "category": "Indian Food",
+        "buying_price": 240,
+        "selling_price": 350,
+        "stock_in": 80,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Chicken Tikka (6 pcs)",
+        "category": "Indian Food",
+        "buying_price": 200,
+        "selling_price": 300,
+        "stock_in": 80,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Chicken Dum Biryani",
+        "category": "Indian Food",
+        "buying_price": 200,
+        "selling_price": 300,
+        "stock_in": 90,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Palak Paneer with Jeera Rice",
+        "category": "Indian Food",
+        "buying_price": 180,
+        "selling_price": 270,
+        "stock_in": 60,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Masala Dosa",
+        "category": "Indian Food",
+        "buying_price": 120,
+        "selling_price": 190,
+        "stock_in": 70,
+        "unit": "PIECES",
+        "meal": [
+            "breakfast"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Seekh Kebab (4 pcs) with Paratha",
+        "category": "Indian Food",
+        "buying_price": 220,
+        "selling_price": 320,
+        "stock_in": 60,
+        "unit": "PIECES",
+        "meal": [
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Garlic Naan Basket (4 pcs)",
+        "category": "Indian Food",
+        "buying_price": 90,
+        "selling_price": 150,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Chicken Curry with Steamed Rice",
+        "category": "Indian Food",
+        "buying_price": 170,
+        "selling_price": 250,
+        "stock_in": 90,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Special Fried Rice with Chicken",
+        "category": "Chinese Food",
+        "buying_price": 180,
+        "selling_price": 270,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Chicken Chow Mein",
+        "category": "Chinese Food",
+        "buying_price": 150,
+        "selling_price": 230,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Sweet & Sour Chicken with Rice",
+        "category": "Chinese Food",
+        "buying_price": 220,
+        "selling_price": 320,
+        "stock_in": 70,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Chicken Spring Rolls (4 pcs)",
+        "category": "Chinese Food",
+        "buying_price": 110,
+        "selling_price": 170,
+        "stock_in": 90,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Thai Soup with Chicken",
+        "category": "Chinese Food",
+        "buying_price": 130,
+        "selling_price": 200,
+        "stock_in": 80,
+        "unit": "PIECES",
+        "meal": [
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Sizzling Chicken Platter",
+        "category": "Chinese Food",
+        "buying_price": 260,
+        "selling_price": 380,
+        "stock_in": 50,
+        "unit": "PIECES",
+        "meal": [
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Vegetable Fried Rice",
+        "category": "Chinese Food",
+        "buying_price": 110,
+        "selling_price": 170,
+        "stock_in": 90,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Chicken Manchurian with Noodles",
+        "category": "Chinese Food",
+        "buying_price": 210,
+        "selling_price": 310,
+        "stock_in": 70,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Chicken Burger with Fries",
+        "category": "Fast Food",
+        "buying_price": 150,
+        "selling_price": 230,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Beef Cheese Burger",
+        "category": "Fast Food",
+        "buying_price": 200,
+        "selling_price": 300,
+        "stock_in": 80,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Chicken Shawarma",
+        "category": "Fast Food",
+        "buying_price": 120,
+        "selling_price": 190,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Club Sandwich",
+        "category": "Fast Food",
+        "buying_price": 140,
+        "selling_price": 210,
+        "stock_in": 80,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Loaded Nachos",
+        "category": "Fast Food",
+        "buying_price": 170,
+        "selling_price": 260,
+        "stock_in": 60,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Crispy Fried Chicken (3 pcs)",
+        "category": "Fast Food",
+        "buying_price": 180,
+        "selling_price": 270,
+        "stock_in": 90,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Chicken Pizza (9 inch)",
+        "category": "Fast Food",
+        "buying_price": 350,
+        "selling_price": 520,
+        "stock_in": 40,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "French Fries (Large)",
+        "category": "Fast Food",
+        "buying_price": 80,
+        "selling_price": 140,
+        "stock_in": 120,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Borhani (Glass)",
+        "category": "Drinks",
+        "buying_price": 40,
+        "selling_price": 70,
+        "stock_in": 150,
+        "unit": "PIECES",
+        "meal": [
+            "lunch",
+            "dinner"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Sweet Lassi",
+        "category": "Drinks",
+        "buying_price": 60,
+        "selling_price": 100,
+        "stock_in": 120,
+        "unit": "PIECES",
+        "meal": [
+            "breakfast",
+            "lunch"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Fresh Orange Juice",
+        "category": "Drinks",
+        "buying_price": 70,
+        "selling_price": 120,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": [
+            "breakfast",
+            "lunch"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Cold Coffee",
+        "category": "Drinks",
+        "buying_price": 90,
+        "selling_price": 150,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Milk Tea (Cha)",
+        "category": "Drinks",
+        "buying_price": 25,
+        "selling_price": 40,
+        "stock_in": 200,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Soft Drink (Can)",
+        "category": "Drinks",
+        "buying_price": 40,
+        "selling_price": 60,
+        "stock_in": 200,
+        "unit": "CANS",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Mineral Water (Bottle)",
+        "category": "Drinks",
+        "buying_price": 20,
+        "selling_price": 30,
+        "stock_in": 300,
+        "unit": "BOTTLES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Mango Smoothie",
+        "category": "Drinks",
+        "buying_price": 85,
+        "selling_price": 140,
+        "stock_in": 90,
+        "unit": "PIECES",
+        "meal": [
+            "breakfast",
+            "lunch"
+        ],
+        "type": "dish"
+    },
+    {
+        "name": "Mishti Doi (Cup)",
+        "category": "Desserts",
+        "buying_price": 50,
+        "selling_price": 90,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Firni",
+        "category": "Desserts",
+        "buying_price": 55,
+        "selling_price": 95,
+        "stock_in": 100,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Gulab Jamun (4 pcs)",
+        "category": "Desserts",
+        "buying_price": 60,
+        "selling_price": 100,
+        "stock_in": 90,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Chocolate Brownie with Ice Cream",
+        "category": "Desserts",
+        "buying_price": 130,
+        "selling_price": 200,
+        "stock_in": 60,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Roshmalai (4 pcs)",
+        "category": "Desserts",
+        "buying_price": 80,
+        "selling_price": 130,
+        "stock_in": 80,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Kheer",
+        "category": "Desserts",
+        "buying_price": 65,
+        "selling_price": 110,
+        "stock_in": 80,
+        "unit": "PIECES",
+        "meal": "all",
+        "type": "dish"
+    },
+    {
+        "name": "Lunch Buffet (Per Person)",
+        "category": "Buffet",
+        "buying_price": 550,
+        "selling_price": 899,
+        "stock_in": 0,
+        "unit": "PIECES",
+        "meal": [
+            "lunch"
+        ],
+        "type": "buffet"
+    },
+    {
+        "name": "Dinner Buffet (Per Person)",
+        "category": "Buffet",
+        "buying_price": 750,
+        "selling_price": 1299,
+        "stock_in": 0,
+        "unit": "PIECES",
+        "meal": [
+            "dinner"
+        ],
+        "type": "buffet"
+    }
+]

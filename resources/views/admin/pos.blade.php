@@ -967,7 +967,7 @@
         // --- Real-time kitchen / order updates ---
         (function subscribePosEcho() {
             if (!window.Echo) return;
-            const sellerId = {{ (int) auth()->id() }};
+            const sellerId = {{ (int) panel_owner_id() }};
             const readyBadge = document.getElementById('posKitchenReadyBadge');
             let readyCount = 0;
 
@@ -982,7 +982,7 @@
                 }
             }
 
-            window.Echo.private(`seller.${sellerId}.pos`)
+            window.Echo.private(`admin.${sellerId}.pos`)
                 .listen('.OrderPlaced', (e) => {
                     if (window.toast) {
                         window.toast.info(`Sent to kitchen: ${e.table_name || e.ticket_number}`);
@@ -1049,6 +1049,7 @@
 @endpush
 
 @endsection
+
 
 
 

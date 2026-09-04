@@ -13,11 +13,25 @@
     <div>
         <p class="page-subtitle">{{ $reservations->total() }} {{ Str::plural('reservation', $reservations->total()) }}</p>
     </div>
-    <div class="page-actions">
+    <form class="page-actions flex flex-wrap gap-2 items-end" method="GET">
+        @if ($branches->isNotEmpty())
+            <div>
+                <label class="form-label text-xs">Branch</label>
+                <select name="branch_id" class="form-control form-control-sm" onchange="this.form.submit()">
+                    <option value="">All branches</option>
+                    @foreach ($branches as $branch)
+                        <option value="{{ $branch->id }}" @selected((string) ($branchFilter ?? '') === (string) $branch->id)>
+                            {{ $branch->name }}
+                        </option>
+                    @endforeach
+                    <option value="unassigned" @selected(($branchFilter ?? '') === 'unassigned')>Unassigned</option>
+                </select>
+            </div>
+        @endif
         <button type="button" class="btn btn-primary" @click="$dispatch('open-modal', { id: 'addReservation' })">
             <i class="ri-add-line"></i> New Reservation
         </button>
-    </div>
+    </form>
 </div>
 
 <div class="card">
@@ -41,7 +55,7 @@
                         <td class="text-slate-500">{{ $reservation->customer_phone }}</td>
                         <td>{{ $reservation->table?->name ?? '—' }}</td>
                         <td>{{ $reservation->guest_count }}</td>
-                        <td>{{ $reservation->reservation_time?->format('d M Y H:i') }}</td>
+                        <td>{{ human_time($reservation->reservation_time) }}</td>
                         <td>
                             @php
                                 $badge = match ($reservation->status) {
@@ -164,7 +178,7 @@
                         <h5 class="modal-title">Edit Reservation</h5>
                         <button type="button" class="text-slate-500 hover:text-slate-800" @click="open = false"><i class="ri-close-line text-xl"></i></button>
                     </div>
-                    <form :action="r ? `/seller/reservations/${r.id}` : '#'" method="post">
+                    <form :action="r ? `/admin/reservations/${r.id}` : '#'" method="post">
                         @csrf
                         @method('PUT')
                         <div class="modal-body grid grid-cols-1 sm:grid-cols-2 gap-3">

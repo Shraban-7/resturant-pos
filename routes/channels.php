@@ -13,25 +13,31 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
-Broadcast::channel('seller.{sellerId}.kds', function ($user, int $sellerId) {
+Broadcast::channel('admin.{sellerId}.kds', function ($user, int $sellerId) {
     return $user
         && in_array($user->role ?? null, ['admin', 'seller', 'employee'], true)
         && (int) $user->ownerId() === $sellerId;
 });
 
-Broadcast::channel('seller.{sellerId}.pos', function ($user, int $sellerId) {
+Broadcast::channel('admin.{sellerId}.pos', function ($user, int $sellerId) {
     return $user
         && in_array($user->role ?? null, ['admin', 'seller', 'employee'], true)
         && (int) $user->ownerId() === $sellerId;
 });
 
-Broadcast::channel('seller.{sellerId}.tables', function ($user, int $sellerId) {
+Broadcast::channel('admin.{sellerId}.reservations', function ($user, int $sellerId) {
     return $user
         && in_array($user->role ?? null, ['admin', 'seller', 'employee'], true)
         && (int) $user->ownerId() === $sellerId;
 });
 
-Broadcast::channel('seller.{sellerId}.staff', function ($user, int $sellerId) {
+Broadcast::channel('admin.{sellerId}.tables', function ($user, int $sellerId) {
+    return $user
+        && in_array($user->role ?? null, ['admin', 'seller', 'employee'], true)
+        && (int) $user->ownerId() === $sellerId;
+});
+
+Broadcast::channel('admin.{sellerId}.staff', function ($user, int $sellerId) {
     if (! $user || ! in_array($user->role ?? null, ['admin', 'seller', 'employee'], true)) {
         return false;
     }
@@ -64,3 +70,4 @@ Broadcast::channel('table.{token}', function ($user, string $token) {
 
     return (bool) $table;
 });
+

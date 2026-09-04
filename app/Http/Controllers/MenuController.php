@@ -59,7 +59,11 @@ class MenuController extends Controller
             }
         }
 
-        return view('digital-menu', compact('table', 'categories', 'productModifiersMap'));
+        $business = \App\Models\BusinessSetting::query()
+            ->where('user_id', $table->seller_id)
+            ->first();
+
+        return view('digital-menu', compact('table', 'categories', 'productModifiersMap', 'business'));
     }
 
     public function placeOrder(PlaceQrOrderRequest $request, DiningTable $table)

@@ -1,11 +1,11 @@
 <div class="flex flex-col h-full">
     <a class="sidebar-brand" href="{{ route('admin.dashboard') }}">
-        <span class="flex items-center justify-center h-9 w-9 rounded-lg bg-brand-600 text-white">
-            <i class="ri-restaurant-2-line text-lg"></i>
+        <span class="flex items-center justify-center h-10 w-10 rounded-xl bg-gradient-brand text-white shadow-lg shadow-brand-900/40">
+            <i class="ri-restaurant-2-line text-xl"></i>
         </span>
         <div class="flex flex-col leading-tight">
-            <span class="text-sm font-semibold text-slate-900">{{ config('app.name', env('APP_NAME')) }}</span>
-            <span class="text-[10px] uppercase tracking-wider text-slate-400">{{ is_employee() ? 'Employee' : 'Admin' }}</span>
+            <span class="text-[0.95rem] font-bold text-white tracking-tight">{{ config('app.name', env('APP_NAME')) }}</span>
+            <span class="text-[10px] uppercase tracking-[0.14em] text-slate-400">{{ is_employee() ? 'Employee' : 'Admin' }}</span>
         </div>
     </a>
 
@@ -93,8 +93,8 @@
         @endcan
     </nav>
 
-    <div class="border-t border-slate-200 p-3 shrink-0">
-        <a href="{{ route('logout') }}" class="sidebar-link text-slate-600 hover:text-red-600">
+    <div class="border-t border-white/10 p-3 shrink-0">
+        <a href="{{ route('logout') }}" class="sidebar-link !text-slate-400 hover:!text-red-300">
             <i class="ri-logout-box-r-line"></i>
             <span>Logout</span>
         </a>

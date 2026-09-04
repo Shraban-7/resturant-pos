@@ -21,13 +21,13 @@ class KdsController extends Controller
 
         return view('admin.kds.index', [
             'tickets' => $tickets,
-            'sellerId' => auth()->id(),
+            'sellerId' => panel_owner_id(),
         ]);
     }
 
     public function updateStatus(Request $request, KitchenTicket $ticket)
     {
-        abort_unless((int) $ticket->seller_id === (int) auth()->id(), 403);
+        abort_unless((int) $ticket->seller_id === (int) panel_owner_id(), 403);
 
         $request->validate([
             'status' => 'required|in:' . implode(',', KitchenTicket::statuses()),
@@ -96,5 +96,6 @@ class KdsController extends Controller
         ];
     }
 }
+
 
 

@@ -30,11 +30,39 @@
         </form>
     @endif
 
-    <div class="relative hidden sm:block" x-data="{ open: false }">
-        <button type="button" class="btn btn-ghost btn-icon" aria-label="Notifications">
+    @php
+        $navNotifications = \App\Models\StaffNotification::forOwner()->latest('id')->take(8)->get();
+        $navUnread = \App\Models\StaffNotification::forOwner()->unread()->count();
+    @endphp
+    <div class="relative" x-data="notifBell()" @keydown.escape.window="open = false" @notif-live.window="await refresh(false)">
+        <button type="button" class="btn btn-ghost btn-icon" aria-label="Notifications" @click="toggle()">
             <i class="ri-notification-3-line text-lg"></i>
-            <span class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500"></span>
+            <span x-show="unread > 0" x-text="unread > 9 ? '9+' : unread" x-cloak
+                  class="absolute -top-0.5 -right-0.5 min-h-[1.1rem] min-w-[1.1rem] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center"></span>
         </button>
+        <div x-show="open" @click.outside="open = false" x-transition class="dropdown-menu !p-0 w-[22rem] max-w-[90vw]" style="display:none">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                <p class="font-semibold text-sm text-slate-900">Notifications</p>
+                <button type="button" @click="readAll()" class="text-xs font-semibold text-brand-600 hover:underline">Mark all read</button>
+            </div>
+            <div class="max-h-[22rem] overflow-y-auto" id="notif-list">
+                <template x-for="n in items" :key="n.id">
+                    <div class="flex gap-3 px-4 py-3 border-b border-slate-50 hover:bg-slate-50" :class="n.read ? '' : 'bg-orange-50/50'">
+                        <span class="shrink-0 flex items-center justify-center h-9 w-9 rounded-full" :class="n.color"><i :class="n.icon" class="text-lg"></i></span>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-slate-900 truncate" x-text="n.title"></p>
+                            <p class="text-xs text-slate-500 line-clamp-2" x-text="n.body"></p>
+                            <p class="text-[11px] text-slate-400 mt-0.5" x-text="n.time"></p>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="!items.length" class="px-4 py-8 text-center text-slate-500">
+                    <i class="ri-notification-off-line text-3xl"></i>
+                    <p class="text-sm font-medium mt-1">No notifications yet</p>
+                </div>
+            </div>
+            <a href="{{ route('admin.notifications.index') }}" class="block text-center text-xs font-semibold text-slate-600 hover:text-brand-600 py-2.5 border-t border-slate-100">View all</a>
+        </div>
     </div>
 
     <div class="relative" x-data="{ open: false }" @keydown.escape.window="open = false">

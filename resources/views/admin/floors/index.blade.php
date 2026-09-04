@@ -119,7 +119,7 @@
                         <h5 class="modal-title">Edit Floor</h5>
                         <button type="button" class="text-slate-500 hover:text-slate-800" @click="open = false"><i class="ri-close-line text-xl"></i></button>
                     </div>
-                    <form :action="f ? `/seller/floors/${f.id}` : '#'" method="post">
+                    <form :action="f ? `/admin/floors/${f.id}` : '#'" method="post">
                         @csrf
                         @method('PUT')
                         <div class="modal-body">

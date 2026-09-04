@@ -11,7 +11,7 @@ class SettingController extends Controller
 {
     public function index(Request $request)
     {
-        $business = BusinessSetting::where('user_id', auth()->id())->first();
+        $business = BusinessSetting::where('user_id', panel_owner_id())->first();
 
         if ($request->isMethod('GET')) {
             return view('admin.settings.index', compact('business'));
@@ -57,12 +57,13 @@ class SettingController extends Controller
 
         $data['signature'] = $signature;
         $data['image'] = $image;
-        $data['user_id'] = auth()->id();
+        $data['user_id'] = panel_owner_id();
 
         is_null($business) ? BusinessSetting::create($data) : $business->update($data);
 
         return redirect()->back()->with('success', 'Business settings updated');
     }
 }
+
 
 

@@ -41,7 +41,7 @@ class SaleController extends Controller
 
     public function invoice(Sale $sale)
     {
-        abort_unless((int) $sale->seller_id === (int) Auth::id(), 403);
+        abort_unless((int) $sale->seller_id === (int) panel_owner_id(), 403);
 
         $sale->load('items', 'customer');
 
@@ -52,7 +52,7 @@ class SaleController extends Controller
 
     public function markPaid(Sale $sale)
     {
-        abort_unless((int) $sale->seller_id === (int) Auth::id(), 403);
+        abort_unless((int) $sale->seller_id === (int) panel_owner_id(), 403);
 
         DB::transaction(function () use ($sale) {
             $sale->paid = $sale->payable;
@@ -159,7 +159,7 @@ class SaleController extends Controller
     {
         return DB::transaction(function () use ($request) {
             $saleItem = SaleItem::query()
-                ->whereHas('sale', fn ($q) => $q->where('seller_id', Auth::id()))
+                ->whereHas('sale', fn ($q) => $q->where('seller_id', panel_owner_id()))
                 ->with(['product.recipe.ingredients.ingredientProduct'])
                 ->findOrFail($request->sale_item_id);
 
@@ -190,7 +190,7 @@ class SaleController extends Controller
         try {
             return DB::transaction(function () use ($request) {
                 $saleItem = SaleItem::query()
-                    ->whereHas('sale', fn ($q) => $q->where('seller_id', Auth::id()))
+                    ->whereHas('sale', fn ($q) => $q->where('seller_id', panel_owner_id()))
                     ->with(['product.recipe.ingredients.ingredientProduct'])
                     ->findOrFail($request->sale_item_id);
 
@@ -252,7 +252,7 @@ class SaleController extends Controller
 
         if ($customer_name != '' && $customer_phone != '') {
             $newCustomer = Customer::create([
-                'seller_id' => Auth::id(),
+                'seller_id' => panel_owner_id(),
                 'name' => $customer_name,
                 'phone' => $customer_phone,
             ]);
@@ -311,5 +311,6 @@ class SaleController extends Controller
         });
     }
 }
+
 
 

@@ -34,7 +34,7 @@ class BranchController extends Controller
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('branches', 'name')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+                Rule::unique('branches', 'name')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
             ],
             'code' => 'nullable|string|max:32',
             'address' => 'nullable|string|max:255',
@@ -52,7 +52,7 @@ class BranchController extends Controller
             }
 
             $branch = Branch::create([
-                'seller_id' => Auth::id(),
+                'seller_id' => panel_owner_id(),
                 'name' => $data['name'],
                 'code' => $data['code'] ?? null,
                 'address' => $data['address'] ?? null,
@@ -73,7 +73,7 @@ class BranchController extends Controller
 
     public function update(Request $request, Branch $branch)
     {
-        abort_unless((int) $branch->seller_id === (int) Auth::id(), 403);
+        abort_unless((int) $branch->seller_id === (int) panel_owner_id(), 403);
 
         $data = $request->validate([
             'name' => [
@@ -81,7 +81,7 @@ class BranchController extends Controller
                 'string',
                 'max:100',
                 Rule::unique('branches', 'name')
-                    ->where(fn ($q) => $q->where('seller_id', Auth::id()))
+                    ->where(fn ($q) => $q->where('seller_id', panel_owner_id()))
                     ->ignore($branch->id),
             ],
             'code' => 'nullable|string|max:32',
@@ -114,7 +114,7 @@ class BranchController extends Controller
 
     public function destroy(Branch $branch)
     {
-        abort_unless((int) $branch->seller_id === (int) Auth::id(), 403);
+        abort_unless((int) $branch->seller_id === (int) panel_owner_id(), 403);
 
         DB::transaction(function () use ($branch) {
             DiningTable::self()->where('branch_id', $branch->id)->update(['branch_id' => null]);
@@ -151,7 +151,7 @@ class BranchController extends Controller
             'branch_id' => [
                 'nullable',
                 Rule::exists('branches', 'id')->where(fn ($q) => $q
-                    ->where('seller_id', Auth::id())
+                    ->where('seller_id', panel_owner_id())
                     ->where('is_active', true)),
             ],
         ]);
@@ -165,5 +165,6 @@ class BranchController extends Controller
         return back()->with('success', 'Active branch updated.');
     }
 }
+
 
 

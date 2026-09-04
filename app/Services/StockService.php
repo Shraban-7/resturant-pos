@@ -18,6 +18,11 @@ class StockService
             return false;
         }
 
+        // Buffet has unlimited seats — capacity is managed by tables/reservations.
+        if ($product->isBuffet()) {
+            return true;
+        }
+
         return $this->availableQuantity($product) >= $requestedQuantity;
     }
 
@@ -31,6 +36,11 @@ class StockService
     {
         if ($quantity <= 0) {
             throw new InvalidArgumentException('Deduction quantity must be greater than zero.');
+        }
+
+        // Buffet never touches inventory.
+        if ($product->isBuffet()) {
+            return $product;
         }
 
         $locked = Product::query()

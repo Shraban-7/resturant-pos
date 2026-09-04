@@ -282,3 +282,33 @@ if (! function_exists('is_all_branches_mode')) {
         return session('active_branch_id') === 'all';
     }
 }
+
+if (! function_exists('human_hour')) {
+    // 5 => "5 AM", 13 => "1 PM", 0 => "12 AM", 12 => "12 PM".
+    function human_hour(int $hour): string
+    {
+        $hour = $hour % 24;
+
+        return date('g A', mktime($hour, 0));
+    }
+}
+
+if (! function_exists('human_time')) {
+    // Any datetime => "12 Jan 2026, 7:30 PM".
+    function human_time($datetime): string
+    {
+        if (! $datetime) {
+            return '—';
+        }
+
+        return \Carbon\Carbon::parse($datetime)->format('d M Y, h:i A');
+    }
+}
+
+if (! function_exists('human_slot_range')) {
+    // ['from' => 5, 'to' => 11] => "5 AM – 11 AM".
+    function human_slot_range(int $from, int $to): string
+    {
+        return human_hour($from).' – '.human_hour($to);
+    }
+}

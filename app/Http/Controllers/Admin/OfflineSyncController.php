@@ -60,7 +60,7 @@ class OfflineSyncController extends Controller
 
     private function reconcile(array $order): array
     {
-        $sellerId = (int) Auth::id();
+        $sellerId = (int) panel_owner_id();
 
         $existing = Sale::query()
             ->where('seller_id', $sellerId)
@@ -260,4 +260,5 @@ class OfflineSyncController extends Controller
         ];
     }
 }
+
 

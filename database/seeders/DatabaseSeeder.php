@@ -15,14 +15,15 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             BusinessSettingSeeder::class,
             ProductUnitSeeder::class,
-            CategoryProductSeeder::class,
+            BranchSeeder::class,
             BranchFloorSeeder::class,
+            CategorySeeder::class,
+            ProductSeeder::class,
             SupplierProductSeeder::class,
             SupplierSaleSeeder::class,
             SellerSaleSeeder::class,
             SellerSeeder::class,
             CatalogExtrasSeeder::class,
-            // ProductSeeder::class,
         ]);
     }
 }

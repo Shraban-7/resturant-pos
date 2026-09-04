@@ -36,9 +36,17 @@ class ProductController extends Controller
             'selling_price' => 'required|numeric',
             'stock_in' => 'required|numeric',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
+            'meal_times' => 'nullable|array',
+            'meal_times.*' => 'in:breakfast,lunch,dinner',
+            'type' => 'nullable|in:dish,buffet',
         ]);
 
         $input['seller_id'] = panel_owner_id();
+        $input['meal_times'] = $this->normalizeMealTimes($request->input('meal_times'));
+
+        if (empty($input['type'])) {
+            $input['type'] = Product::TYPE_DISH;
+        }
 
         if ($request->hasFile('image')) {
 
@@ -79,7 +87,16 @@ class ProductController extends Controller
             'selling_price' => 'required|numeric',
             'stock_in' => 'required|numeric',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
+            'meal_times' => 'nullable|array',
+            'meal_times.*' => 'in:breakfast,lunch,dinner',
+            'type' => 'nullable|in:dish,buffet',
         ]);
+
+        $input['meal_times'] = $this->normalizeMealTimes($request->input('meal_times'));
+
+        if (empty($input['type'])) {
+            unset($input['type']); // keep existing / DB default
+        }
 
         if ($request->hasFile('image')) {
             if ($product->image != null) {
@@ -94,6 +111,20 @@ class ProductController extends Controller
         $product->update($input);
 
         return redirect()->back()->with('success', 'Product Updated');
+    }
+
+    /**
+     * Empty or all-slots-selected both mean "served all day" (stored as NULL).
+     */
+    private function normalizeMealTimes(?array $slots): ?array
+    {
+        $slots = array_values(array_intersect($slots ?? [], Product::MEAL_SLOTS));
+
+        if (empty($slots) || count($slots) === count(Product::MEAL_SLOTS)) {
+            return null;
+        }
+
+        return $slots;
     }
 
     private function updateStock($product, $request)

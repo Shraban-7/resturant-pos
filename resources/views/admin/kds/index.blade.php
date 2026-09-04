@@ -175,7 +175,7 @@ function kdsApp(initialTickets, sellerId) {
                 console.warn('Echo not available');
                 return;
             }
-            const channel = window.Echo.private(`seller.${this.sellerId}.kds`);
+            const channel = window.Echo.private(`admin.${this.sellerId}.kds`);
             channel
                 .subscribed(() => { this.connected = true; })
                 .error(() => { this.connected = false; })
@@ -246,7 +246,7 @@ function kdsApp(initialTickets, sellerId) {
         async setStatus(ticket, status) {
             this.busyId = ticket.ticket_id;
             try {
-                const res = await window.axios.post(`/seller/kds/tickets/${ticket.ticket_id}/status`, { status });
+                const res = await window.axios.post(`/admin/kds/tickets/${ticket.ticket_id}/status`, { status });
                 if (res.data?.ticket) {
                     if (status === 'served') {
                         this.tickets = this.tickets.filter(t => t.ticket_id !== ticket.ticket_id);
@@ -267,4 +267,5 @@ function kdsApp(initialTickets, sellerId) {
 }
 </script>
 @endpush
+
 

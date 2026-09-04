@@ -14,17 +14,10 @@ class BranchFloorSeeder extends Seeder
     {
         $ownerId = User::admin()->first()->id;
 
-        $branches = [
-            ['name' => 'Head Office / HQ', 'code' => 'HQ', 'address' => 'House 12, Road 5, Gulshan, Dhaka', 'phone' => '01711111111', 'is_default' => true, 'is_active' => true],
-            ['name' => 'Dhanmondi Branch', 'code' => 'DHN', 'address' => 'House 8, Road 27, Dhanmondi, Dhaka', 'phone' => '01722222222', 'is_default' => false, 'is_active' => true],
-            ['name' => 'Uttara Branch', 'code' => 'UTR', 'address' => 'Plot 4, Sector 11, Uttara, Dhaka', 'phone' => '01733333333', 'is_default' => false, 'is_active' => true],
-        ];
+        // Branches come from BranchSeeder; here we only add floors + tables.
+        $branches = Branch::where('seller_id', $ownerId)->orderBy('id')->get();
 
-        foreach ($branches as $data) {
-            $branch = Branch::firstOrCreate(
-                ['seller_id' => $ownerId, 'code' => $data['code']],
-                $data + ['seller_id' => $ownerId]
-            );
+        foreach ($branches as $branch) {
 
             foreach (['Ground Floor' => 1, 'First Floor' => 2] as $floorName => $priority) {
                 $floor = Floor::firstOrCreate(

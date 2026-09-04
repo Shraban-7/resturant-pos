@@ -38,11 +38,27 @@
                     <tr>
                         <td>
                             <div class="flex items-center gap-3">
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="image" class="h-12 w-12 object-cover rounded-lg" />
+                                @if ($product->image)
+                                    <img src="{{ asset('storage/' . $product->image) }}" alt="image" class="h-12 w-12 object-cover rounded-lg" />
+                                @else
+                                    <span class="flex items-center justify-center h-12 w-12 rounded-lg bg-slate-100 text-slate-400 text-xl"><i class="ri-bowl-line"></i></span>
+                                @endif
                                 <span class="font-medium text-slate-800">{{ $product->name }}</span>
+                                @if (($product->type ?? 'dish') === 'buffet')
+                                    <span class="badge badge-success" title="Per-person buffet, unlimited">Buffet</span>
+                                @endif
                             </div>
                         </td>
-                        <td><span class="badge badge-light">{{ $product->category->name }}</span></td>
+                        <td>
+                            <span class="badge badge-light">{{ $product->category->name }}</span>
+                            @if (empty($product->meal_times))
+                                <span class="badge badge-success" title="Served all day">All day</span>
+                            @else
+                                @foreach ($product->meal_times as $slot)
+                                    <span class="badge badge-light" title="Served at {{ $slot }}">{{ ucfirst(substr($slot, 0, 5)) }}</span>
+                                @endforeach
+                            @endif
+                        </td>
                         <td class="font-medium">{{ money($product->selling_price) }}</td>
                         <td>{{ $product->availableStock }}</td>
                         <td>{{ $product->stock_out }}</td>

@@ -20,7 +20,7 @@ class StorefrontController extends Controller
      */
     public static function owner(): ?User
     {
-        return User::admin()->orderBy('id')->first();
+        return User::storeOwner();
     }
 
     public function index(Request $request)
@@ -67,81 +67,84 @@ class StorefrontController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'branch_id']);
 
-        return view('storefront.index', compact('owner', 'business', 'categories', 'popular', 'branches', 'tables'));
+        $mealSlots = Product::mealSlotHours();
+        $currentSlot = Product::currentMealSlot();
+
+        return view('storefront.index', compact('owner', 'business', 'categories', 'popular', 'branches', 'tables', 'mealSlots', 'currentSlot'));
     }
 
     /**
-     * Seed a starter menu when the owner has no categories/products yet.
-     * Idempotent: runs only when both tables are empty for this seller.
+     * Seed the menu from database/seeders/data/products.json when the owner
+     * has no categories/products yet. Idempotent: single source of truth
+     * shared with ProductSeeder. Images are always NULL.
      */
     protected static function ensureDemoMenu(User $owner): void
     {
-        $hasCategories = ProductCategory::where('seller_id', $owner->id)->exists();
-        $hasProducts = Product::where('seller_id', $owner->id)->exists();
-
-        if ($hasCategories || $hasProducts) {
+        if (ProductCategory::where('seller_id', $owner->id)->exists()
+            || Product::where('seller_id', $owner->id)->exists()) {
             return;
         }
 
-        $unit = \App\Models\ProductUnit::firstOrCreate(
-            ['name' => 'PIECES'],
-            ['short_name' => 'pcs']
+        $items = json_decode(
+            file_get_contents(database_path(\Database\Seeders\ProductSeeder::JSON_PATH)),
+            true
         );
 
-        $menu = [
-            'Starters' => [
-                ['Chicken Wings', 180, 250], ['Spring Rolls', 120, 180],
-                ['French Fries', 100, 150], ['Chicken Soup', 140, 200],
-            ],
-            'Main Course' => [
-                ['Chicken Biryani', 180, 260], ['Beef Tehari', 200, 280],
-                ['Fried Rice & Chicken', 220, 320], ['Pasta Alfredo', 250, 350],
-            ],
-            'Burgers & Fast Food' => [
-                ['Chicken Burger', 150, 220], ['Beef Burger', 200, 290],
-                ['Club Sandwich', 160, 230], ['Shawarma', 130, 190],
-            ],
-            'Drinks' => [
-                ['Fresh Juice', 80, 120], ['Cold Coffee', 120, 170],
-                ['Soft Drink', 40, 60], ['Mineral Water', 20, 30],
-            ],
-            'Desserts' => [
-                ['Gulab Jamun', 60, 100], ['Ice Cream', 80, 120],
-                ['Firni', 70, 110], ['Brownie', 120, 170],
-            ],
-        ];
+        if (! is_array($items)) {
+            return;
+        }
 
-        foreach ($menu as $categoryName => $items) {
-            $category = ProductCategory::create([
-                'seller_id' => $owner->id,
-                'name' => $categoryName,
-            ]);
+        $branchIds = \App\Models\Branch::where('seller_id', $owner->id)->orderBy('id')->pluck('id')->all();
 
-            foreach ($items as [$name, $buying, $selling]) {
-                $product = Product::create([
+        foreach (array_values($items) as $index => $item) {
+            $category = ProductCategory::firstOrCreate(
+                ['seller_id' => $owner->id, 'name' => $item['category']],
+                ['seller_id' => $owner->id, 'name' => $item['category']]
+            );
+
+            $unit = \App\Models\ProductUnit::firstOrCreate(
+                ['name' => $item['unit']],
+                ['short_name' => strtolower(substr($item['unit'], 0, 3))]
+            );
+
+            $branchId = ($branchIds && $index % 6 === 5)
+                ? $branchIds[(int) ($index / 6) % count($branchIds)]
+                : null;
+
+            $mealTimes = ($item['meal'] ?? 'all') === 'all' ? null : array_values($item['meal']);
+
+            $product = Product::firstOrCreate(
+                ['seller_id' => $owner->id, 'name' => $item['name']],
+                [
                     'seller_id' => $owner->id,
+                    'branch_id' => $branchId,
+                    'type' => $item['type'] ?? Product::TYPE_DISH,
+                    'meal_times' => $mealTimes,
                     'category_id' => $category->id,
                     'unit_id' => $unit->id,
-                    'name' => $name,
-                    'buying_price' => $buying,
-                    'selling_price' => $selling,
-                    'stock_in' => 100,
+                    'name' => $item['name'],
+                    'buying_price' => $item['buying_price'],
+                    'selling_price' => $item['selling_price'],
+                    'stock_in' => $item['stock_in'],
                     'stock_out' => 0,
-                    'image' => 'images/products/' . str_slug($categoryName) . '.jpg',
+                    'image' => null,
                     'is_active' => 1,
-                ]);
+                ]
+            );
 
-                \App\Models\ProductStock::create([
+            \App\Models\ProductStock::firstOrCreate(
+                ['product_id' => $product->id, 'seller_id' => $owner->id, 'type' => 'increment'],
+                [
                     'product_id' => $product->id,
                     'seller_id' => $owner->id,
                     'type' => 'increment',
-                    'quantity' => 100,
+                    'quantity' => $product->stock_in,
                     'old_stock' => 0,
-                    'new_stock' => 100,
-                    'buying_price' => $buying,
-                    'selling_price' => $selling,
-                ]);
-            }
+                    'new_stock' => $product->stock_in,
+                    'buying_price' => $product->buying_price,
+                    'selling_price' => $product->selling_price,
+                ]
+            );
         }
     }
 
@@ -174,6 +177,12 @@ class StorefrontController extends Controller
             ->whereKey($data['table_id'])
             ->firstOrFail();
 
+        if ($conflict = Reservation::conflictingBooking((int) $table->id, $data['reservation_time'])) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'reservation_time' => Reservation::conflictMessage($conflict),
+            ]);
+        }
+
         $reservation = Reservation::create([
             'seller_id' => $owner->id,
             'branch_id' => $data['branch_id'] ?? $table->branch_id,
@@ -185,6 +194,17 @@ class StorefrontController extends Controller
             'notes' => $data['notes'] ?? null,
             'status' => Reservation::PENDING,
         ]);
+
+        // Persist for the bell dropdown + live ping to every staff screen.
+        \App\Models\StaffNotification::notify(
+            $owner->id,
+            \App\Models\StaffNotification::TYPE_RESERVATION,
+            "New reservation: {$reservation->customer_name}",
+            "{$reservation->guest_count} guests · " . ($table->name ?? '') . ' · ' . \Carbon\Carbon::parse($reservation->reservation_time)->format('d M, h:i A'),
+            ['reservation_id' => $reservation->id]
+        );
+
+        event(new \App\Events\ReservationPlaced($reservation));
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([

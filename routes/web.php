@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\FloorController;
 use App\Http\Controllers\Admin\GiftCardController;
 use App\Http\Controllers\Admin\KdsController;
 use App\Http\Controllers\Admin\LoyaltyController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OfflineSyncController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ProductController;
@@ -54,6 +55,12 @@ Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'seller'])->prefix('admin')->as('admin.')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:dashboard');
+
+    Route::prefix('notifications')->as('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/latest', [NotificationController::class, 'latest'])->name('latest');
+        Route::post('/read-all', [NotificationController::class, 'readAll'])->name('readAll');
+    });
 
     Route::prefix('pos')->as('pos.')->group(function () {
         Route::get('/', [PosController::class, 'index'])->name('index');
@@ -171,9 +178,9 @@ Route::middleware(['auth', 'seller'])->prefix('admin')->as('admin.')->group(func
 
 });
 
-// Legacy seller URLs redirect to admin panel.
+// Legacy seller URLs redirect to admin panel (any method: GET/POST/PUT/DELETE).
 Route::prefix('seller')->group(function () {
-    Route::get('/{any?}', function () {
+    Route::any('/{any?}', function () {
         $path = str_replace('/seller', '/admin', request()->path());
         $query = request()->getQueryString() ? '?'.request()->getQueryString() : '';
 

@@ -22,6 +22,11 @@ class DeductRecipeStockAction
             return;
         }
 
+        // Buffet is per-person with no inventory impact.
+        if ($product->isBuffet()) {
+            return;
+        }
+
         $recipe = $this->resolveRecipe($product);
 
         if ($recipe && $recipe->ingredients->isNotEmpty()) {

@@ -10,10 +10,11 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
 </head>
-<body class="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4" style="background: radial-gradient(60rem 30rem at 50% -10%, #ffedd5 0%, transparent 60%), linear-gradient(180deg, #0c1222 0%, #131c33 46%, #1c1330 100%);">
     <main class="w-full max-w-md">
         <x-flash-message />
         @yield('content')
+        <p class="text-center text-xs text-slate-400 mt-6">{{ config('app.name', env('APP_NAME')) }} · Restaurant POS</p>
     </main>
 </body>
 </html>

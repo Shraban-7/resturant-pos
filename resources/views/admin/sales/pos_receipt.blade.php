@@ -125,7 +125,7 @@
 
     <div class="invoice-info">
         <div>#{{ $sale->order_id }}</div>
-        <div>{{ $sale->created_at->format('Y-m-d H:i') }}</div>
+        <div>{{ human_time($sale->created_at) }}</div>
     </div>
 
     <div class="invoice-info">

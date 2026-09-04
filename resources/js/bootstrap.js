@@ -17,13 +17,16 @@ if (token) {
 
 const reverbKey = import.meta.env.VITE_REVERB_APP_KEY;
 if (reverbKey) {
+    // Follow the site domain (restaurant_pos.test, localhost, LAN IP...) so the
+    // socket works wherever the app is served. Reverb must listen on 0.0.0.0.
+    const pageIsHttps = window.location.protocol === 'https:';
     window.Echo = new Echo({
         broadcaster: 'reverb',
         key: reverbKey,
-        wsHost: import.meta.env.VITE_REVERB_HOST,
+        wsHost: window.location.hostname,
         wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
         wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
-        forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
-        enabledTransports: ['ws', 'wss'],
+        forceTLS: pageIsHttps,
+        enabledTransports: pageIsHttps ? ['wss'] : ['ws'],
     });
 }

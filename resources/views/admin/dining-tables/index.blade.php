@@ -149,7 +149,7 @@
                             <i class="ri-close-line text-xl"></i>
                         </button>
                     </div>
-                    <form :action="t ? `/seller/dining-tables/${t.id}/update` : '#'" method="post">
+                    <form :action="t ? `/admin/dining-tables/${t.id}/update` : '#'" method="post">
                         @csrf
                         <div class="modal-body">
                             <div class="form-group">

@@ -96,19 +96,21 @@ class KdsTicketTest extends TestCase
         $this->assertSame(KitchenTicketItem::READY, $ticket->items()->first()->status);
     }
 
-    public function test_seller_cannot_update_another_sellers_ticket(): void
+    public function test_admins_share_single_store_dataset(): void
     {
+        // Single restaurant = single dataset: every admin resolves to the
+        // canonical (first) admin, so a second admin sees the same tickets.
         $owner = $this->createSeller();
         $ticket = $this->makeSaleWithTicket($owner);
-        $intruder = $this->createSeller();
+        $coAdmin = $this->createSeller();
 
-        $response = $this->actingAs($intruder)->postJson(
+        $response = $this->actingAs($coAdmin)->postJson(
             route('admin.kds.updateStatus', $ticket),
             ['status' => KitchenTicket::READY]
         );
 
-        $response->assertStatus(403);
-        $this->assertSame(KitchenTicket::PENDING, $ticket->fresh()->status);
+        $response->assertOk();
+        $this->assertSame(KitchenTicket::READY, $ticket->fresh()->status);
     }
 
     public function test_update_status_rejects_invalid_status(): void

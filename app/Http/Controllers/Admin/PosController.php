@@ -61,14 +61,14 @@ class PosController extends Controller
             ->get();
 
         $cart = Cart::query()->firstOrCreate(
-            ['seller_id' => auth()->id()],
+            ['seller_id' => panel_owner_id()],
             ['order_id' => generateOrderId()]
         );
         $cart->load(['items.item.unit']);
 
         $categories = ProductCategory::query()
-            ->where('seller_id', auth()->id())
-            ->withCount(['products' => fn ($q) => $q->where('seller_id', auth()->id())])
+            ->where('seller_id', panel_owner_id())
+            ->withCount(['products' => fn ($q) => $q->where('seller_id', panel_owner_id())])
             ->get();
         $diningTables = DiningTable::self()->forActiveBranch()->with('floor')->get();
         $employees = SellerEmployee::self()->forActiveBranch()->get();
@@ -81,7 +81,7 @@ class PosController extends Controller
         if ($request->has('sale')) {
             $sale = Sale::query()
                 ->where('order_id', request('sale'))
-                ->where('seller_id', auth()->id())
+                ->where('seller_id', panel_owner_id())
                 ->with(['items.product.unit', 'customer', 'table', 'waiter'])
                 ->first();
             if ($sale) {
@@ -172,12 +172,12 @@ class PosController extends Controller
                 $product = Product::query()
                     ->with(['recipe.ingredients.ingredientProduct', 'modifiers'])
                     ->whereKey($request->product_id)
-                    ->where('seller_id', auth()->id())
+                    ->where('seller_id', panel_owner_id())
                     ->lockForUpdate()
                     ->firstOrFail();
 
                 $cart = Cart::where('order_id', $request->order_id)
-                    ->where('seller_id', auth()->id())
+                    ->where('seller_id', panel_owner_id())
                     ->firstOrFail();
 
                 $modifiers = collect($request->input('modifiers', []));
@@ -236,7 +236,7 @@ class PosController extends Controller
         try {
             return DB::transaction(function () use ($request) {
                 $cart_item = CartItem::whereHas('cart', function ($q) {
-                    $q->where('seller_id', auth()->id());
+                    $q->where('seller_id', panel_owner_id());
                 })->with(['item.recipe.ingredients.ingredientProduct'])->findOrFail($request->cart_item_id);
 
                 $item = $cart_item->item;
@@ -263,7 +263,7 @@ class PosController extends Controller
         try {
             return DB::transaction(function () use ($request) {
                 $cart_item = CartItem::whereHas('cart', function ($q) {
-                    $q->where('seller_id', auth()->id());
+                    $q->where('seller_id', panel_owner_id());
                 })->with(['item.recipe.ingredients.ingredientProduct'])->findOrFail($request->cart_item_id);
 
                 $item = $cart_item->item;
@@ -303,7 +303,7 @@ class PosController extends Controller
 
                 if ($customer_name != '' && $customer_phone != '') {
                     $newCustomer = Customer::create([
-                        'seller_id' => auth()->id(),
+                        'seller_id' => panel_owner_id(),
                         'name' => $customer_name,
                         'phone' => $customer_phone,
                     ]);
@@ -311,7 +311,7 @@ class PosController extends Controller
                 }
 
                 $cart = Cart::where('order_id', $request->order_id)
-                    ->where('seller_id', auth()->id())
+                    ->where('seller_id', panel_owner_id())
                     ->with('items.item.unit')
                     ->lockForUpdate()
                     ->first();
@@ -421,7 +421,7 @@ class PosController extends Controller
         try {
             return DB::transaction(function () use ($request) {
                 $cart = Cart::where('order_id', $request->order_id)
-                    ->where('seller_id', auth()->id())
+                    ->where('seller_id', panel_owner_id())
                     ->with('items.item.unit')
                     ->lockForUpdate()
                     ->first();
@@ -436,7 +436,7 @@ class PosController extends Controller
 
                 if ($customer_name != '' && $customer_phone != '') {
                     $newCustomer = Customer::create([
-                        'seller_id' => auth()->id(),
+                        'seller_id' => panel_owner_id(),
                         'name' => $customer_name,
                         'phone' => $customer_phone,
                     ]);
@@ -518,5 +518,6 @@ class PosController extends Controller
         }
     }
 }
+
 
 

@@ -32,20 +32,20 @@ class DiningTableController extends Controller
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('dining_tables', 'name')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+                Rule::unique('dining_tables', 'name')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
             ],
             'floor_id' => [
                 'nullable',
-                Rule::exists('floors', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+                Rule::exists('floors', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
             ],
             'branch_id' => [
                 'nullable',
-                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
             ],
         ]);
 
         DiningTable::create([
-            'seller_id' => Auth::id(),
+            'seller_id' => panel_owner_id(),
             'branch_id' => $data['branch_id'] ?? active_branch_id(),
             'name' => $data['name'],
             'floor_id' => $data['floor_id'] ?? null,
@@ -58,7 +58,7 @@ class DiningTableController extends Controller
 
     public function update(Request $request, DiningTable $table)
     {
-        abort_unless((int) $table->seller_id === (int) Auth::id(), 403);
+        abort_unless((int) $table->seller_id === (int) panel_owner_id(), 403);
 
         $data = $request->validate([
             'name' => [
@@ -66,17 +66,17 @@ class DiningTableController extends Controller
                 'string',
                 'max:100',
                 Rule::unique('dining_tables', 'name')
-                    ->where(fn ($q) => $q->where('seller_id', Auth::id()))
+                    ->where(fn ($q) => $q->where('seller_id', panel_owner_id()))
                     ->ignore($table->id),
             ],
             'status' => 'required|in:'.implode(',', DiningTable::statuses()),
             'floor_id' => [
                 'nullable',
-                Rule::exists('floors', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+                Rule::exists('floors', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
             ],
             'branch_id' => [
                 'nullable',
-                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
             ],
         ]);
 
@@ -94,7 +94,7 @@ class DiningTableController extends Controller
 
     public function destroy(DiningTable $table)
     {
-        abort_unless((int) $table->seller_id === (int) Auth::id(), 403);
+        abort_unless((int) $table->seller_id === (int) panel_owner_id(), 403);
 
         $table->delete();
 
@@ -129,7 +129,7 @@ class DiningTableController extends Controller
             'positions.*.id' => [
                 'required',
                 'integer',
-                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
             ],
             'positions.*.x' => 'required|integer|min:0|max:5000',
             'positions.*.y' => 'required|integer|min:0|max:5000',
@@ -152,7 +152,7 @@ class DiningTableController extends Controller
 
     public function qrCard(DiningTable $table)
     {
-        abort_unless((int) $table->seller_id === (int) Auth::id(), 403);
+        abort_unless((int) $table->seller_id === (int) panel_owner_id(), 403);
 
         $token = $table->ensureQrToken();
         $menuUrl = route('menu.index', $table);
@@ -164,7 +164,7 @@ class DiningTableController extends Controller
 
     public function qrSvg(DiningTable $table)
     {
-        abort_unless((int) $table->seller_id === (int) Auth::id(), 403);
+        abort_unless((int) $table->seller_id === (int) panel_owner_id(), 403);
 
         $table->ensureQrToken();
         $svg = QrCode::size(400)->margin(1)->generate(route('menu.index', $table));
@@ -175,5 +175,6 @@ class DiningTableController extends Controller
         ]);
     }
 }
+
 
 

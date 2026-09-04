@@ -15,8 +15,13 @@ class ReservationController extends Controller
 {
     public function index()
     {
+        // Explicit branch filter (default: all). The old session-scope hid
+        // storefront bookings made for other branches.
+        $branchFilter = request()->get('branch_id');
+
         $reservations = Reservation::self()
-            ->forActiveBranch()
+            ->when($branchFilter === 'unassigned', fn ($q) => $q->whereNull('branch_id'))
+            ->when($branchFilter && $branchFilter !== 'unassigned', fn ($q) => $q->where('branch_id', (int) $branchFilter))
             ->with(['table', 'branch'])
             ->orderByDesc('reservation_time')
             ->paginate(20)
@@ -26,7 +31,7 @@ class ReservationController extends Controller
         $statuses = Reservation::statuses();
         $branches = seller_branches();
 
-        return view('admin.reservations.index', compact('reservations', 'tables', 'statuses', 'branches'));
+        return view('admin.reservations.index', compact('reservations', 'tables', 'statuses', 'branches', 'branchFilter'));
     }
 
     public function store(Request $request)
@@ -34,7 +39,7 @@ class ReservationController extends Controller
         $data = $request->validate([
             'table_id' => [
                 'required',
-                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
             ],
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:50',
@@ -44,17 +49,24 @@ class ReservationController extends Controller
             'status' => 'nullable|in:'.implode(',', Reservation::statuses()),
             'branch_id' => [
                 'nullable',
-                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
             ],
         ]);
 
         $status = $data['status'] ?? Reservation::CONFIRMED;
 
+        if ($status !== Reservation::CANCELLED
+            && $conflict = Reservation::conflictingBooking((int) $data['table_id'], $data['reservation_time'])) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', Reservation::conflictMessage($conflict));
+        }
+
         DB::transaction(function () use ($data, $status) {
             $table = DiningTable::self()->whereKey($data['table_id'])->firstOrFail();
 
             $reservation = Reservation::create([
-                'seller_id' => Auth::id(),
+                'seller_id' => panel_owner_id(),
                 'branch_id' => $data['branch_id'] ?? $table->branch_id ?? active_branch_id(),
                 'table_id' => $data['table_id'],
                 'customer_name' => $data['customer_name'],
@@ -75,12 +87,12 @@ class ReservationController extends Controller
 
     public function update(Request $request, Reservation $reservation)
     {
-        abort_unless((int) $reservation->seller_id === (int) Auth::id(), 403);
+        abort_unless((int) $reservation->seller_id === (int) panel_owner_id(), 403);
 
         $data = $request->validate([
             'table_id' => [
                 'required',
-                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('seller_id', Auth::id())),
+                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('seller_id', panel_owner_id())),
             ],
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:50',
@@ -89,6 +101,13 @@ class ReservationController extends Controller
             'notes' => 'nullable|string|max:1000',
             'status' => 'required|in:'.implode(',', Reservation::statuses()),
         ]);
+
+        if ($data['status'] !== Reservation::CANCELLED
+            && $conflict = Reservation::conflictingBooking((int) $data['table_id'], $data['reservation_time'], (int) $reservation->id)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', Reservation::conflictMessage($conflict));
+        }
 
         DB::transaction(function () use ($reservation, $data) {
             $previousTableId = $reservation->table_id;
@@ -117,7 +136,7 @@ class ReservationController extends Controller
 
     public function destroy(Reservation $reservation)
     {
-        abort_unless((int) $reservation->seller_id === (int) Auth::id(), 403);
+        abort_unless((int) $reservation->seller_id === (int) panel_owner_id(), 403);
 
         DB::transaction(function () use ($reservation) {
             $tableId = (int) $reservation->table_id;
@@ -177,5 +196,6 @@ class ReservationController extends Controller
         }
     }
 }
+
 
 
