@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\KdsController;
 use App\Http\Controllers\Admin\LoyaltyController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PurchaseController;
+use App\Http\Controllers\Admin\StorefrontSettingController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\OfflineSyncController;
 use App\Http\Controllers\Admin\PosController;
@@ -66,6 +67,11 @@ Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:dashboard');
+
+    Route::prefix('storefront-settings')->as('storefront-settings.')->middleware('permission:settings')->group(function () {
+        Route::get('/', [StorefrontSettingController::class, 'index'])->name('index');
+        Route::put('/', [StorefrontSettingController::class, 'update'])->name('update');
+    });
 
     Route::prefix('notifications')->as('notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');

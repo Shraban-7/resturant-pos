@@ -77,8 +77,9 @@ class StorefrontController extends Controller
 
         $mealSlots = Product::mealSlotHours();
         $currentSlot = Product::currentMealSlot();
+        $store = \App\Models\StoreSetting::allFor($owner->id);
 
-        return view('storefront.index', compact('owner', 'business', 'categories', 'popular', 'branches', 'tables', 'mealSlots', 'currentSlot'));
+        return view('storefront.index', compact('owner', 'business', 'categories', 'popular', 'branches', 'tables', 'mealSlots', 'currentSlot', 'store'));
     }
 
     /**

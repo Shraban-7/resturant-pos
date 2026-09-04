@@ -45,17 +45,31 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased" style="scroll-behavior:smooth" x-data="storefront()" x-cloak>
 
+@if (($store['announcement_enabled'] ?? '0') === '1' && ! empty($store['announcement_text']))
+    <div class="bg-orange-600 text-white text-center text-xs sm:text-sm font-medium px-4 py-2">
+        <i class="ri-megaphone-line mr-1"></i>{{ $store['announcement_text'] }}
+    </div>
+@endif
+
 <!-- Navbar -->
 <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
         <a href="{{ route('storefront.index') }}" class="flex items-center gap-2 font-bold text-slate-900">
-            <span class="flex items-center justify-center h-9 w-9 rounded-xl bg-orange-600 text-white text-lg"><i class="ri-restaurant-2-line"></i></span>
-            <span class="truncate">{{ $business->name ?? config('app.name') }}</span>
+            @if (store_logo_url())
+                <img src="{{ store_logo_url() }}" alt="{{ store_name() }}" class="h-9 w-9 rounded-xl object-cover shrink-0">
+            @else
+                <span class="flex items-center justify-center h-9 w-9 rounded-xl bg-orange-600 text-white text-lg"><i class="ri-restaurant-2-line"></i></span>
+            @endif
+            <span class="truncate">{{ $business->name ?? store_name() }}</span>
         </a>
         <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
-            <a href="#menu" class="px-3 py-2 text-slate-600 hover:text-orange-600">Menu</a>
-            <a href="#popular" class="px-3 py-2 text-slate-600 hover:text-orange-600">Popular</a>
-            <a href="#branches" class="px-3 py-2 text-slate-600 hover:text-orange-600">Branches</a>
+            <a href="#menu" class="px-3 py-2 text-slate-600 hover:text-orange-600">{{ __('storefront.menu') }}</a>
+            @if (($store['show_popular'] ?? '1') === '1')
+                <a href="#popular" class="px-3 py-2 text-slate-600 hover:text-orange-600">{{ __('storefront.popular') }}</a>
+            @endif
+            @if (($store['show_branches'] ?? '1') === '1')
+                <a href="#branches" class="px-3 py-2 text-slate-600 hover:text-orange-600">{{ __('storefront.branches') }}</a>
+            @endif
             <a href="{{ route('login') }}" class="px-3 py-2 text-slate-600 hover:text-orange-600">{{ __('storefront.staff_login') }}</a>
             <span class="flex items-center rounded-full border border-slate-200 overflow-hidden text-xs font-bold">
                 <a href="{{ route('lang.switch', 'en') }}" class="px-2.5 py-1.5 {{ app()->getLocale() === 'en' ? 'bg-slate-900 text-white' : 'text-slate-500' }}">EN</a>
@@ -75,8 +89,11 @@
             <p class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-amber-300 bg-white/10 rounded-full px-3 py-1">
                 <i class="ri-map-pin-line"></i>{{ $branches->first()?->address ?? 'Dine-in • Takeaway' }}
             </p>
-            <h1 class="text-3xl md:text-5xl font-extrabold leading-tight mt-4">{{ $business->name ?? config('app.name') }}</h1>
-            <p class="text-slate-300 mt-3 max-w-md">{{ __('storefront.hero_tagline') }}</p>
+            <h1 class="text-3xl md:text-5xl font-extrabold leading-tight mt-4">{{ $store['hero_title'] ?: ($business->name ?? config('app.name')) }}</h1>
+            <p class="text-slate-300 mt-3 max-w-md">{{ $store['hero_subtitle'] ?: __('storefront.hero_tagline') }}</p>
+            @if (! empty($store['opening_hours']))
+                <p class="text-amber-300 text-sm font-medium mt-2"><i class="ri-time-line mr-1"></i>{{ $store['opening_hours'] }}</p>
+            @endif
             <div class="flex flex-wrap gap-3 mt-6">
                 <a href="#menu" class="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-5 py-2.5 rounded-full text-sm transition">{{ __('storefront.browse_menu') }}</a>
                 <a href="#reservation" class="bg-white/10 hover:bg-white/20 border border-white/20 font-semibold px-5 py-2.5 rounded-full text-sm transition">{{ __('storefront.reserve_table') }}</a>
@@ -179,7 +196,7 @@
 </section>
 
 <!-- Popular strip -->
-@if ($popular->isNotEmpty())
+@if (($store['show_popular'] ?? '1') === '1' && $popular->isNotEmpty())
 <section id="popular" class="bg-white border-y border-slate-200">
     <div class="max-w-7xl mx-auto px-4 py-8">
         <h2 class="text-xl font-bold text-slate-900">{{ __('storefront.most_loved') }}</h2>
@@ -197,6 +214,7 @@
 @endif
 
 <!-- Reservation -->
+@if (($store['show_reservation'] ?? '1') === '1')
 <section id="reservation" class="max-w-7xl mx-auto px-4 py-10">
     <div class="grid lg:grid-cols-5 gap-6">
         <div class="lg:col-span-2">
@@ -262,9 +280,10 @@
         </form>
     </div>
 </section>
+@endif
 
 <!-- Branches -->
-@if ($branches->isNotEmpty())
+@if (($store['show_branches'] ?? '1') === '1' && $branches->isNotEmpty())
 <section id="branches" class="max-w-7xl mx-auto px-4 pb-12">
     <h2 class="text-xl font-bold text-slate-900">{{ __('storefront.find_us') }}</h2>
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
@@ -282,7 +301,7 @@
 
 <footer class="bg-slate-900 text-slate-400">
     <div class="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-3 text-sm">
-        <p>© {{ date('Y') }} {{ $business->name ?? config('app.name') }}. All rights reserved.</p>
+        <p>© {{ date('Y') }} {{ $business->name ?? config('app.name') }}. {{ $store['footer_note'] ?: __('storefront.rights') }}</p>
         <div class="flex gap-4">
             <a href="#menu" class="hover:text-white">Menu</a>
             <a href="#reservation" class="hover:text-white">Reserve</a>

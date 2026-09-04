@@ -460,7 +460,12 @@
     @keydown.escape.window="cartOpen = false; confirmOpen = false; modifierOpen = false">
     <header class="header">
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="brand-logo">{{ ($business->name ?? config('app.name')) }}</div>
+            <div class="brand-logo" style="display:flex;align-items:center;gap:.5rem;justify-content:center;">
+                @if (store_logo_url())
+                    <img src="{{ store_logo_url() }}" alt="{{ store_name() }}" style="height:2rem;width:2rem;border-radius:.6rem;object-fit:cover;">
+                @endif
+                <span>{{ ($business->name ?? store_name()) }}</span>
+            </div>
             <div class="flex items-center gap-3">
                 <span class="table-badge">
                     <i class="ri-map-pin-line mr-1"></i> {{ $table->name ?? $table->id }}

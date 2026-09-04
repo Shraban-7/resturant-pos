@@ -1,10 +1,14 @@
 <div class="flex flex-col h-full">
     <a class="sidebar-brand" href="{{ route('admin.dashboard') }}">
-        <span class="flex items-center justify-center h-10 w-10 rounded-xl bg-gradient-brand text-white shadow-lg shadow-brand-900/40">
-            <i class="ri-restaurant-2-line text-xl"></i>
-        </span>
-        <div class="flex flex-col leading-tight">
-            <span class="text-[0.95rem] font-bold text-white tracking-tight">{{ config('app.name', env('APP_NAME')) }}</span>
+        @if (store_logo_url())
+            <img src="{{ store_logo_url() }}" alt="{{ store_name() }}" class="h-10 w-10 rounded-xl object-cover bg-white/10 shrink-0">
+        @else
+            <span class="flex items-center justify-center h-10 w-10 rounded-xl bg-brand-600 text-white shadow-lg shadow-brand-900/40">
+                <i class="ri-restaurant-2-line text-xl"></i>
+            </span>
+        @endif
+        <div class="flex flex-col leading-tight min-w-0">
+            <span class="text-[0.95rem] font-bold text-white tracking-tight truncate">{{ store_name() }}</span>
             <span class="text-[10px] uppercase tracking-[0.14em] text-slate-400">{{ is_employee() ? 'Employee' : 'Admin' }}</span>
         </div>
     </a>
@@ -91,6 +95,7 @@
             <div class="sidebar-section">System</div>
             <ul class="sidebar-list">
                 <x-sidebar-list-item :title="'Settings'" :icon="'ri-settings-3-line'" :route="'admin.settings.index'" />
+                <x-sidebar-list-item :title="'Storefront'" :icon="'ri-global-line'" :route="'admin.storefront-settings.index'" />
             </ul>
         @endcan
     </nav>

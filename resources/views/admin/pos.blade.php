@@ -30,9 +30,13 @@
     {{-- =================== TOP BAR =================== --}}
     <header class="bg-slate-950 text-white h-16 flex items-center gap-3 px-4 shrink-0 z-20">
         <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 shrink-0">
-            <span class="flex items-center justify-center h-9 w-9 rounded-xl bg-brand-600 text-white shadow-lg shadow-brand-900/50">
-                <i class="ri-restaurant-2-line text-lg"></i>
-            </span>
+            @if (store_logo_url())
+                <img src="{{ store_logo_url() }}" alt="{{ store_name() }}" class="h-9 w-9 rounded-xl object-cover shrink-0">
+            @else
+                <span class="flex items-center justify-center h-9 w-9 rounded-xl bg-brand-600 text-white shadow-lg shadow-brand-900/50">
+                    <i class="ri-restaurant-2-line text-lg"></i>
+                </span>
+            @endif
             <div class="hidden sm:block">
                 <div class="text-sm font-bold text-white leading-tight tracking-tight">POS Terminal</div>
                 <div class="text-[10px] text-slate-400 uppercase tracking-wider">{{ auth()->user()->name }}</div>

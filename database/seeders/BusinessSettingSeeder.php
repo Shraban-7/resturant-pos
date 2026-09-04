@@ -14,8 +14,8 @@ class BusinessSettingSeeder extends Seeder
 
         BusinessSetting::create([
             'user_id' => $admin->id,
-            'name' => 'Mezban Restaurant',
-            'email' => 'hello@mezban.com',
+            'name' => 'Dine Master',
+            'email' => 'hello@dinemaster.com',
             'phone' => '01712345678',
             'image' => 'images/mezban.png',
             'signature' => 'images/signature.png',

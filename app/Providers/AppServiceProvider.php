@@ -28,6 +28,15 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useTailwind();
 
+        // Site name comes from Admin → Settings (Business Name), not .env.
+        try {
+            if ($name = store_business()?->name) {
+                config(['app.name' => $name]);
+            }
+        } catch (\Throwable $e) {
+            // Fresh install without tables yet — keep .env default.
+        }
+
         Broadcast::routes(['middleware' => ['web', 'auth']]);
 
         Gate::before(function ($user, $ability) {

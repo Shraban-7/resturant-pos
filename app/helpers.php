@@ -268,6 +268,52 @@ if (! function_exists('is_all_branches_mode')) {
     }
 }
 
+if (! function_exists('store_business')) {
+    // Canonical store profile (first admin's business settings), cached.
+    function store_business(): ?\App\Models\BusinessSetting
+    {
+        try {
+            return \Illuminate\Support\Facades\Cache::rememberForever(
+                'store.branding',
+                fn () => \App\Models\BusinessSetting::query()
+                    ->whereIn('user_id', \App\Models\User::admin()->orderBy('id')->pluck('id'))
+                    ->orderBy('id')
+                    ->first()
+            );
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+}
+
+if (! function_exists('store_name')) {
+    function store_name(): string
+    {
+        return store_business()?->name ?: config('app.name');
+    }
+}
+
+if (! function_exists('store_logo_url')) {
+    // Uploaded business logo first, bundled Dine Master mark as fallback.
+    function store_logo_url(): string
+    {
+        $image = store_business()?->image;
+
+        return $image ? storage_url($image) : asset('assets/images/logo.svg');
+    }
+}
+
+if (! function_exists('forget_store_branding')) {
+    function forget_store_branding(): void
+    {
+        try {
+            \Illuminate\Support\Facades\Cache::forget('store.branding');
+        } catch (\Throwable $e) {
+            // Cache unavailable (e.g. during install) — safe to ignore.
+        }
+    }
+}
+
 if (! function_exists('human_hour')) {
     // 5 => "5 AM", 13 => "1 PM", 0 => "12 AM", 12 => "12 PM".
     function human_hour(int $hour): string

@@ -61,6 +61,8 @@ class SettingController extends Controller
 
         is_null($business) ? BusinessSetting::create($data) : $business->update($data);
 
+        forget_store_branding();
+
         return redirect()->back()->with('success', 'Business settings updated');
     }
 }

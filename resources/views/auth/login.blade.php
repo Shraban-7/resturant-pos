@@ -4,10 +4,14 @@
 
 <div class="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-8">
     <div class="text-center mb-6">
-        <span class="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-brand-600 text-white mb-3">
-            <i class="ri-restaurant-2-line text-2xl"></i>
-        </span>
-        <h1 class="text-2xl font-semibold text-slate-900">Welcome back</h1>
+        @if (store_logo_url())
+            <img src="{{ store_logo_url() }}" alt="{{ store_name() }}" class="h-14 w-14 rounded-2xl object-cover mx-auto mb-3 shadow-md">
+        @else
+            <span class="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-brand-600 text-white mb-3">
+                <i class="ri-restaurant-2-line text-2xl"></i>
+            </span>
+        @endif
+        <h1 class="text-2xl font-semibold text-slate-900">{{ store_name() }}</h1>
         <p class="mt-1 text-sm text-slate-500">Sign in to your account to continue</p>
     </div>
 
