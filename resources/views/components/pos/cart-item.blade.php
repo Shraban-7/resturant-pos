@@ -8,7 +8,7 @@
      data-note="{{ $item->note }}"
      data-modifiers="{{ json_encode($item->modifiers_json ?? []) }}"
      data-source="server_cart">
-    <img src="{{ asset('storage/' . $item->item->image) }}" alt="" class="h-11 w-11 object-cover rounded-md shrink-0">
+    <img src="{{ $item->item->imageUrl() }}" alt="" class="h-11 w-11 object-cover rounded-md shrink-0 bg-orange-50">
     <div class="flex-1 min-w-0">
         <div class="text-sm font-medium text-slate-800 truncate">{{ $item->item->name }}</div>
         @if (!empty($item->modifiers_json))

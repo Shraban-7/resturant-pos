@@ -38,7 +38,7 @@
                         <td class="text-slate-600">{{ $stock->created_at->format('d M Y, h:i A') }}</td>
                         <td>
                             <div class="flex items-center gap-3">
-                                <img src="{{ asset('storage/' . $stock->product->image) }}" alt="image" class="h-10 w-10 object-cover rounded-lg" />
+                                <img src="{{ $stock->product->imageUrl() }}" alt="image" class="h-10 w-10 object-cover rounded-lg bg-orange-50" />
                                 <span class="font-medium text-slate-800">{{ $stock->product->name }}</span>
                             </div>
                         </td>

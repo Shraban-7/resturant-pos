@@ -35,6 +35,10 @@
                             <input type="text" name="name" placeholder="Enter item name" class="form-control" required>
                         </div>
                         <div>
+                            <label class="form-label">Name (Bangla) <span class="text-slate-500 text-xs">(optional)</span></label>
+                            <input type="text" name="name_bn" placeholder="বাংলা নাম" class="form-control">
+                        </div>
+                        <div>
                             <label class="form-label">Type</label>
                             <select name="type" class="form-select">
                                 <option value="dish">Dish (sellable, stock tracked)</option>

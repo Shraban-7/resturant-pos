@@ -500,15 +500,15 @@
                             @endphp
                             <article class="menu-card"
                                      data-id="{{ $product->id }}"
-                                     data-name="{{ $product->name }}"
+                                     data-name="{{ $product->displayName() }}"
                                      data-price="{{ $product->selling_price }}"
-                                     data-image="{{ storage_url($product->image) }}"
+                                     data-image="{{ $product->imageUrl() }}"
                                      data-available="{{ $inStock ? '1' : '0' }}"
                                      data-has-modifiers="{{ $hasMods ? '1' : '0' }}">
                                 <div class="menu-card-body">
-                                    <img src="{{ storage_url($product->image) }}" alt="{{ $product->name }}" class="menu-card-image" loading="lazy">
+                                    <img src="{{ $product->imageUrl() }}" alt="{{ $product->displayName() }}" class="menu-card-image" loading="lazy">
                                     <div class="menu-card-content">
-                                        <h3 class="menu-card-title">{{ $product->name }}</h3>
+                                        <h3 class="menu-card-title">{{ $product->displayName() }}</h3>
                                         @if($hasMods)
                                             <div class="text-xs text-gray-400 mb-1">Customizable</div>
                                         @endif
@@ -839,4 +839,6 @@
 </body>
 
 </html>
+
+
 

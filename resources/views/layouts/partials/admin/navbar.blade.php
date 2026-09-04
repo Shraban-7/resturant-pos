@@ -34,6 +34,11 @@
         $navNotifications = \App\Models\StaffNotification::forOwner()->latest('id')->take(8)->get();
         $navUnread = \App\Models\StaffNotification::forOwner()->unread()->count();
     @endphp
+    <div class="hidden sm:flex items-center rounded-full border border-slate-200 overflow-hidden text-[11px] font-bold" title="Language">
+        <a href="{{ route('lang.switch', 'en') }}" class="px-2 py-1.5 {{ app()->getLocale() === 'en' ? 'bg-slate-900 text-white' : 'text-slate-500' }}">EN</a>
+        <a href="{{ route('lang.switch', 'bn') }}" class="px-2 py-1.5 {{ app()->getLocale() === 'bn' ? 'bg-slate-900 text-white' : 'text-slate-500' }}">বাং</a>
+    </div>
+
     <div class="relative" x-data="notifBell()" @keydown.escape.window="open = false" @notif-live.window="await refresh(false)">
         <button type="button" class="btn btn-ghost btn-icon" aria-label="Notifications" @click="toggle()">
             <i class="ri-notification-3-line text-lg"></i>

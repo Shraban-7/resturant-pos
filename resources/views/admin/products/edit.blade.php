@@ -37,6 +37,10 @@
                             <input type="text" name="name" class="form-control" value="{{ $product->name }}" required>
                         </div>
                         <div>
+                            <label class="form-label">Name (Bangla) <span class="text-slate-500 text-xs">(optional)</span></label>
+                            <input type="text" name="name_bn" class="form-control" value="{{ $product->name_bn }}" placeholder="বাংলা নাম">
+                        </div>
+                        <div>
                             <label class="form-label">Type</label>
                             <select name="type" class="form-select">
                                 <option value="dish" @selected($product->type === \App\Enums\ProductType::DISH)>Dish (sellable, stock tracked)</option>
@@ -89,9 +93,7 @@
                         </div>
 
                         <div class="md:col-span-2">
-                            @if($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="image" class="h-24 w-24 rounded-lg object-cover mb-3 border border-slate-200">
-                            @endif
+                            <img src="{{ $product->imageUrl() }}" alt="image" class="h-24 w-24 rounded-lg object-cover mb-3 border border-slate-200 bg-orange-50">
                             <label class="form-label">Image <span class="text-slate-500 text-xs">(optional)</span></label>
                             <input class="form-control" type="file" name="image">
                         </div>

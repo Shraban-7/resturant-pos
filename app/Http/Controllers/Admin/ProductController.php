@@ -34,6 +34,7 @@ class ProductController extends Controller
             'category_id' => 'required',
             'unit_id' => 'required',
             'name' => 'required|min:2',
+            'name_bn' => 'nullable|string|max:255',
             'buying_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
             'stock_in' => 'required|numeric',
@@ -85,6 +86,7 @@ class ProductController extends Controller
             'category_id' => 'required',
             'unit_id' => 'required',
             'name' => 'required|min:2',
+            'name_bn' => 'nullable|string|max:255',
             'buying_price' => 'required|numeric',
             'selling_price' => 'required|numeric',
             'stock_in' => 'required|numeric',
@@ -167,6 +169,7 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Product Deleted');
     }
 }
+
 
 
 

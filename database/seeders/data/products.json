@@ -10,7 +10,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চিকেন কাচ্চি বিরিয়ানি"
     },
     {
         "name": "Morog Polao",
@@ -23,7 +24,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "মোরগ পোলাও"
     },
     {
         "name": "Shorshe Ilish with Rice",
@@ -36,7 +38,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "সরষে ইলিশ ও ভাত"
     },
     {
         "name": "Beef Bhuna with Paratha (3 pcs)",
@@ -49,7 +52,8 @@
             "breakfast",
             "lunch"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "বিফ ভুনা ও পরোটা (৩ পিস)"
     },
     {
         "name": "Dal Bhaat Set (Veg)",
@@ -61,7 +65,8 @@
         "meal": [
             "lunch"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "ডাল ভাত সেট (ভেজ)"
     },
     {
         "name": "Chingri Malai Curry with Rice",
@@ -74,7 +79,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চিংড়ি মালাইকারি ও ভাত"
     },
     {
         "name": "Chicken Roast with Polao",
@@ -87,7 +93,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চিকেন রোস্ট ও পোলাও"
     },
     {
         "name": "Beef Tehari",
@@ -100,7 +107,8 @@
             "breakfast",
             "lunch"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "বিফ তেহারি"
     },
     {
         "name": "Butter Chicken with Naan (2 pcs)",
@@ -113,7 +121,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "বাটার চিকেন ও নান (২ পিস)"
     },
     {
         "name": "Chicken Tikka (6 pcs)",
@@ -126,7 +135,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চিকেন টিক্কা (৬ পিস)"
     },
     {
         "name": "Chicken Dum Biryani",
@@ -139,7 +149,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চিকেন দম বিরিয়ানি"
     },
     {
         "name": "Palak Paneer with Jeera Rice",
@@ -152,7 +163,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "পালং পনির ও জিরা রাইস"
     },
     {
         "name": "Masala Dosa",
@@ -164,7 +176,8 @@
         "meal": [
             "breakfast"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "মসলা দোসা"
     },
     {
         "name": "Seekh Kebab (4 pcs) with Paratha",
@@ -176,7 +189,8 @@
         "meal": [
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "সিক কাবাব (৪ পিস) ও পরোটা"
     },
     {
         "name": "Garlic Naan Basket (4 pcs)",
@@ -189,7 +203,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "গার্লিক নান বাস্কেট (৪ পিস)"
     },
     {
         "name": "Chicken Curry with Steamed Rice",
@@ -202,7 +217,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চিকেন কারি ও সাদা ভাত"
     },
     {
         "name": "Special Fried Rice with Chicken",
@@ -215,7 +231,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "স্পেশাল ফ্রাইড রাইস ও চিকেন"
     },
     {
         "name": "Chicken Chow Mein",
@@ -228,7 +245,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চিকেন চাউমিন"
     },
     {
         "name": "Sweet & Sour Chicken with Rice",
@@ -241,7 +259,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "সুইট অ্যান্ড সাওয়ার চিকেন ও রাইস"
     },
     {
         "name": "Chicken Spring Rolls (4 pcs)",
@@ -254,7 +273,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চিকেন স্প্রিং রোল (৪ পিস)"
     },
     {
         "name": "Thai Soup with Chicken",
@@ -266,7 +286,8 @@
         "meal": [
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "থাই স্যুপ চিকেন"
     },
     {
         "name": "Sizzling Chicken Platter",
@@ -278,7 +299,8 @@
         "meal": [
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "সিজলিং চিকেন প্ল্যাটার"
     },
     {
         "name": "Vegetable Fried Rice",
@@ -291,7 +313,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "ভেজিটেবল ফ্রাইড রাইস"
     },
     {
         "name": "Chicken Manchurian with Noodles",
@@ -304,7 +327,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চিকেন মাঞ্চুরিয়ান ও নুডলস"
     },
     {
         "name": "Chicken Burger with Fries",
@@ -314,7 +338,8 @@
         "stock_in": 100,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চিকেন বার্গার ও ফ্রেঞ্চ ফ্রাই"
     },
     {
         "name": "Beef Cheese Burger",
@@ -324,7 +349,8 @@
         "stock_in": 80,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "বিফ চিজ বার্গার"
     },
     {
         "name": "Chicken Shawarma",
@@ -334,7 +360,8 @@
         "stock_in": 100,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চিকেন শর্মা"
     },
     {
         "name": "Club Sandwich",
@@ -344,7 +371,8 @@
         "stock_in": 80,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "ক্লাব স্যান্ডউইচ"
     },
     {
         "name": "Loaded Nachos",
@@ -354,7 +382,8 @@
         "stock_in": 60,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "লোডেড নাচোস"
     },
     {
         "name": "Crispy Fried Chicken (3 pcs)",
@@ -364,7 +393,8 @@
         "stock_in": 90,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "ক্রিসপি ফ্রাইড চিকেন (৩ পিস)"
     },
     {
         "name": "Chicken Pizza (9 inch)",
@@ -374,7 +404,8 @@
         "stock_in": 40,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চিকেন পিজ্জা (৯ ইঞ্চি)"
     },
     {
         "name": "French Fries (Large)",
@@ -384,7 +415,8 @@
         "stock_in": 120,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "ফ্রেঞ্চ ফ্রাই (বড়)"
     },
     {
         "name": "Borhani (Glass)",
@@ -397,7 +429,8 @@
             "lunch",
             "dinner"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "বোরহানি (গ্লাস)"
     },
     {
         "name": "Sweet Lassi",
@@ -410,7 +443,8 @@
             "breakfast",
             "lunch"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "মিষ্টি লাচ্ছি"
     },
     {
         "name": "Fresh Orange Juice",
@@ -423,7 +457,8 @@
             "breakfast",
             "lunch"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "তাজা কমলার জুস"
     },
     {
         "name": "Cold Coffee",
@@ -433,7 +468,8 @@
         "stock_in": 100,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "কোল্ড কফি"
     },
     {
         "name": "Milk Tea (Cha)",
@@ -443,7 +479,8 @@
         "stock_in": 200,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "দুধ চা"
     },
     {
         "name": "Soft Drink (Can)",
@@ -453,7 +490,8 @@
         "stock_in": 200,
         "unit": "CANS",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "কোমল পানীয় (ক্যান)"
     },
     {
         "name": "Mineral Water (Bottle)",
@@ -463,7 +501,8 @@
         "stock_in": 300,
         "unit": "BOTTLES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "মিনারেল ওয়াটার (বোতল)"
     },
     {
         "name": "Mango Smoothie",
@@ -476,7 +515,8 @@
             "breakfast",
             "lunch"
         ],
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "ম্যাংগো স্মুদি"
     },
     {
         "name": "Mishti Doi (Cup)",
@@ -486,7 +526,8 @@
         "stock_in": 100,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "মিষ্টি দই (কাপ)"
     },
     {
         "name": "Firni",
@@ -496,7 +537,8 @@
         "stock_in": 100,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "ফিরনি"
     },
     {
         "name": "Gulab Jamun (4 pcs)",
@@ -506,7 +548,8 @@
         "stock_in": 90,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "গোলাপ জামুন (৪ পিস)"
     },
     {
         "name": "Chocolate Brownie with Ice Cream",
@@ -516,7 +559,8 @@
         "stock_in": 60,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "চকলেট ব্রাউনি ও আইসক্রিম"
     },
     {
         "name": "Roshmalai (4 pcs)",
@@ -526,7 +570,8 @@
         "stock_in": 80,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "রসমালাই (৪ পিস)"
     },
     {
         "name": "Kheer",
@@ -536,7 +581,8 @@
         "stock_in": 80,
         "unit": "PIECES",
         "meal": "all",
-        "type": "dish"
+        "type": "dish",
+        "name_bn": "ক্ষীর"
     },
     {
         "name": "Lunch Buffet (Per Person)",
@@ -548,7 +594,8 @@
         "meal": [
             "lunch"
         ],
-        "type": "buffet"
+        "type": "buffet",
+        "name_bn": "লাঞ্চ বুফে (জনপ্রতি)"
     },
     {
         "name": "Dinner Buffet (Per Person)",
@@ -560,7 +607,8 @@
         "meal": [
             "dinner"
         ],
-        "type": "buffet"
+        "type": "buffet",
+        "name_bn": "ডিনার বুফে (জনপ্রতি)"
     },
     {
         "name": "Miniket Rice",
@@ -570,7 +618,8 @@
         "stock_in": 200,
         "unit": "KILOGRAMS",
         "meal": "all",
-        "type": "ingredient"
+        "type": "ingredient",
+        "name_bn": "মিনিকেট চাল"
     },
     {
         "name": "Boiler Chicken",
@@ -580,7 +629,8 @@
         "stock_in": 150,
         "unit": "KILOGRAMS",
         "meal": "all",
-        "type": "ingredient"
+        "type": "ingredient",
+        "name_bn": "বয়লার মুরগি"
     },
     {
         "name": "Beef (Bone-in)",
@@ -590,7 +640,8 @@
         "stock_in": 80,
         "unit": "KILOGRAMS",
         "meal": "all",
-        "type": "ingredient"
+        "type": "ingredient",
+        "name_bn": "গরুর মাংস (হাড়সহ)"
     },
     {
         "name": "Farm Eggs",
@@ -600,7 +651,8 @@
         "stock_in": 100,
         "unit": "DOZENS",
         "meal": "all",
-        "type": "ingredient"
+        "type": "ingredient",
+        "name_bn": "ফার্মের ডিম"
     },
     {
         "name": "Soybean Oil",
@@ -610,7 +662,8 @@
         "stock_in": 100,
         "unit": "LITRE",
         "meal": "all",
-        "type": "ingredient"
+        "type": "ingredient",
+        "name_bn": "সয়াবিন তেল"
     },
     {
         "name": "Onion (Deshi)",
@@ -620,7 +673,8 @@
         "stock_in": 120,
         "unit": "KILOGRAMS",
         "meal": "all",
-        "type": "ingredient"
+        "type": "ingredient",
+        "name_bn": "দেশি পেঁয়াজ"
     },
     {
         "name": "Mixed Spices (Garam Masala)",
@@ -630,7 +684,8 @@
         "stock_in": 30,
         "unit": "KILOGRAMS",
         "meal": "all",
-        "type": "ingredient"
+        "type": "ingredient",
+        "name_bn": "মিক্সড মসলা (গরম মসলা)"
     },
     {
         "name": "Flour (Maida)",
@@ -640,7 +695,8 @@
         "stock_in": 120,
         "unit": "KILOGRAMS",
         "meal": "all",
-        "type": "ingredient"
+        "type": "ingredient",
+        "name_bn": "ময়দা"
     },
     {
         "name": "Sugar",
@@ -650,7 +706,8 @@
         "stock_in": 100,
         "unit": "KILOGRAMS",
         "meal": "all",
-        "type": "ingredient"
+        "type": "ingredient",
+        "name_bn": "চিনি"
     },
     {
         "name": "Fresh Milk",
@@ -660,6 +717,7 @@
         "stock_in": 100,
         "unit": "LITRE",
         "meal": "all",
-        "type": "ingredient"
+        "type": "ingredient",
+        "name_bn": "তাজা দুধ"
     }
 ]

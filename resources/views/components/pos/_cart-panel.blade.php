@@ -11,11 +11,11 @@
 ])
 @php $isSale = request('sale'); @endphp
 
-<div class="p-4 border-b border-slate-200 space-y-3 shrink-0">
+<div class="p-4 border-b border-slate-200 space-y-3 shrink-0 bg-white">
     <div class="flex items-center justify-between">
-        <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-            <i class="ri-shopping-bag-3-line text-brand-600"></i>
-            Order
+        <h2 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <span class="flex items-center justify-center h-8 w-8 rounded-lg bg-brand-600 text-white"><i class="ri-shopping-bag-3-line"></i></span>
+            Current Order
         </h2>
         @if($isSale && $sale)
             <span class="badge badge-warning">
@@ -99,7 +99,7 @@
     </div>
 </div>
 
-<div class="border-t border-slate-200 p-4 space-y-3 bg-slate-50 shrink-0">
+<div class="border-t border-slate-200 p-4 space-y-3 bg-slate-50/80 shrink-0">
     <div class="flex items-center justify-between text-sm">
         <span class="text-slate-600">Subtotal</span>
         <span class="font-semibold text-slate-900" id="subtotal">{{ $subtotal }}</span>
@@ -120,14 +120,14 @@
 
     <input type="text" id="note" class="form-control form-control-sm" placeholder="Add a note (optional)">
 
-    <div class="bg-white rounded-lg p-3 border border-slate-200">
+    <div class="rounded-2xl p-4 bg-slate-950 text-white shadow-lg shadow-slate-900/20">
         <div class="flex items-baseline justify-between">
-            <span class="text-sm text-slate-600">Total</span>
-            <span class="text-2xl font-bold text-slate-900" id="totalPrice">{{ $totalPrice }}</span>
+            <span class="text-xs uppercase tracking-wider text-slate-400">Total</span>
+            <span class="text-[1.7rem] leading-none font-extrabold tracking-tight" id="totalPrice">{{ $totalPrice }}</span>
         </div>
-        <div class="flex items-center justify-between text-sm mt-1">
-            <span class="text-slate-500">Due</span>
-            <span class="font-semibold text-red-600" id="due">{{ $isSale && $sale ? $sale->due : 0 }}</span>
+        <div class="flex items-center justify-between text-sm mt-2 pt-2 border-t border-white/10">
+            <span class="text-slate-400">Due</span>
+            <span class="font-bold text-red-300" id="due">{{ $isSale && $sale ? $sale->due : 0 }}</span>
         </div>
     </div>
 

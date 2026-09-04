@@ -131,6 +131,7 @@ class StorefrontController extends Controller
                     'category_id' => $category->id,
                     'unit_id' => $unit->id,
                     'name' => $item['name'],
+                    'name_bn' => $item['name_bn'] ?? null,
                     'buying_price' => $item['buying_price'],
                     'selling_price' => $item['selling_price'],
                     'stock_in' => $item['stock_in'],

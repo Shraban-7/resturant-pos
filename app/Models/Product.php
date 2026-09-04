@@ -21,6 +21,11 @@ class Product extends Model
 
     protected $guarded = ['id'];
 
+    protected $appends = [
+        'display_name',
+        'image_url',
+    ];
+
     protected $casts = [
         'type' => ProductType::class,
         'meal_times' => AsEnumCollection::class.':'.MealSlot::class,
@@ -176,6 +181,39 @@ class Product extends Model
         return Attribute::make(
             get: fn () => $this->stock_in - $this->stock_out
         );
+    }
+
+    /**
+     * Localized product name: Bangla when locale is `bn` and a
+     * translation exists, otherwise the default (English) name.
+     */
+    public function displayName(): string
+    {
+        if (app()->getLocale() === 'bn' && ! empty($this->name_bn)) {
+            return $this->name_bn;
+        }
+
+        return $this->name;
+    }
+
+    public function displayNameAttribute(): string
+    {
+        return $this->displayName();
+    }
+
+    /** Public image URL with a built-in default when no photo is uploaded. */
+    public function imageUrl(): string
+    {
+        if (! empty($this->image)) {
+            return asset('storage/'.$this->image);
+        }
+
+        return asset('assets/images/default-product.svg');
+    }
+
+    public function imageUrlAttribute(): string
+    {
+        return $this->imageUrl();
     }
 
     public function lastStockEntry()

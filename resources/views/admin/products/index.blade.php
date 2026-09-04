@@ -38,12 +38,11 @@
                     <tr>
                         <td>
                             <div class="flex items-center gap-3">
-                                @if ($product->image)
-                                    <img src="{{ asset('storage/' . $product->image) }}" alt="image" class="h-12 w-12 object-cover rounded-lg" />
-                                @else
-                                    <span class="flex items-center justify-center h-12 w-12 rounded-lg bg-slate-100 text-slate-400 text-xl"><i class="ri-bowl-line"></i></span>
-                                @endif
+                                <img src="{{ $product->imageUrl() }}" alt="image" class="h-12 w-12 object-cover rounded-lg bg-orange-50" />
                                 <span class="font-medium text-slate-800">{{ $product->name }}</span>
+                                @if ($product->name_bn)
+                                    <span class="block text-xs text-slate-500">{{ $product->name_bn }}</span>
+                                @endif
                                 @if ($product->type === \App\Enums\ProductType::BUFFET)
                                     <span class="badge badge-success" title="Per-person buffet, unlimited">Buffet</span>
                                 @elseif ($product->type === \App\Enums\ProductType::INGREDIENT)

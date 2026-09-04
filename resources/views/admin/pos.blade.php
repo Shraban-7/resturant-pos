@@ -6,16 +6,14 @@
 @php
     $subtotal = $totalPrice = 0;
     $categoryIcons = [
-        'Set Menu' => 'ri-restaurant-2-line',
-        'Appetizer' => 'ri-restaurant-line',
-        'Pasta' => 'ri-restaurant-line',
-        'Soft Drinks' => 'ri-goblet-2-line',
-        'Main Course' => 'ri-bowl-line',
+        'Bengali Food' => 'ri-bowl-line',
+        'Indian Food' => 'ri-restaurant-2-line',
+        'Chinese Food' => 'ri-takeaway-line',
+        'Fast Food' => 'ri-ham-line',
+        'Drinks' => 'ri-goblet-2-line',
         'Desserts' => 'ri-cake-2-line',
-        'Seafood' => 'ri-bowl-line',
-        'Salads' => 'ri-leaf-line',
-        'Soups' => 'ri-bowl-line',
-        'BBQ' => 'ri-fire-line',
+        'Buffet' => 'ri-team-line',
+        'Raw Ingredients' => 'ri-seedling-line',
     ];
 @endphp
 
@@ -30,21 +28,21 @@
     </div>
 
     {{-- =================== TOP BAR =================== --}}
-    <header class="bg-white border-b border-slate-200 h-16 flex items-center gap-3 px-4 shrink-0 z-20">
+    <header class="bg-slate-950 text-white h-16 flex items-center gap-3 px-4 shrink-0 z-20">
         <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 shrink-0">
-            <span class="flex items-center justify-center h-9 w-9 rounded-lg bg-brand-600 text-white">
+            <span class="flex items-center justify-center h-9 w-9 rounded-xl bg-brand-600 text-white shadow-lg shadow-brand-900/50">
                 <i class="ri-restaurant-2-line text-lg"></i>
             </span>
             <div class="hidden sm:block">
-                <div class="text-sm font-semibold text-slate-900 leading-tight">POS Terminal</div>
-                <div class="text-[10px] text-slate-500 uppercase tracking-wider">{{ auth()->user()->name }}</div>
+                <div class="text-sm font-bold text-white leading-tight tracking-tight">POS Terminal</div>
+                <div class="text-[10px] text-slate-400 uppercase tracking-wider">{{ auth()->user()->name }}</div>
             </div>
         </a>
 
         <div class="flex-1 max-w-xl">
             <div class="relative">
                 <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                <input id="productNameSearch" type="text" class="form-control pl-10" placeholder="Search products by name...">
+                <input id="productNameSearch" type="text" class="block w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 pl-10 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent" placeholder="Search products by name...">
             </div>
         </div>
 
@@ -64,7 +62,7 @@
 
         <div class="flex items-center gap-1">
             <a href="{{ route('admin.kds.index') }}"
-               class="relative btn btn-ghost btn-icon"
+               class="relative inline-flex items-center justify-center h-9 w-9 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition"
                title="Kitchen Display"
                id="posKitchenBadgeLink">
                 <i class="ri-tablet-line text-lg"></i>
@@ -72,25 +70,25 @@
                       class="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold leading-[1.1rem] text-center hidden">0</span>
             </a>
             <button type="button" id="offlineSyncButton"
-                    class="relative btn btn-ghost btn-icon hidden"
+                    class="relative btn btn-ghost btn-icon hidden !text-slate-300 hover:!text-white hover:!bg-white/10"
                     title="Synchronize offline orders">
                 <i class="ri-cloud-line text-lg"></i>
                 <span id="offlineSyncBadge"
                       class="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-amber-500 text-white text-[10px] font-bold leading-[1.1rem] text-center">0</span>
             </button>
-            <button type="button" id="productCodeBtn" class="btn btn-ghost btn-icon" title="Scan code or search by name" @click="barcodeOpen = true; $nextTick(() => document.getElementById('barcodeInput')?.focus())">
+            <button type="button" id="productCodeBtn" class="inline-flex items-center justify-center h-9 w-9 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition" title="Scan code or search by name" @click="barcodeOpen = true; $nextTick(() => document.getElementById('barcodeInput')?.focus())">
                 <i class="ri-barcode-line text-lg"></i>
             </button>
-            <button type="button" id="fullscreen-btn" class="btn btn-ghost btn-icon" title="Fullscreen">
+            <button type="button" id="fullscreen-btn" class="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition" title="Fullscreen">
                 <i class="ri-fullscreen-line text-lg"></i>
             </button>
-            <button type="button" id="refresh-btn" class="btn btn-ghost btn-icon" title="Refresh">
+            <button type="button" id="refresh-btn" class="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition" title="Refresh">
                 <i class="ri-loop-right-line text-lg"></i>
             </button>
-            <a href="{{ route('admin.dashboard') }}" class="btn btn-ghost btn-icon" title="Dashboard">
+            <a href="{{ route('admin.dashboard') }}" class="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition" title="Dashboard">
                 <i class="ri-dashboard-line text-lg"></i>
             </a>
-            <a href="{{ route('logout') }}" class="btn btn-ghost btn-icon" title="Logout">
+            <a href="{{ route('logout') }}" class="inline-flex items-center justify-center h-9 w-9 rounded-lg text-slate-300 hover:text-red-300 hover:bg-white/10 transition" title="Logout">
                 <i class="ri-logout-box-r-line text-lg"></i>
             </a>
         </div>
@@ -120,7 +118,7 @@
 
             {{-- Categories --}}
             <div class="mb-5">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Categories</h3>
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-[0.12em] mb-2">Categories</h3>
                 <div class="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1" id="categoryScroll" style="scrollbar-width: none;">
                     <button class="category-card shrink-0 active" data-category="all" onclick="window.filterCategory('all', this)" type="button">
                         <i class="ri-apps-2-line"></i>
@@ -138,8 +136,8 @@
 
             {{-- Products --}}
             <div>
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Menu</h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-8 gap-2 sm:gap-2.5" id="productsGrid">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-[0.12em] mb-2">Menu</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-2.5 sm:gap-3" id="productsGrid">
                     @foreach ($products as $product)
                         <x-pos.item :item="$product" />
                     @endforeach
@@ -232,7 +230,7 @@
 @push('footer')
 <script>
     window.POS_OFFLINE_CONFIG = {
-        admin_id: {{ (int) auth()->id() }},
+        admin_id: {{ (int) panel_owner_id() }},
         currency: 'BDT',
         products: {!! json_encode($offlineProducts ?? []) !!},
         categories: {!! json_encode($offlineCategories ?? []) !!},

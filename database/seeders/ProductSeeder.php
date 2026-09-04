@@ -68,6 +68,7 @@ class ProductSeeder extends Seeder
                     'category_id' => $category->id,
                     'unit_id' => $unit->id,
                     'name' => $item['name'],
+                    'name_bn' => $item['name_bn'] ?? null,
                     'buying_price' => $item['buying_price'],
                     'selling_price' => $item['selling_price'],
                     'stock_in' => $item['stock_in'],
@@ -77,8 +78,11 @@ class ProductSeeder extends Seeder
                 ]
             );
 
-            // Backfill meal times + type on rows seeded before these features existed.
+            // Backfill meal times + type + Bangla name on older rows.
             $backfill = [];
+            if (isset($item['name_bn']) && $product->name_bn !== $item['name_bn']) {
+                $backfill['name_bn'] = $item['name_bn'];
+            }
             if ($product->meal_times != $mealTimes) {
                 $backfill['meal_times'] = $mealTimes;
             }
@@ -104,6 +108,7 @@ class ProductSeeder extends Seeder
         }
     }
 }
+
 
 
 

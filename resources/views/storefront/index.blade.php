@@ -56,10 +56,14 @@
             <a href="#menu" class="px-3 py-2 text-slate-600 hover:text-orange-600">Menu</a>
             <a href="#popular" class="px-3 py-2 text-slate-600 hover:text-orange-600">Popular</a>
             <a href="#branches" class="px-3 py-2 text-slate-600 hover:text-orange-600">Branches</a>
-            <a href="{{ route('login') }}" class="px-3 py-2 text-slate-600 hover:text-orange-600">Staff Login</a>
+            <a href="{{ route('login') }}" class="px-3 py-2 text-slate-600 hover:text-orange-600">{{ __('storefront.staff_login') }}</a>
+            <span class="flex items-center rounded-full border border-slate-200 overflow-hidden text-xs font-bold">
+                <a href="{{ route('lang.switch', 'en') }}" class="px-2.5 py-1.5 {{ app()->getLocale() === 'en' ? 'bg-slate-900 text-white' : 'text-slate-500' }}">EN</a>
+                <a href="{{ route('lang.switch', 'bn') }}" class="px-2.5 py-1.5 {{ app()->getLocale() === 'bn' ? 'bg-slate-900 text-white' : 'text-slate-500' }}">বাং</a>
+            </span>
         </nav>
         <a href="#reservation" class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold px-4 py-2 rounded-full transition">
-            <i class="ri-calendar-check-line mr-1"></i>Reserve Table
+            <i class="ri-calendar-check-line mr-1"></i>{{ __('storefront.reserve_table') }}
         </a>
     </div>
 </header>
@@ -72,10 +76,10 @@
                 <i class="ri-map-pin-line"></i>{{ $branches->first()?->address ?? 'Dine-in • Takeaway' }}
             </p>
             <h1 class="text-3xl md:text-5xl font-extrabold leading-tight mt-4">{{ $business->name ?? config('app.name') }}</h1>
-            <p class="text-slate-300 mt-3 max-w-md">Browse our menu, pick your favourites, then reserve a table in under a minute. Show up — we handle the rest.</p>
+            <p class="text-slate-300 mt-3 max-w-md">{{ __('storefront.hero_tagline') }}</p>
             <div class="flex flex-wrap gap-3 mt-6">
-                <a href="#menu" class="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-5 py-2.5 rounded-full text-sm transition">Browse Menu</a>
-                <a href="#reservation" class="bg-white/10 hover:bg-white/20 border border-white/20 font-semibold px-5 py-2.5 rounded-full text-sm transition">Reserve a Table</a>
+                <a href="#menu" class="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-5 py-2.5 rounded-full text-sm transition">{{ __('storefront.browse_menu') }}</a>
+                <a href="#reservation" class="bg-white/10 hover:bg-white/20 border border-white/20 font-semibold px-5 py-2.5 rounded-full text-sm transition">{{ __('storefront.reserve_table') }}</a>
             </div>
             <div class="flex gap-6 mt-8 text-sm">
                 <div><p class="text-2xl font-bold">{{ $categories->sum(fn ($c) => $c->products->count()) }}</p><p class="text-slate-400">Dishes</p></div>
@@ -86,12 +90,8 @@
         <div class="hidden md:grid grid-cols-2 gap-3">
             @foreach ($popular->take(4) as $item)
                 <div class="bg-white/10 border border-white/10 rounded-2xl p-3 backdrop-blur">
-                    @if ($item->image)
-                        <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}" class="h-28 w-full object-cover rounded-xl" loading="lazy">
-                    @else
-                        <div class="h-28 w-full rounded-xl bg-white/10 flex items-center justify-center text-3xl"><i class="ri-bowl-line text-amber-300"></i></div>
-                    @endif
-                    <p class="font-semibold text-sm mt-2 truncate">{{ $item->name }}</p>
+                    <img src="{{ $item->imageUrl() }}" alt="{{ $item->displayName() }}" class="h-28 w-full object-cover rounded-xl" loading="lazy">
+                    <p class="font-semibold text-sm mt-2 truncate">{{ $item->displayName() }}</p>
                     <p class="text-amber-300 font-bold text-sm">{{ money($item->selling_price) }}</p>
                 </div>
             @endforeach
@@ -103,12 +103,12 @@
 <section id="menu" class="max-w-7xl mx-auto px-4 py-10">
     <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
-            <h2 class="text-xl md:text-2xl font-bold text-slate-900">Our Menu</h2>
+            <h2 class="text-xl md:text-2xl font-bold text-slate-900">{{ __('storefront.our_menu') }}</h2>
             <p class="text-sm text-slate-500">Dine-in ordering happens by scanning the QR on your table.</p>
         </div>
         <div class="relative w-full sm:w-64">
             <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input x-model="query" type="text" placeholder="Search dishes..." class="w-full border border-slate-200 rounded-full pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <input x-model="query" type="text" placeholder="{{ __('storefront.search_dishes') }}" class="w-full border border-slate-200 rounded-full pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
         </div>
     </div>
 
@@ -142,13 +142,9 @@
                 @foreach ($cat->products as $product)
                     <div x-show="'{{ strtolower($product->name) }}'.includes(query.toLowerCase()) && (slot === 'all' || {{ (!$product->meal_times || $product->meal_times->isEmpty()) ? 'true' : 'false' }} || @js($product->meal_times?->map(fn ($m) => $m->value)->all() ?? []).includes(slot))"
                          class="bg-white border border-slate-200/70 rounded-2xl overflow-hidden hover:shadow-md hover:border-orange-200 transition">
-                        @if ($product->image)
-                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="h-32 md:h-40 w-full object-cover" loading="lazy">
-                        @else
-                            <div class="h-32 md:h-40 w-full bg-slate-100 flex items-center justify-center text-4xl text-slate-300"><i class="ri-bowl-line"></i></div>
-                        @endif
+                        <img src="{{ $product->imageUrl() }}" alt="{{ $product->displayName() }}" class="h-32 md:h-40 w-full object-cover" loading="lazy">
                         <div class="p-3">
-                            <p class="font-semibold text-sm text-slate-900 truncate">{{ $product->name }}</p>
+                            <p class="font-semibold text-sm text-slate-900 truncate">{{ $product->displayName() }}</p>
                             <p class="mt-1 flex flex-wrap gap-1">
                                 @if (!$product->meal_times || $product->meal_times->isEmpty())
                                     <span class="text-[10px] font-semibold text-sky-700 bg-sky-50 rounded-full px-2 py-0.5">All day</span>
@@ -186,11 +182,11 @@
 @if ($popular->isNotEmpty())
 <section id="popular" class="bg-white border-y border-slate-200">
     <div class="max-w-7xl mx-auto px-4 py-8">
-        <h2 class="text-xl font-bold text-slate-900">Most loved right now</h2>
+        <h2 class="text-xl font-bold text-slate-900">{{ __('storefront.most_loved') }}</h2>
         <div class="flex gap-3 overflow-x-auto no-scrollbar mt-4 pb-1">
             @foreach ($popular as $item)
                 <div class="shrink-0 w-44 bg-slate-50 border border-slate-200 rounded-2xl p-3">
-                    <p class="font-semibold text-sm truncate">{{ $item->name }}</p>
+                    <p class="font-semibold text-sm truncate">{{ $item->displayName() }}</p>
                     <p class="text-orange-700 font-bold text-sm mt-0.5">{{ money($item->selling_price) }}</p>
                     <p class="text-[11px] text-slate-500">{{ $item->stock_out }} sold</p>
                 </div>
@@ -204,7 +200,7 @@
 <section id="reservation" class="max-w-7xl mx-auto px-4 py-10">
     <div class="grid lg:grid-cols-5 gap-6">
         <div class="lg:col-span-2">
-            <h2 class="text-xl md:text-2xl font-bold text-slate-900">Reserve a table</h2>
+            <h2 class="text-xl md:text-2xl font-bold text-slate-900">{{ __('storefront.reserve_title') }}</h2>
             <p class="text-sm text-slate-500 mt-1">Pick a branch, table and time. Requests start as <span class="font-semibold">pending</span> — our staff confirms shortly.</p>
             <ul class="mt-4 space-y-2 text-sm text-slate-600">
                 <li class="flex gap-2"><i class="ri-check-line text-emerald-600 mt-0.5"></i>Free — no advance payment</li>
@@ -260,7 +256,7 @@
             </div>
             <div class="sm:col-span-2">
                 <button type="submit" id="reserve-btn" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 rounded-xl text-sm transition disabled:opacity-60">
-                    Request Reservation
+                    {{ __('storefront.request_reservation') }}
                 </button>
             </div>
         </form>
@@ -270,7 +266,7 @@
 <!-- Branches -->
 @if ($branches->isNotEmpty())
 <section id="branches" class="max-w-7xl mx-auto px-4 pb-12">
-    <h2 class="text-xl font-bold text-slate-900">Find us</h2>
+    <h2 class="text-xl font-bold text-slate-900">{{ __('storefront.find_us') }}</h2>
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
         @foreach ($branches as $branch)
             <div class="bg-white border border-slate-200 rounded-2xl p-5">
@@ -350,4 +346,6 @@ function storefront() {
 </script>
 </body>
 </html>
+
+
 

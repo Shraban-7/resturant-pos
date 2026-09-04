@@ -118,6 +118,7 @@ class PosController extends Controller
             'category_id' => $product->product_category_id ?? $product->category_id,
             'unit' => $product->unit?->short_name,
             'image' => $product->image,
+            'image_url' => $product->image_url,
             'active' => (bool) $product->is_active,
             'modifiers' => $productModifiersMap[$product->id] ?? [],
         ])->values();

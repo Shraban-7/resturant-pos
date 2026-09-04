@@ -35,6 +35,15 @@ Route::get('/', function () {
     return app(App\Http\Controllers\StorefrontController::class)->index(request());
 })->name('home');
 
+// Language switcher (English / Bangla)
+Route::get('/lang/{locale}', function (string $locale) {
+    if (in_array($locale, App\Http\Middleware\SetLocale::ALLOWED, true)) {
+        session(['locale' => $locale]);
+    }
+
+    return redirect()->back();
+})->name('lang.switch');
+
 // Public storefront (products + table reservation)
 Route::get('/store', [App\Http\Controllers\StorefrontController::class, 'index'])->name('storefront.index');
 Route::post('/reserve', [App\Http\Controllers\StorefrontController::class, 'reserve'])->name('storefront.reserve');
