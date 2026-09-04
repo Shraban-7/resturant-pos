@@ -15,28 +15,28 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 
 Broadcast::channel('seller.{sellerId}.kds', function ($user, int $sellerId) {
     return $user
-        && ($user->role ?? null) === 'seller'
-        && (int) ($user->seller_id ?? $user->id) === $sellerId;
+        && in_array($user->role ?? null, ['admin', 'seller', 'employee'], true)
+        && (int) $user->ownerId() === $sellerId;
 });
 
 Broadcast::channel('seller.{sellerId}.pos', function ($user, int $sellerId) {
     return $user
-        && ($user->role ?? null) === 'seller'
-        && (int) ($user->seller_id ?? $user->id) === $sellerId;
+        && in_array($user->role ?? null, ['admin', 'seller', 'employee'], true)
+        && (int) $user->ownerId() === $sellerId;
 });
 
 Broadcast::channel('seller.{sellerId}.tables', function ($user, int $sellerId) {
     return $user
-        && ($user->role ?? null) === 'seller'
-        && (int) ($user->seller_id ?? $user->id) === $sellerId;
+        && in_array($user->role ?? null, ['admin', 'seller', 'employee'], true)
+        && (int) $user->ownerId() === $sellerId;
 });
 
 Broadcast::channel('seller.{sellerId}.staff', function ($user, int $sellerId) {
-    if (! $user || ($user->role ?? null) !== 'seller') {
+    if (! $user || ! in_array($user->role ?? null, ['admin', 'seller', 'employee'], true)) {
         return false;
     }
 
-    if ((int) ($user->seller_id ?? $user->id) !== $sellerId) {
+    if ((int) $user->ownerId() !== $sellerId) {
         return false;
     }
 
@@ -49,7 +49,7 @@ Broadcast::channel('seller.{sellerId}.staff', function ($user, int $sellerId) {
 
 Broadcast::channel('table.{token}', function ($user, string $token) {
     // Guests use the public Channel("table.{token}") — no auth callback needed.
-    // Keep this for any private listeners (e.g. authenticated seller tools).
+    // Keep this for any private listeners (e.g. authenticated panel tools).
     $table = DiningTable::query()
         ->where('qr_code_token', $token)
         ->first();
@@ -58,8 +58,8 @@ Broadcast::channel('table.{token}', function ($user, string $token) {
         return false;
     }
 
-    if ($user && ($user->role ?? null) === 'seller') {
-        return (int) $user->id === (int) $table->seller_id;
+    if ($user && in_array($user->role ?? null, ['admin', 'seller', 'employee'], true)) {
+        return (int) $user->ownerId() === (int) $table->seller_id;
     }
 
     return (bool) $table;

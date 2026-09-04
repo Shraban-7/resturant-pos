@@ -18,7 +18,8 @@ class Seller
      */
     public function handle(Request $request, Closure $next)
     {
-        if (! is_seller()) {
+        // Single panel: admin + employee both allowed; fine-grained checks via `permission` middleware.
+        if (! is_admin() && ! is_employee()) {
             // Offline sync / fetch clients must receive JSON, not a login redirect.
             if ($request->expectsJson() || $request->is('api/*')) {
                 $status = Auth::check() ? 403 : 401;

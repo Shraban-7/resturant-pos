@@ -30,7 +30,7 @@ class SellerEmployee extends Model
 
     public function scopeSelf($query)
     {
-        return $query->where('seller_id', auth()->id());
+        return $query->where('seller_id', panel_owner_id());
     }
 
     public static function roles(): array
@@ -43,3 +43,4 @@ class SellerEmployee extends Model
         ];
     }
 }
+

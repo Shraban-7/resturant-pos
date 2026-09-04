@@ -136,10 +136,6 @@
             <button type="button" id="updateSaleBtn" class="btn btn-primary col-span-2" onclick="window.updateSale()">
                 <i class="ri-check-double-line"></i> Update Order
             </button>
-        @elseif(request()->routeIs('supplier.supply.index'))
-            <button type="button" id="checkoutBtn" class="btn btn-primary col-span-2" onclick="window.checkout()">
-                <i class="ri-shopping-bag-3-line"></i> Checkout
-            </button>
         @else
             <button type="button" id="holdBtn" class="btn btn-secondary" onclick="window.hold()">
                 <i class="ri-pause-circle-line"></i> Hold

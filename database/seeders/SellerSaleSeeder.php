@@ -23,7 +23,13 @@ class SellerSaleSeeder extends Seeder
 
         for ($i = 0; $i < 10; $i++) {
             $seller = $sellers->random();
-            $customer = Customer::where('seller_id', $seller->id)->inRandomOrder()->first();
+            $customer = Customer::where('seller_id', $seller->id)->inRandomOrder()->first()
+                ?? Customer::create([
+                    'seller_id' => $seller->id,
+                    'name' => 'Walk-in Customer',
+                    'phone' => '0180000000' . rand(10, 99),
+                    'address' => 'Dhaka, Bangladesh',
+                ]);
             $orderId = generateOrderId();
 
             $subtotal = 0;

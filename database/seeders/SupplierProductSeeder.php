@@ -28,7 +28,7 @@ class SupplierProductSeeder extends Seeder
         ];
 
         $unitId = ProductUnit::where('name', 'PIECES')->first()->id;
-        $supplierId = User::supplier()->first()->id;
+        $supplierId = User::admin()->first()->id;
 
         foreach ($categories as $categoryName => $products) {
             $category = SupplierProductCategory::create([

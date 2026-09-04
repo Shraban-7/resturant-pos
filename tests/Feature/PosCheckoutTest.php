@@ -22,7 +22,7 @@ class PosCheckoutTest extends TestCase
         $cart = $this->createCart($seller);
         $this->addCartItem($cart, $product, 2, ['unit_price' => 100]);
 
-        $response = $this->actingAs($seller)->postJson(route('seller.pos.checkout'), [
+        $response = $this->actingAs($seller)->postJson(route('admin.pos.checkout'), [
             'order_id' => $cart->order_id,
             'payment_type' => 'cash',
             'paid_amount' => 200,
@@ -61,7 +61,7 @@ class PosCheckoutTest extends TestCase
         $seller = $this->createSeller();
         $cart = $this->createCart($seller);
 
-        $response = $this->actingAs($seller)->postJson(route('seller.pos.checkout'), [
+        $response = $this->actingAs($seller)->postJson(route('admin.pos.checkout'), [
             'order_id' => $cart->order_id,
             'payment_type' => 'cash',
             'paid_amount' => 0,
@@ -94,7 +94,7 @@ class PosCheckoutTest extends TestCase
         $cart = $this->createCart($seller);
         $this->addCartItem($cart, $product, 1, ['unit_price' => 100]);
 
-        $response = $this->actingAs($seller)->postJson(route('seller.pos.checkout'), [
+        $response = $this->actingAs($seller)->postJson(route('admin.pos.checkout'), [
             'order_id' => $cart->order_id,
             'payment_type' => 'cash',
             'paid_amount' => 100,
@@ -110,7 +110,7 @@ class PosCheckoutTest extends TestCase
 
     public function test_checkout_requires_seller_authentication(): void
     {
-        $response = $this->postJson(route('seller.pos.checkout'), [
+        $response = $this->postJson(route('admin.pos.checkout'), [
             'order_id' => 'missing',
             'payment_type' => 'cash',
             'paid_amount' => 0,
@@ -121,3 +121,4 @@ class PosCheckoutTest extends TestCase
         $this->assertDatabaseCount('sales', 0);
     }
 }
+

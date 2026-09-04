@@ -1,7 +1,8 @@
 <?php
 
+use App\Http\Middleware\CheckPermission;
 use App\Http\Middleware\Seller;
-use App\Http\Middleware\Supplier;
+use App\Providers\AppServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,14 +16,15 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__.'/../routes/channels.php',
         health: '/up',
         then: function () {
-            Route::middleware('web')
-                ->group(base_path('routes/supplier.php'));
+            // Single panel: seller/* routes serve admin + employees (RBAC via permissions).
         },
     )
+    ->withProviders([AppServiceProvider::class])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'seller' => Seller::class,
-            'supplier' => Supplier::class,
+            'admin' => Seller::class,
+            'permission' => CheckPermission::class,
         ]);
 
         // Background Sync cannot read the page's CSRF token. The endpoint still

@@ -16,7 +16,7 @@ class SupplierProduct extends Model
 
     public function scopeSelf($query)
     {
-        return $query->where('supplier_id', auth()->id());
+        return $query->where('supplier_id', panel_owner_id());
     }
 
     public function availableStock(): Attribute
@@ -36,3 +36,4 @@ class SupplierProduct extends Model
         return $this->belongsTo(SupplierProductCategory::class);
     }
 }
+

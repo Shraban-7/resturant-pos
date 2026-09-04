@@ -1,26 +1,24 @@
-@if ($message = Session::get('success'))
-    <x-alert :type="'success'">{{ $message }}</x-alert>
-@endif
+{{-- Server flash messages rendered as toasts (window.toast from app.js). --}}
+@php
+    $toasts = [];
+    foreach (['success' => 'success', 'error' => 'error', 'warning' => 'warning', 'info' => 'info'] as $key => $type) {
+        if ($message = Session::get($key)) {
+            $toasts[] = ['type' => $type, 'message' => $message];
+        }
+    }
+    if ($errors->any()) {
+        foreach ($errors->all() as $message) {
+            $toasts[] = ['type' => 'error', 'message' => $message];
+        }
+    }
+@endphp
 
-@if ($message = Session::get('error'))
-    <x-alert :type="'danger'">{{ $message }}</x-alert>
-@endif
-
-@if ($message = Session::get('warning'))
-    <x-alert :type="'warning'">{{ $message }}</x-alert>
-@endif
-
-@if ($message = Session::get('info'))
-    <x-alert :type="'info'">{{ $message }}</x-alert>
-@endif
-
-@if ($errors->any())
-    <div class="alert alert-danger my-3" role="alert" x-data="{ open: true }" x-show="open">
-        <ul class="flex-1 list-disc pl-4">
-            @foreach($errors->getMessages() as $key => $value)
-                <li>{{ $value[0] }}</li>
+@if (! empty($toasts))
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            @foreach ($toasts as $toast)
+                window.toast?.{{ $toast['type'] }}(@js($toast['message']));
             @endforeach
-        </ul>
-        <button type="button" class="btn-close" @click="open = false" aria-label="Close">×</button>
-    </div>
+        });
+    </script>
 @endif

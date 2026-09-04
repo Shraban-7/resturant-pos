@@ -65,7 +65,7 @@ class KdsTicketTest extends TestCase
         $ticket = $this->makeSaleWithTicket($seller);
 
         $response = $this->actingAs($seller)->postJson(
-            route('seller.kds.updateStatus', $ticket),
+            route('admin.kds.updateStatus', $ticket),
             ['status' => KitchenTicket::PREPARING]
         );
 
@@ -85,7 +85,7 @@ class KdsTicketTest extends TestCase
         $ticket = $this->makeSaleWithTicket($seller);
 
         $response = $this->actingAs($seller)->postJson(
-            route('seller.kds.updateStatus', $ticket),
+            route('admin.kds.updateStatus', $ticket),
             ['status' => KitchenTicket::READY]
         );
 
@@ -103,7 +103,7 @@ class KdsTicketTest extends TestCase
         $intruder = $this->createSeller();
 
         $response = $this->actingAs($intruder)->postJson(
-            route('seller.kds.updateStatus', $ticket),
+            route('admin.kds.updateStatus', $ticket),
             ['status' => KitchenTicket::READY]
         );
 
@@ -117,10 +117,11 @@ class KdsTicketTest extends TestCase
         $ticket = $this->makeSaleWithTicket($seller);
 
         $response = $this->actingAs($seller)->postJson(
-            route('seller.kds.updateStatus', $ticket),
+            route('admin.kds.updateStatus', $ticket),
             ['status' => 'flying']
         );
 
         $response->assertStatus(422);
     }
 }
+

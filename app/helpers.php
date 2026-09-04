@@ -147,23 +147,43 @@ if (!function_exists('money')) {
 }
 
 
+if(!function_exists('is_admin')) {
+    function is_admin() : bool
+    {
+        if (!Auth::user()) {
+            return false;
+        }
+
+        return in_array(Auth::user()->role, ['admin', 'seller'], true);
+    }
+}
+if(!function_exists('is_employee')) {
+    function is_employee() : bool
+    {
+        if (!Auth::user()) {
+            return false;
+        }
+
+        return Auth::user()->role === 'employee';
+    }
+}
 if(!function_exists('is_seller')) {
     function is_seller() : bool
     {
-        if (!Auth::user()) {
-            return false;
-        }
-        
-        return Auth::user()->role === 'seller';
+        // Back-compat alias: single panel (admin + employee).
+        return is_admin() || is_employee();
     }
 }
-if(!function_exists('is_supplier')) {
-    function is_supplier() : bool
+if(!function_exists('can')) {
+    function can(string $permission) : bool
     {
-        if (!Auth::user()) {
-            return false;
-        }
-        return Auth::user()->role === 'supplier';
+        return auth()->check() && auth()->user()->hasPermission($permission);
+    }
+}
+if(!function_exists('panel_owner_id')) {
+    function panel_owner_id() : ?int
+    {
+        return auth()->check() ? auth()->user()->ownerId() : null;
     }
 }
 
@@ -181,8 +201,10 @@ if (! function_exists('active_branch_id')) {
             return null;
         }
 
+        $ownerId = panel_owner_id();
+
         $hasBranches = \App\Models\Branch::query()
-            ->where('seller_id', auth()->id())
+            ->where('seller_id', $ownerId)
             ->where('is_active', true)
             ->exists();
 
@@ -198,7 +220,7 @@ if (! function_exists('active_branch_id')) {
 
         if ($sessionId) {
             $exists = \App\Models\Branch::query()
-                ->where('seller_id', auth()->id())
+                ->where('seller_id', $ownerId)
                 ->whereKey($sessionId)
                 ->where('is_active', true)
                 ->exists();
@@ -211,7 +233,7 @@ if (! function_exists('active_branch_id')) {
         }
 
         $default = \App\Models\Branch::query()
-            ->where('seller_id', auth()->id())
+            ->where('seller_id', $ownerId)
             ->where('is_active', true)
             ->orderByDesc('is_default')
             ->orderBy('name')
@@ -233,7 +255,7 @@ if (! function_exists('active_branch')) {
         $id = active_branch_id();
 
         return $id
-            ? \App\Models\Branch::query()->where('seller_id', auth()->id())->find($id)
+            ? \App\Models\Branch::query()->where('seller_id', panel_owner_id())->find($id)
             : null;
     }
 }
@@ -246,7 +268,7 @@ if (! function_exists('seller_branches')) {
         }
 
         return \App\Models\Branch::query()
-            ->where('seller_id', auth()->id())
+            ->where('seller_id', panel_owner_id())
             ->where('is_active', true)
             ->orderByDesc('is_default')
             ->orderBy('name')

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -28,5 +29,23 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useTailwind();
 
         Broadcast::routes(['middleware' => ['web', 'auth']]);
+
+        Gate::before(function ($user, $ability) {
+            if ($user && method_exists($user, 'isAdmin') && $user->isAdmin()) {
+                return true;
+            }
+
+            return null;
+        });
+
+        $permissions = array_keys(config('permissions', []));
+        if (empty($permissions)) {
+            // Fallback when config is cached without permissions.php.
+            $permissions = ['dashboard','pos','products','stocks','sales','kds','floors','branches','reservations','loyalty','gift-cards','customers','employees','reports','settings'];
+        }
+
+        foreach ($permissions as $permission) {
+            Gate::define($permission, fn ($user) => $user && $user->hasPermission($permission));
+        }
     }
 }

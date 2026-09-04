@@ -18,8 +18,8 @@ class SupplierSaleSeeder extends Seeder
 {
     public function run()
     {
-        $supplier = User::supplier()->first();
-        $sellers = User::seller()->get();
+        $supplier = User::admin()->first();
+        $sellers = User::admin()->get();
 
         $products = SupplierProduct::all();
 

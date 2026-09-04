@@ -3,34 +3,38 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderStatusController;
-use App\Http\Controllers\Seller\BranchController;
-use App\Http\Controllers\Seller\CustomerController;
-use App\Http\Controllers\Seller\DashboardController;
-use App\Http\Controllers\Seller\DiningTableController;
-use App\Http\Controllers\Seller\EmployeeController;
-use App\Http\Controllers\Seller\FloorController;
-use App\Http\Controllers\Seller\GiftCardController;
-use App\Http\Controllers\Seller\KdsController;
-use App\Http\Controllers\Seller\LoyaltyController;
-use App\Http\Controllers\Seller\OfflineSyncController;
-use App\Http\Controllers\Seller\PosController;
-use App\Http\Controllers\Seller\ProductController;
-use App\Http\Controllers\Seller\ProductModifierController;
-use App\Http\Controllers\Seller\RecipeController;
-use App\Http\Controllers\Seller\ReportController;
-use App\Http\Controllers\Seller\ReservationController;
-use App\Http\Controllers\Seller\SaleController;
-use App\Http\Controllers\Seller\SettingController;
-use App\Http\Controllers\Seller\StockController;
+use App\Http\Controllers\Admin\BranchController;
+use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DiningTableController;
+use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\FloorController;
+use App\Http\Controllers\Admin\GiftCardController;
+use App\Http\Controllers\Admin\KdsController;
+use App\Http\Controllers\Admin\LoyaltyController;
+use App\Http\Controllers\Admin\OfflineSyncController;
+use App\Http\Controllers\Admin\PosController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductModifierController;
+use App\Http\Controllers\Admin\RecipeController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\ReservationController;
+use App\Http\Controllers\Admin\SaleController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\StockController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    if ($user = auth()->user()) {
-        return redirect()->route("{$user->role}.dashboard");
+    if (auth()->user()) {
+        return redirect()->route('admin.dashboard');
     }
 
-    return redirect()->route('login');
+    return app(App\Http\Controllers\StorefrontController::class)->index(request());
 })->name('home');
+
+// Public storefront (products + table reservation)
+Route::get('/store', [App\Http\Controllers\StorefrontController::class, 'index'])->name('storefront.index');
+Route::post('/reserve', [App\Http\Controllers\StorefrontController::class, 'reserve'])->name('storefront.reserve');
 
 // Digital QR Code Menu & Public Tracking
 Route::get('/menu/tracker/{token}', [MenuController::class, 'tracker'])->name('menu.tracker');
@@ -46,10 +50,10 @@ Route::middleware('guest')->group(function () {
 
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Seller panel routes...
-Route::middleware(['auth', 'seller'])->prefix('seller')->as('seller.')->group(function () {
+// Admin panel routes (single panel: admin + employees via RBAC)...
+Route::middleware(['auth', 'seller'])->prefix('admin')->as('admin.')->group(function () {
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:dashboard');
 
     Route::prefix('pos')->as('pos.')->group(function () {
         Route::get('/', [PosController::class, 'index'])->name('index');
@@ -76,7 +80,7 @@ Route::middleware(['auth', 'seller'])->prefix('seller')->as('seller.')->group(fu
         Route::get('/{sale}/mark-paid', [SaleController::class, 'markPaid'])->name('mark-paid');
     });
 
-    Route::prefix('products')->as('products.')->group(function () {
+    Route::prefix('products')->as('products.')->middleware('permission:products')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('index');
         Route::get('/create', [ProductController::class, 'create'])->name('create');
         Route::post('/store', [ProductController::class, 'store'])->name('store');
@@ -137,18 +141,18 @@ Route::middleware(['auth', 'seller'])->prefix('seller')->as('seller.')->group(fu
         Route::post('/update', [StockController::class, 'update'])->name('update');
     });
 
-    Route::get('/report', [ReportController::class, 'index'])->name('report.index');
+    Route::get('/report', [ReportController::class, 'index'])->name('report.index')->middleware('permission:reports');
 
-    Route::prefix('customers')->as('customers.')->group(function () {
+    Route::prefix('customers')->as('customers.')->middleware('permission:customers')->group(function () {
         Route::get('/', [CustomerController::class, 'index'])->name('index');
         Route::post('/store', [CustomerController::class, 'store'])->name('store');
     });
 
-    Route::prefix('settings')->as('settings.')->group(function () {
+    Route::prefix('settings')->as('settings.')->middleware('permission:settings')->group(function () {
         Route::match(['get', 'post'], 'business', [SettingController::class, 'index'])->name('index');
     });
 
-    Route::prefix('dining-tables')->as('diningTables.')->group(function () {
+    Route::prefix('dining-tables')->as('diningTables.')->middleware('permission:floors')->group(function () {
         Route::get('/', [DiningTableController::class, 'index'])->name('index');
         Route::get('/floor-map', [DiningTableController::class, 'floorMap'])->name('floorMap');
         Route::post('/positions', [DiningTableController::class, 'savePositions'])->name('savePositions');
@@ -159,10 +163,21 @@ Route::middleware(['auth', 'seller'])->prefix('seller')->as('seller.')->group(fu
         Route::get('/{table}/qr.svg', [DiningTableController::class, 'qrSvg'])->name('qrSvg');
     });
 
-    Route::prefix('employees')->as('employees.')->group(function () {
+    Route::prefix('employees')->as('employees.')->middleware('permission:employees')->group(function () {
         Route::get('/', [EmployeeController::class, 'index'])->name('index');
         Route::post('/store', [EmployeeController::class, 'store'])->name('store');
         Route::post('/{employee}/update', [EmployeeController::class, 'update'])->name('update');
     });
 
 });
+
+// Legacy seller URLs redirect to admin panel.
+Route::prefix('seller')->group(function () {
+    Route::get('/{any?}', function () {
+        $path = str_replace('/seller', '/admin', request()->path());
+        $query = request()->getQueryString() ? '?'.request()->getQueryString() : '';
+
+        return redirect('/'.$path.$query, 301);
+    })->where('any', '.*');
+});
+

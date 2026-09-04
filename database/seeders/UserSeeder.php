@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Customer;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -12,48 +11,54 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
-        $this->createAdmin();
-        $this->createSeller();
-        $this->createSupplier();
-        $this->createCustomer();
-    }
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@gmail.com'],
+            [
+                'role' => 'admin',
+                'name' => 'Admin',
+                'password' => Hash::make('password'),
+            ]
+        );
 
-    private function createAdmin()
-    {
-        User::create([
-            'role' => 'admin',
-            'name' => 'Admin',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make(12345678),
-        ]);
-    }
+        // Previous seller login kept as full admin (all permissions via isAdmin).
+        User::firstOrCreate(
+            ['email' => 'seller@gmail.com'],
+            [
+                'role' => 'admin',
+                'name' => 'Seller',
+                'password' => Hash::make('password'),
+            ]
+        );
 
-    private function createSeller()
-    {
-        User::create([
-            'role' => 'seller',
-            'name' => 'Seller',
-            'email' => 'seller@gmail.com',
-            'password' => Hash::make(12345678),
-        ]);
-    }    
-    private function createSupplier()
-    {
-        User::create([
-            'role' => 'supplier',
-            'name' => 'Supplier',
-            'email' => 'supplier@gmail.com',
-            'password' => Hash::make(12345678),
-        ]);
-    }
+        $staff = [
+            ['name' => 'Cashier', 'email' => 'cashier@gmail.com', 'permissions' => ['dashboard', 'pos', 'sales', 'customers']],
+            ['name' => 'Manager', 'email' => 'manager@gmail.com', 'permissions' => ['dashboard', 'pos', 'products', 'stocks', 'sales', 'customers', 'reports', 'reservations', 'floors']],
+            ['name' => 'Chef', 'email' => 'chef@gmail.com', 'permissions' => ['kds']],
+        ];
 
-    private function createCustomer()
-    {
-        Customer::create([
-            'seller_id' => User::where('role', 'seller')->first()->id,
-            'name' => 'Customer',
-            'phone' => '01234567890',
-            'address' => 'Dhaka, Bangladesh',
-        ]);
+        foreach ($staff as $data) {
+            User::firstOrCreate(
+                ['email' => $data['email']],
+                [
+                    'role' => 'employee',
+                    'parent_id' => $admin->id,
+                    'name' => $data['name'],
+                    'password' => Hash::make('password'),
+                    'permissions' => $data['permissions'],
+                ]
+            );
+        }
+
+        $customers = [
+            ['name' => 'Customer', 'phone' => '01234567890', 'address' => 'Dhaka, Bangladesh'],
+            ['name' => 'Rahim Uddin', 'phone' => '01811111111', 'address' => 'Mirpur 10, Dhaka'],
+        ];
+
+        foreach ($customers as $data) {
+            Customer::firstOrCreate(
+                ['seller_id' => $admin->id, 'phone' => $data['phone']],
+                $data + ['seller_id' => $admin->id]
+            );
+        }
     }
 }

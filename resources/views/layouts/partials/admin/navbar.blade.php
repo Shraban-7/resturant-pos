@@ -17,7 +17,7 @@
 
 <div class="flex items-center gap-2">
     @if (is_seller() && seller_branches()->isNotEmpty())
-        <form action="{{ route('seller.branches.switch') }}" method="post" class="hidden sm:block">
+        <form action="{{ route('admin.branches.switch') }}" method="post" class="hidden sm:block">
             @csrf
             <select name="branch_id" class="form-control form-control-sm min-w-[10rem]" onchange="this.form.submit()">
                 <option value="" @selected(is_all_branches_mode())>All branches</option>
@@ -44,12 +44,12 @@
             </span>
             <span class="hidden md:flex flex-col items-start leading-tight">
                 <span class="text-sm font-medium text-slate-900">{{ auth()->user()->name ?? 'User' }}</span>
-                <span class="text-[10px] uppercase tracking-wider text-slate-400">{{ is_supplier() ? 'Supplier' : 'Seller' }}</span>
+                <span class="text-[10px] uppercase tracking-wider text-slate-400">{{ is_employee() ? 'Employee' : 'Admin' }}</span>
             </span>
             <i class="ri-arrow-down-s-line text-slate-400"></i>
         </button>
         <div x-show="open" @click.outside="open = false" x-transition class="dropdown-menu" style="display:none">
-            <a href="{{ route(is_supplier() ? 'supplier.settings.index' : 'seller.settings.index') }}" class="dropdown-item">
+            <a href="{{ route('admin.settings.index') }}" class="dropdown-item">
                 <i class="ri-settings-3-line me-2"></i> Settings
             </a>
             <div class="border-t border-slate-100 my-1"></div>
@@ -59,3 +59,4 @@
         </div>
     </div>
 </div>
+

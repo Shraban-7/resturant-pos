@@ -409,6 +409,51 @@
             .menu-card { margin-bottom: 0; }
         }
     </style>
+    <script>
+        // Toast fallback (this page does not load app.js). Mirrors resources/js/toast.js styling.
+        (function () {
+            if (window.toast) return;
+            function ensureContainer() {
+                let el = document.getElementById('toast-container');
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = 'toast-container';
+                    el.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;max-width:min(92vw,24rem);';
+                    document.body.appendChild(el);
+                }
+                return el;
+            }
+            function show(message, type) {
+                const colors = { success: '#059669', error: '#dc2626', warning: '#d97706', info: '#0284c7' };
+                const icons = { success: '✓', error: '✕', warning: '!', info: 'i' };
+                const box = ensureContainer();
+                while (box.children.length >= 4) box.firstElementChild?.remove();
+                const el = document.createElement('div');
+                el.style.cssText = 'display:flex;align-items:center;gap:.6rem;background:#fff;color:#0f172a;border-radius:.75rem;box-shadow:0 12px 30px rgba(0,0,0,.18);padding:.7rem .8rem .7rem .9rem;font-size:.85rem;border:1px solid #e2e8f0;border-left:4px solid ' + (colors[type] || colors.info) + ';animation:toastIn .25s ease both;';
+                const badge = document.createElement('span');
+                badge.textContent = icons[type] || 'i';
+                badge.style.cssText = 'flex:none;display:flex;align-items:center;justify-content:center;height:1.75rem;width:1.75rem;border-radius:9999px;font-weight:700;font-size:.8rem;color:#fff;background:' + (colors[type] || colors.info) + ';';
+                const txt = document.createElement('span');
+                txt.style.cssText = 'flex:1;line-height:1.4;';
+                txt.textContent = message;
+                const btn = document.createElement('button');
+                btn.textContent = '×';
+                btn.style.cssText = 'font-size:1.1rem;line-height:1;opacity:.5;';
+                btn.onclick = () => el.remove();
+                el.appendChild(badge);
+                el.appendChild(txt);
+                el.appendChild(btn);
+                box.appendChild(el);
+                setTimeout(() => el.remove(), 4000);
+            }
+            window.toast = {
+                success: (m) => show(m, 'success'),
+                error: (m) => show(m, 'error'),
+                warning: (m) => show(m, 'warning'),
+                info: (m) => show(m, 'info'),
+            };
+        })();
+    </script>
 </head>
 
 <body x-data="digitalMenuApp(@js($productModifiersMap ?? []))" x-cloak
@@ -716,7 +761,7 @@
                 confirmModifiers() {
                     for (const group of this.modifierGroups) {
                         if (group.required && !group.items.some(m => this.isModSelected(m.id))) {
-                            alert('Please choose an option for: ' + group.name);
+                            window.toast?.warning('Please choose an option for: ' + group.name);
                             return;
                         }
                     }
@@ -783,7 +828,7 @@
                         this.cart = [];
                         setTimeout(() => { this.confirmOpen = true; }, 250);
                     } catch (err) {
-                        alert(err.message || 'Something went wrong. Please try again.');
+                        window.toast?.error(err.message || 'Something went wrong. Please try again.');
                     } finally {
                         this.placing = false;
                     }

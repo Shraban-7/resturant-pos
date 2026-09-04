@@ -19,17 +19,12 @@ class Product extends Model
 
     public function scopeSeller($query)
     {
-        return $query->where('seller_id', auth()->id());
+        return $query->where('seller_id', panel_owner_id());
     }
 
     public function scopeSelf($query)
     {
-        return $query->where('seller_id', auth()->id());
-    }
-
-    public function supplierStocks(): HasMany
-    {
-        return $this->hasMany(SupplierProductStock::class);
+        return $query->where('seller_id', panel_owner_id());
     }
 
     public function unit(): BelongsTo

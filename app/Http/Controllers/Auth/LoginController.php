@@ -29,7 +29,7 @@ class LoginController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route("{$user->role}.dashboard");
+        return redirect()->route('admin.dashboard');
     }
 
     public function logout()

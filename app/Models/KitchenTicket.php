@@ -64,7 +64,7 @@ class KitchenTicket extends Model
 
     public function scopeSelf($query)
     {
-        return $query->where('seller_id', auth()->id());
+        return $query->where('seller_id', panel_owner_id());
     }
 
     public function scopeActiveQueue($query)
@@ -72,3 +72,4 @@ class KitchenTicket extends Model
         return $query->whereIn('status', [self::PENDING, self::PREPARING, self::READY]);
     }
 }
+

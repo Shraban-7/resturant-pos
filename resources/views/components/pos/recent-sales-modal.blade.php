@@ -6,7 +6,7 @@
                 <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
                     <h3 class="text-base font-semibold text-slate-900 flex items-center gap-2">
                         <i class="ri-receipt-2-line text-brand-600"></i>
-                        @if(auth()->user()->role == 'seller') Recent Sales @else Recent Supplies @endif
+                        Recent Sales
                     </h3>
                     <button type="button" class="btn btn-ghost btn-icon" @click="open = false" aria-label="Close">
                         <i class="ri-close-line text-xl"></i>

@@ -273,15 +273,42 @@ body {
 
     /* ---------- Toast ---------- */
     .toast-container {
-        @apply fixed top-5 right-5 z-[60] flex flex-col gap-2;
+        @apply fixed top-5 right-5 z-[100] flex flex-col gap-2.5 items-end;
     }
     .toast {
-        @apply min-w-[260px] max-w-sm rounded-md shadow-lg border px-4 py-3 text-sm bg-white flex items-start gap-2;
+        @apply relative overflow-hidden min-w-[300px] max-w-sm rounded-xl shadow-xl shadow-slate-900/10 border border-slate-200/80 bg-white flex items-start gap-3 px-4 py-3.5 text-sm text-slate-700;
+        animation: toast-in .28s cubic-bezier(.21, 1.02, .73, 1) both;
     }
-    .toast-success { @apply border-emerald-200 bg-emerald-50 text-emerald-800; }
-    .toast-error   { @apply border-red-200 bg-red-50 text-red-800; }
-    .toast-info    { @apply border-sky-200 bg-sky-50 text-sky-800; }
-    .toast-warning { @apply border-amber-200 bg-amber-50 text-amber-800; }
+    .toast-icon {
+        @apply shrink-0 flex items-center justify-center h-8 w-8 rounded-full text-base;
+    }
+    .toast-success .toast-icon { @apply bg-emerald-100 text-emerald-600; }
+    .toast-error .toast-icon { @apply bg-red-100 text-red-600; }
+    .toast-info .toast-icon { @apply bg-sky-100 text-sky-600; }
+    .toast-warning .toast-icon { @apply bg-amber-100 text-amber-600; }
+    .toast-body { @apply flex-1 min-w-0 leading-snug pt-0.5; }
+    .toast-close {
+        @apply absolute top-2 right-2 flex items-center justify-center h-6 w-6 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition;
+    }
+    .toast-bar {
+        @apply absolute bottom-0 left-0 h-[3px] w-full origin-left;
+        animation: toast-bar linear forwards;
+    }
+    .toast-success .toast-bar { @apply bg-emerald-500; }
+    .toast-error .toast-bar { @apply bg-red-500; }
+    .toast-info .toast-bar { @apply bg-sky-500; }
+    .toast-warning .toast-bar { @apply bg-amber-500; }
+    .toast-leaving {
+        @apply opacity-0 translate-x-4 transition-all duration-200;
+    }
+    @keyframes toast-in {
+        from { opacity: 0; transform: translateX(1.5rem) scale(.97); }
+        to { opacity: 1; transform: none; }
+    }
+    @keyframes toast-bar {
+        from { transform: scaleX(1); }
+        to { transform: scaleX(0); }
+    }
 
     /* ---------- Pagination ---------- */
     nav[role="navigation"] svg { @apply w-4 h-4; }
