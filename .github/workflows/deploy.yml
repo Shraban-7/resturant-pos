@@ -23,4 +23,4 @@ jobs:
             set -euo pipefail
             cd "${{ secrets.PROJECT_PATH }}"
             export PHP_BIN="${{ secrets.PHP_BIN }}"
-            ./deploy-shared.sh
+            bash ./deploy-shared.sh
