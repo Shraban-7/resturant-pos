@@ -14,7 +14,7 @@ class BusinessSettingSeeder extends Seeder
 
         BusinessSetting::create([
             'user_id' => $admin->id,
-            'name' => 'E Restora',
+            'name' => 'E-Restora',
             'email' => 'hello@erestora.com',
             'phone' => '01700000000',
             'image' => 'images/mezban.png',
