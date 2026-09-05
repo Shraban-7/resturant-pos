@@ -11,7 +11,8 @@ class BusinessSettingSeeder extends Seeder
     public function run()
     {
         $admin = User::admin()->first();
-     
+
+        
         BusinessSetting::create([
             'user_id' => $admin->id,
             'name' => 'E-Restora',
