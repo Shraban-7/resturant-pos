@@ -21,7 +21,7 @@
                 </span>
                 <div>
                     <h2 class="text-sm font-extrabold text-slate-900 leading-tight flex items-center gap-1.5">
-                        <span>Current Ticket</span>
+                        <span>{{ __('admin.pos.current_ticket') }}</span>
                         <span
                             class="text-[11px] font-mono font-bold text-slate-500 bg-slate-200/70 px-2 py-0.5 rounded-md">
                             #{{ $isSale && $sale ? $sale->order_id : $cart->order_id }}
@@ -33,7 +33,7 @@
             @if ($isSale && $sale)
                 <span
                     class="inline-flex items-center gap-1 bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                    <i class="ri-edit-line"></i> Editing
+                    <i class="ri-edit-line"></i> {{ __('admin.pos.editing') }}
                 </span>
             @endif
         </div>
@@ -44,7 +44,7 @@
                 <i class="ri-barcode-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                 <input type="text" id="productCodeInput"
                     class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    placeholder="Scan barcode or type item code, then Enter">
+                    placeholder="{{ __('admin.pos.code_placeholder') }}">
             </div>
         @endif
 
@@ -56,7 +56,7 @@
                     <select id="customerSelect"
                         class="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
                         required>
-                        <option value="">Walk-in Customer</option>
+                        <option value="">{{ __('admin.pos.walk_in') }}</option>
                         @foreach ($customers as $customer)
                             <option value="{{ $customer->id }}">{{ $customer->name }}</option>
                         @endforeach
@@ -64,19 +64,19 @@
                 </div>
                 <button type="button"
                     class="h-8 px-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold transition flex items-center gap-1 shadow-sm shrink-0"
-                    onclick="window.toggleCustomerForm()" title="Add Customer">
+                    onclick="window.toggleCustomerForm()" title="{{ __('admin.pos.add_customer') }}">
                     <i class="ri-user-add-line"></i>
-                    <span class="hidden sm:inline">New</span>
+                    <span class="hidden sm:inline">{{ __('admin.pos.new_customer') }}</span>
                 </button>
             </div>
 
             <div id="customerForm" class="hidden grid grid-cols-2 gap-2 pt-1">
                 <input type="text" id="customer_name"
                     class="w-full border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
-                    placeholder="Customer name">
+                    placeholder="{{ __('admin.pos.customer_name') }}">
                 <input type="text" id="customer_phone"
                     class="w-full border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
-                    placeholder="Phone">
+                    placeholder="{{ __('admin.pos.phone') }}">
             </div>
         </div>
 
@@ -92,9 +92,9 @@
                                 ? $sale->order_type->value
                                 : $sale?->order_type ?? 'dine_in';
                     @endphp
-                    <option value="dine_in"{{ $saleOrderType === 'dine_in' ? ' selected' : '' }}>Dine In</option>
-                    <option value="takeaway"{{ $saleOrderType === 'takeaway' ? ' selected' : '' }}>Takeaway</option>
-                    <option value="delivery"{{ $saleOrderType === 'delivery' ? ' selected' : '' }}>Delivery</option>
+                    <option value="dine_in"{{ $saleOrderType === 'dine_in' ? ' selected' : '' }}>{{ __('admin.pos.dine_in') }}</option>
+                    <option value="takeaway"{{ $saleOrderType === 'takeaway' ? ' selected' : '' }}>{{ __('admin.pos.takeaway') }}</option>
+                    <option value="delivery"{{ $saleOrderType === 'delivery' ? ' selected' : '' }}>{{ __('admin.pos.delivery') }}</option>
                 </select>
             </div>
 
@@ -102,7 +102,7 @@
                 <select id="tableSelect"
                     class="w-full bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     required>
-                    <option value="">Table</option>
+                    <option value="">{{ __('admin.pos.table') }}</option>
                     @php $cartTable = ($sale?->getRelationValue('diningTable') ?? $sale?->getRelationValue('table')) ?? $sale?->diningTable ?? $sale?->table ?? null; @endphp
                     @if ($isSale && $cartTable)
                         <option value="{{ $cartTable->id }}" selected>{{ $cartTable->name }}</option>
@@ -118,7 +118,7 @@
                 <select id="employeeSelect"
                     class="w-full bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     required>
-                    <option value="">Server</option>
+                    <option value="">{{ __('admin.pos.server') }}</option>
                     @foreach ($employees as $employee)
                         <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                     @endforeach
@@ -131,7 +131,7 @@
     <div class="flex-1 overflow-y-auto p-4 min-h-0">
         <div class="flex items-center justify-between mb-2.5 pb-1.5 border-b border-slate-100">
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                <i class="ri-shopping-basket-line text-sm text-orange-600"></i> Selected Items
+                <i class="ri-shopping-basket-line text-sm text-orange-600"></i> {{ __('admin.pos.selected_items') }}
             </h3>
             <span class="text-[11px] font-bold text-slate-400" id="itemsCount"></span>
         </div>
@@ -146,9 +146,8 @@
                             class="h-14 w-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center text-2xl mx-auto mb-3">
                             <i class="ri-shopping-cart-2-line"></i>
                         </div>
-                        <h3 class="text-sm font-bold text-slate-700">Order is Empty</h3>
-                        <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">Click any item from the menu on the left
-                            to add it to this ticket.</p>
+                        <h3 class="text-sm font-bold text-slate-700">{{ __('admin.pos.order_is_empty') }}</h3>
+                        <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">{{ __('admin.pos.empty_desc') }}</p>
                     </div>
                 @endforelse
             @else
@@ -160,9 +159,8 @@
                             class="h-14 w-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center text-2xl mx-auto mb-3">
                             <i class="ri-shopping-cart-2-line"></i>
                         </div>
-                        <h3 class="text-sm font-bold text-slate-700">Order is Empty</h3>
-                        <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">Click any item from the menu on the left
-                            to add it to this ticket.</p>
+                        <h3 class="text-sm font-bold text-slate-700">{{ __('admin.pos.order_is_empty') }}</h3>
+                        <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">{{ __('admin.pos.empty_desc') }}</p>
                     </div>
                 @endforelse
             @endif
@@ -173,7 +171,7 @@
     <div class="border-t border-slate-200 p-4 space-y-3 bg-slate-50 shrink-0">
         {{-- Subtotal --}}
         <div class="flex items-center justify-between text-xs font-semibold text-slate-600">
-            <span>Subtotal</span>
+            <span>{{ __('admin.pos.subtotal') }}</span>
             <div class="flex items-baseline gap-1 text-slate-900 font-bold text-sm">
                 <span class="text-xs font-normal text-slate-400">৳</span>
                 <span id="subtotal">{{ $subtotal }}</span>
@@ -183,7 +181,7 @@
         {{-- Discount & Paid Row --}}
         <div class="grid grid-cols-2 gap-2">
             <div>
-                <label class="block text-[11px] font-bold text-slate-500 mb-1">Discount (৳)</label>
+                <label class="block text-[11px] font-bold text-slate-500 mb-1">{{ __('admin.pos.discount_label') }}</label>
                 <div class="relative">
                     <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">-</span>
                     <input type="number" id="discountInput"
@@ -192,7 +190,7 @@
                 </div>
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-slate-500 mb-1">Paid Amount (৳)</label>
+                <label class="block text-[11px] font-bold text-slate-500 mb-1">{{ __('admin.pos.paid_amount') }}</label>
                 <div class="relative">
                     <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">৳</span>
                     <input type="number" id="paidInput"
@@ -205,7 +203,7 @@
         {{-- Gift Card Verification --}}
         <div class="rounded-xl border border-slate-200 p-2 bg-white space-y-1 shadow-sm">
             <div class="flex items-center justify-between text-[11px] font-bold text-slate-600">
-                <span>Gift Card Voucher</span>
+                <span>{{ __('admin.pos.gift_card_voucher') }}</span>
                 <i class="ri-gift-line text-orange-500"></i>
             </div>
             <div class="flex items-center gap-1.5">
@@ -216,7 +214,7 @@
                 <button type="button" id="verifyGiftCardBtn"
                     class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 text-xs font-bold transition flex items-center gap-1"
                     onclick="window.verifyGiftCard?.()">
-                    <i class="ri-shield-check-line"></i> Apply
+                    <i class="ri-shield-check-line"></i> {{ __('admin.pos.apply') }}
                 </button>
             </div>
             <div id="giftCardStatus" class="text-[10px] text-slate-500 hidden pt-0.5"></div>
@@ -226,20 +224,20 @@
         <div>
             <input type="text" id="note"
                 class="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                placeholder="Kitchen/Invoice note (optional)">
+                placeholder="{{ __('admin.pos.note_placeholder') }}">
         </div>
 
         {{-- Digital Amount Summary Screen --}}
         <div class="rounded-2xl p-3.5 bg-slate-950 text-white shadow-xl shadow-slate-950/20 border border-slate-800">
             <div class="flex items-baseline justify-between">
-                <span class="text-[11px] uppercase tracking-widest font-extrabold text-slate-400">Total Payable</span>
+                <span class="text-[11px] uppercase tracking-widest font-extrabold text-slate-400">{{ __('admin.pos.total_payable') }}</span>
                 <div class="flex items-baseline gap-1">
                     <span class="text-sm font-bold text-amber-300">৳</span>
                     <span class="text-2xl font-black tracking-tight" id="totalPrice">{{ $totalPrice }}</span>
                 </div>
             </div>
             <div class="flex items-center justify-between text-xs mt-2 pt-2 border-t border-white/10">
-                <span class="text-slate-400 font-medium">Due Balance</span>
+                <span class="text-slate-400 font-medium">{{ __('admin.pos.due_balance') }}</span>
                 <div class="flex items-baseline gap-0.5 font-bold text-red-300">
                     <span>৳</span>
                     <span id="due">{{ $isSale && $sale ? $sale->due : 0 }}</span>
@@ -253,18 +251,18 @@
                 <button type="button" id="updateSaleBtn"
                     class="col-span-2 bg-orange-600 hover:bg-orange-700 text-white font-extrabold py-3 px-4 rounded-xl text-sm transition shadow-lg shadow-orange-600/25 active:scale-[0.98] flex items-center justify-center gap-2"
                     onclick="window.updateSale()">
-                    <i class="ri-check-double-line text-lg"></i> Update Sale Order
+                    <i class="ri-check-double-line text-lg"></i> {{ __('admin.pos.update_sale_order') }}
                 </button>
             @else
                 <button type="button" id="holdBtn"
                     class="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-bold py-3 px-4 rounded-xl text-xs sm:text-sm transition active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-sm"
                     onclick="window.hold()">
-                    <i class="ri-pause-circle-line text-base"></i> Hold Order
+                    <i class="ri-pause-circle-line text-base"></i> {{ __('admin.pos.hold_order') }}
                 </button>
                 <button type="button" id="checkoutBtn"
                     class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs sm:text-sm transition shadow-lg shadow-emerald-600/25 active:scale-[0.98] flex items-center justify-center gap-1.5"
                     onclick="window.checkout()">
-                    <i class="ri-shopping-bag-3-line text-base"></i> Checkout
+                    <i class="ri-shopping-bag-3-line text-base"></i> {{ __('admin.pos.checkout') }}
                 </button>
             @endif
         </div>

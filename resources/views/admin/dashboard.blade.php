@@ -1,6 +1,6 @@
 @extends('layouts.admin')
-@section('title', 'Dashboard')
-@section('page_title', 'Dashboard')
+@section('title', __('admin.dashboard.title'))
+@section('page_title', __('admin.dashboard.title'))
 
 @push('header')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
@@ -57,9 +57,8 @@
     {{-- Top Header / Date Filter bar --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-2 border-b border-slate-200/80">
         <div>
-            <h1 class="text-xl sm:text-2xl font-black tracking-tight text-slate-900">Executive Overview</h1>
-            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Real-time performance metrics, sales velocity, and inventory
-                pulse</p>
+            <h1 class="text-xl sm:text-2xl font-black tracking-tight text-slate-900">{{ __('admin.dashboard.title') }}</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">{{ __('admin.dashboard.subtitle') }}</p>
         </div>
         <form class="flex items-center gap-2" method="GET" action="{{ route('admin.dashboard') }}">
             <div
@@ -74,11 +73,11 @@
                     class="border-0 bg-transparent py-1.5 px-2 text-xs font-medium text-slate-700 focus:outline-none focus:ring-0">
                 <button type="submit"
                     class="ml-1 inline-flex items-center gap-1.5 rounded-lg bg-orange-600 hover:bg-orange-700 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-95">
-                    <i class="ri-filter-3-line"></i> Filter
+                    <i class="ri-filter-3-line"></i> {{ __('admin.dashboard.filter') }}
                 </button>
                 @if (request()->has('fromDate') || request()->has('toDate'))
                     <a href="{{ route('admin.dashboard') }}" class="px-2 text-xs text-slate-400 hover:text-slate-600"
-                        title="Reset filter">
+                        title="{{ __('admin.dashboard.reset') }}">
                         <i class="ri-close-circle-line text-base"></i>
                     </a>
                 @endif
@@ -100,14 +99,14 @@
                                 class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
                         </span>
-                        Shift Summary
+                        {{ __('admin.dashboard.shift_summary') }}
                         <span class="text-orange-300">|</span>
                         <span class="font-semibold text-slate-600 normal-case tracking-normal">
                             {{ request()->fromDate ? \Carbon\Carbon::parse(request()->fromDate)->format('d M Y') . ' – ' . \Carbon\Carbon::parse(request()->toDate)->format('d M Y') : 'Today, ' . date('d M Y') }}
                         </span>
                     </div>
                     <div class="mt-4">
-                        <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Total Net Sales</span>
+                        <span class="text-xs font-medium uppercase tracking-wider text-slate-400">{{ __('admin.dashboard.total_net_sales') }}</span>
                         <div
                             class="font-mono text-3xl sm:text-5xl font-black tracking-tight text-slate-900 tabular-nums mt-1">
                             {{ money($totalSales) }}
@@ -118,9 +117,9 @@
                             class="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-slate-100/80 px-2.5 py-1 rounded-md">
                             <i class="ri-shopping-bag-3-line text-orange-600"></i>
                             <strong class="text-slate-900">{{ $totalOrders }}</strong>
-                            {{ $totalOrders === 1 ? 'order processed' : 'orders processed' }}
+                            {{ $totalOrders === 1 ? __('admin.dashboard.orders_processed') : __('admin.dashboard.orders_processed_plural') }}
                         </span>
-                        <span>Average per order: <strong
+                        <span>{{ __('admin.dashboard.average_per_order') }} <strong
                                 class="font-mono font-bold text-slate-800">{{ money($totalOrders > 0 ? $totalSales / $totalOrders : 0) }}</strong></span>
                     </div>
                 </div>
@@ -130,34 +129,34 @@
                     <div
                         class="group rounded-xl border border-slate-100 bg-slate-50/70 p-4 transition hover:bg-white hover:border-slate-200 hover:shadow-sm">
                         <div class="flex items-center justify-between text-slate-400 mb-2">
-                            <span class="text-[11px] font-bold uppercase tracking-wider">Orders</span>
+                            <span class="text-[11px] font-bold uppercase tracking-wider">{{ __('admin.dashboard.orders') }}</span>
                             <i
                                 class="ri-shopping-cart-2-line text-base text-slate-400 group-hover:text-orange-600 transition-colors"></i>
                         </div>
                         <p class="font-mono text-2xl font-black text-slate-900 tabular-nums">{{ $totalOrders }}</p>
-                        <p class="text-[11px] text-slate-500 mt-1">Completed tickets</p>
+                        <p class="text-[11px] text-slate-500 mt-1">{{ __('admin.dashboard.completed_tickets') }}</p>
                     </div>
 
                     <div
                         class="group rounded-xl border border-emerald-100/70 bg-emerald-50/40 p-4 transition hover:bg-white hover:border-emerald-200 hover:shadow-sm">
                         <div class="flex items-center justify-between text-emerald-600 mb-2">
-                            <span class="text-[11px] font-bold uppercase tracking-wider">Cash Collected</span>
+                            <span class="text-[11px] font-bold uppercase tracking-wider">{{ __('admin.dashboard.cash_collected') }}</span>
                             <i
                                 class="ri-wallet-3-line text-base text-emerald-500 group-hover:scale-110 transition-transform"></i>
                         </div>
                         <p class="font-mono text-2xl font-black text-emerald-700 tabular-nums">{{ money($cashInHand) }}</p>
-                        <p class="text-[11px] text-emerald-600/80 mt-1">Liquid / paid in hand</p>
+                        <p class="text-[11px] text-emerald-600/80 mt-1">{{ __('admin.dashboard.liquid_paid') }}</p>
                     </div>
 
                     <div
                         class="group rounded-xl border border-rose-100/70 bg-rose-50/40 p-4 transition hover:bg-white hover:border-rose-200 hover:shadow-sm">
                         <div class="flex items-center justify-between text-rose-500 mb-2">
-                            <span class="text-[11px] font-bold uppercase tracking-wider">Due / Pending</span>
+                            <span class="text-[11px] font-bold uppercase tracking-wider">{{ __('admin.dashboard.due_pending') }}</span>
                             <i
                                 class="ri-error-warning-line text-base text-rose-500 group-hover:scale-110 transition-transform"></i>
                         </div>
                         <p class="font-mono text-2xl font-black text-rose-600 tabular-nums">{{ money($due) }}</p>
-                        <p class="text-[11px] text-rose-600/80 mt-1">Receivables remaining</p>
+                        <p class="text-[11px] text-rose-600/80 mt-1">{{ __('admin.dashboard.receivables') }}</p>
                     </div>
                 </div>
             </div>
@@ -169,13 +168,13 @@
             <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
                 <span class="inline-flex items-center gap-1.5">
                     <span class="h-2 w-2 rounded-full bg-orange-500"></span>
-                    <span>Gross Revenue:</span>
+                    <span>{{ __('admin.dashboard.gross_revenue') }}</span>
                     <strong class="font-mono font-bold text-slate-800">{{ money($totalRevenue) }}</strong>
                 </span>
                 <span class="text-slate-300">/</span>
                 <span class="inline-flex items-center gap-1.5">
                     <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-                    <span>Collected Ratio:</span>
+                    <span>{{ __('admin.dashboard.collected_ratio') }}</span>
                     <strong class="font-mono font-bold text-emerald-700">
                         {{ $totalSales > 0 ? round(($cashInHand / $totalSales) * 100, 1) : 0 }}%
                     </strong>
@@ -183,14 +182,14 @@
                 <span class="text-slate-300">/</span>
                 <span class="inline-flex items-center gap-1.5">
                     <span class="h-2 w-2 rounded-full bg-rose-400"></span>
-                    <span>Outstanding Ratio:</span>
+                    <span>{{ __('admin.dashboard.outstanding_ratio') }}</span>
                     <strong class="font-mono font-bold text-rose-700">
                         {{ $totalSales > 0 ? round(($due / $totalSales) * 100, 1) : 0 }}%
                     </strong>
                 </span>
             </div>
             <div class="text-[11px] text-slate-400">
-                Auto-refreshes on filter change
+                {{ __('admin.dashboard.auto_refresh') }}
             </div>
         </div>
     </div>
@@ -198,64 +197,64 @@
     @php
         $statCards = [
             [
-                'title' => "Sales ({$totalOrders})",
+                'title' => __('admin.dashboard.sales_with_count', ['count' => $totalOrders]),
                 'value' => money($totalSales),
-                'subtitle' => 'Total invoiced',
+                'subtitle' => __('admin.dashboard.total_invoiced'),
                 'route' => route('admin.sales.index'),
                 'icon' => 'ri-receipt-2-line',
                 'iconBg' => 'bg-orange-50 text-orange-600 border border-orange-100',
                 'accent' => 'hover:border-orange-300',
-                'badge' => 'Orders',
+                'badge' => __('admin.dashboard.badge_orders'),
             ],
             [
-                'title' => 'Cash in Hand',
+                'title' => __('admin.dashboard.cash_in_hand'),
                 'value' => money($cashInHand),
-                'subtitle' => 'Payment received',
+                'subtitle' => __('admin.dashboard.payment_received'),
                 'route' => route('admin.sales.index'),
                 'icon' => 'ri-wallet-3-line',
                 'iconBg' => 'bg-emerald-50 text-emerald-600 border border-emerald-100',
                 'accent' => 'hover:border-emerald-300',
-                'badge' => 'Paid',
+                'badge' => __('admin.dashboard.badge_paid'),
             ],
             [
-                'title' => 'Gross Revenue',
+                'title' => __('admin.dashboard.gross_revenue_t'),
                 'value' => money($totalRevenue),
-                'subtitle' => 'Sales & net gains',
+                'subtitle' => __('admin.dashboard.net_gains'),
                 'route' => route('admin.sales.index'),
                 'icon' => 'ri-funds-box-line',
                 'iconBg' => 'bg-sky-50 text-sky-600 border border-sky-100',
                 'accent' => 'hover:border-sky-300',
-                'badge' => 'Revenue',
+                'badge' => __('admin.dashboard.badge_revenue'),
             ],
             [
-                'title' => 'Customer Due',
+                'title' => __('admin.dashboard.customer_due'),
                 'value' => money($due),
-                'subtitle' => 'Unsettled balances',
+                'subtitle' => __('admin.dashboard.unsettled'),
                 'route' => route('admin.sales.index'),
                 'icon' => 'ri-error-warning-line',
                 'iconBg' => 'bg-rose-50 text-rose-600 border border-rose-100',
                 'accent' => 'hover:border-rose-300',
-                'badge' => 'Due',
+                'badge' => __('admin.dashboard.badge_due'),
             ],
             [
-                'title' => 'Active Products',
+                'title' => __('admin.dashboard.active_products'),
                 'value' => $totalProducts,
-                'subtitle' => 'Live in catalog',
+                'subtitle' => __('admin.dashboard.live_catalog'),
                 'route' => route('admin.products.index'),
                 'icon' => 'ri-restaurant-2-line',
                 'iconBg' => 'bg-amber-50 text-amber-600 border border-amber-100',
                 'accent' => 'hover:border-amber-300',
-                'badge' => 'Catalog',
+                'badge' => __('admin.dashboard.badge_catalog'),
             ],
             [
-                'title' => 'Total Customers',
+                'title' => __('admin.dashboard.total_customers'),
                 'value' => $totalCustomers,
-                'subtitle' => 'Registered diners',
+                'subtitle' => __('admin.dashboard.diners'),
                 'route' => route('admin.customers.index'),
                 'icon' => 'ri-user-heart-line',
                 'iconBg' => 'bg-violet-50 text-violet-600 border border-violet-100',
                 'accent' => 'hover:border-violet-300',
-                'badge' => 'Patrons',
+                'badge' => __('admin.dashboard.badge_patrons'),
             ],
         ];
     @endphp
@@ -285,7 +284,7 @@
                     </div>
                     <div
                         class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                        <span class="font-medium text-slate-400">View details</span>
+                        <span class="font-medium text-slate-400">{{ __('admin.dashboard.view_details') }}</span>
                         <i
                             class="ri-arrow-right-s-line text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all"></i>
                     </div>
@@ -301,13 +300,13 @@
             <div class="rounded-2xl border border-slate-200/90 bg-white shadow-sm overflow-hidden flex flex-col h-full">
                 <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                     <div>
-                        <h2 class="text-base font-bold text-slate-900">Sales Velocity</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Daily completed orders during the selected period</p>
+                        <h2 class="text-base font-bold text-slate-900">{{ __('admin.dashboard.sales_velocity') }}</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">{{ __('admin.dashboard.daily_completed') }}</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <span
                             class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 font-mono">
-                            {{ $dailySales->count() }} {{ $dailySales->count() === 1 ? 'day recorded' : 'days recorded' }}
+                            {{ $dailySales->count() }} {{ $dailySales->count() === 1 ? __('admin.dashboard.days_recorded') : __('admin.dashboard.days_recorded_plural') }}
                         </span>
                     </div>
                 </div>
@@ -322,9 +321,8 @@
                                 class="mx-auto w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 mb-3">
                                 <i class="ri-line-chart-line text-2xl"></i>
                             </div>
-                            <h4 class="text-sm font-bold text-slate-700">No sales records found</h4>
-                            <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">Sales transaction velocity will chart
-                                here automatically once orders are completed.</p>
+                            <h4 class="text-sm font-bold text-slate-700">{{ __('admin.dashboard.no_sales_records') }}</h4>
+                            <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">{{ __('admin.dashboard.no_sales_desc') }}</p>
                         </div>
                     @endif
                 </div>
@@ -336,10 +334,10 @@
             <div class="rounded-2xl border border-slate-200/90 bg-white shadow-sm overflow-hidden flex flex-col h-full">
                 <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                     <div>
-                        <h2 class="text-base font-bold text-slate-900">Top Selling Items</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Most ordered dishes by popularity</p>
+                        <h2 class="text-base font-bold text-slate-900">{{ __('admin.dashboard.top_selling') }}</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">{{ __('admin.dashboard.most_ordered') }}</p>
                     </div>
-                    <span class="text-xs font-medium text-slate-400">Share %</span>
+                    <span class="text-xs font-medium text-slate-400">{{ __('admin.dashboard.share') }}</span>
                 </div>
                 <div class="p-5 sm:p-6 flex-1">
                     @forelse($popularItems as $item)
@@ -357,7 +355,7 @@
                                         </h3>
                                         <span class="shrink-0 text-slate-400 text-xs font-mono">
                                             {{ $item['sale_count'] }} <span
-                                                class="hidden sm:inline">{{ $item['sale_count'] === 1 ? 'order' : 'orders' }}</span>
+                                                class="hidden sm:inline">{{ $item['sale_count'] === 1 ? __('admin.common.order') : __('admin.common.orders') }}</span>
                                         </span>
                                     </div>
                                     <div class="flex items-center gap-2.5">
@@ -377,8 +375,8 @@
                                 class="mx-auto w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 mb-2">
                                 <i class="ri-pie-chart-line text-xl"></i>
                             </div>
-                            <h4 class="text-xs font-bold text-slate-700">No popular items</h4>
-                            <p class="text-[11px] text-slate-400 mt-0.5">Item rankings appear as guests place orders.</p>
+                            <h4 class="text-xs font-bold text-slate-700">{{ __('admin.dashboard.no_popular') }}</h4>
+                            <p class="text-[11px] text-slate-400 mt-0.5">{{ __('admin.dashboard.no_popular_desc') }}</p>
                         </div>
                     @endforelse
                 </div>
@@ -405,12 +403,12 @@
     <div class="mt-6 rounded-2xl border border-slate-200/90 bg-white shadow-sm overflow-hidden">
         <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <div>
-                <h2 class="text-base font-bold text-slate-900">Recent Transactions</h2>
-                <p class="text-xs text-slate-400 mt-0.5">Latest finalized dining and takeaway tickets</p>
+                <h2 class="text-base font-bold text-slate-900">{{ __('admin.dashboard.recent_transactions') }}</h2>
+                <p class="text-xs text-slate-400 mt-0.5">{{ __('admin.dashboard.latest_tickets') }}</p>
             </div>
             <a href="{{ route('admin.sales.index') }}"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
-                View All Sales <i class="ri-arrow-right-line text-xs"></i>
+                {{ __('admin.dashboard.view_all_sales') }} <i class="ri-arrow-right-line text-xs"></i>
             </a>
         </div>
         <div class="overflow-x-auto">
@@ -418,14 +416,14 @@
                 <thead>
                     <tr
                         class="border-b border-slate-100 bg-slate-50/60 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                        <th class="py-3 px-5">Order ID</th>
-                        <th class="py-3 px-4">Date & Time</th>
-                        <th class="py-3 px-4">Type</th>
-                        <th class="py-3 px-4">Payment</th>
-                        <th class="py-3 px-4 text-right">Payable</th>
-                        <th class="py-3 px-4 text-right">Paid</th>
-                        <th class="py-3 px-4 text-right">Due</th>
-                        <th class="py-3 px-5 text-right">Invoice</th>
+                        <th class="py-3 px-5">{{ __('admin.dashboard.order_id') }}</th>
+                        <th class="py-3 px-4">{{ __('admin.dashboard.date_time') }}</th>
+                        <th class="py-3 px-4">{{ __('admin.dashboard.type') }}</th>
+                        <th class="py-3 px-4">{{ __('admin.dashboard.payment') }}</th>
+                        <th class="py-3 px-4 text-right">{{ __('admin.dashboard.payable') }}</th>
+                        <th class="py-3 px-4 text-right">{{ __('admin.dashboard.paid') }}</th>
+                        <th class="py-3 px-4 text-right">{{ __('admin.dashboard.due') }}</th>
+                        <th class="py-3 px-5 text-right">{{ __('admin.dashboard.invoice') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-xs text-slate-700">
@@ -438,7 +436,7 @@
                             $payBadge = $paymentBadges[$payValue] ?? 'bg-slate-50 text-slate-600';
                             $payLabel = ($method = \App\Enums\PaymentMethod::tryFrom($payValue))
                                 ? $method->label()
-                                : 'Cash';
+                                : __('admin.payment.cash');
                         @endphp
                         <tr class="hover:bg-slate-50/70 transition-colors">
                             <td class="py-3.5 px-5 font-mono font-semibold text-slate-900">
@@ -478,8 +476,8 @@
                             <td class="py-3.5 px-5 text-right">
                                 <a href="{{ route('admin.sales.invoice', $order->order_id) }}"
                                     class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200/80 transition"
-                                    target="_blank" title="Print Invoice">
-                                    <i class="ri-printer-line text-sm"></i> Print
+                                    target="_blank" title="{{ __('admin.dashboard.print') }}">
+                                    <i class="ri-printer-line text-sm"></i> {{ __('admin.dashboard.print') }}
                                 </a>
                             </td>
                         </tr>
@@ -487,7 +485,7 @@
                         <tr>
                             <td colspan="8" class="text-center py-12 text-slate-400">
                                 <i class="ri-inbox-line text-2xl block mb-1 text-slate-300"></i>
-                                No orders found for this period.
+                                {{ __('admin.dashboard.no_orders') }}
                             </td>
                         </tr>
                     @endforelse
@@ -509,7 +507,7 @@
                     data: {
                         labels: salesLabels,
                         datasets: [{
-                            label: 'Orders',
+                            label: '{{ __('admin.dashboard.chart_orders') }}',
                             data: saleCounts,
                             borderColor: '#ea580c',
                             backgroundColor: 'rgba(234, 88, 12, 0.10)',
@@ -555,8 +553,8 @@
                                 displayColors: false,
                                 callbacks: {
                                     label: function(context) {
-                                        return ' ' + context.parsed.y + (context.parsed.y === 1 ? ' order' :
-                                            ' orders');
+                                        return ' ' + context.parsed.y + (context.parsed.y === 1 ? ' {{ __('admin.common.order') }}' :
+                                            ' {{ __('admin.common.orders') }}');
                                     }
                                 }
                             }

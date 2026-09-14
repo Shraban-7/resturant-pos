@@ -1,5 +1,5 @@
 @extends('layouts.pos')
-@section('title', 'POS Terminal')
+@section('title', __('admin.pos.terminal'))
 
 @section('content')
 
@@ -27,8 +27,7 @@
         <div id="offlineStatusBanner"
             class="hidden shrink-0 px-4 py-2 text-xs font-bold bg-amber-400 text-amber-950 border-b border-amber-500 shadow-sm z-30">
             <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
-                <span class="flex items-center gap-2"><i class="ri-wifi-off-line text-base"></i> Offline mode active — orders
-                    will queue locally and sync automatically when connection returns.</span>
+                <span class="flex items-center gap-2"><i class="ri-wifi-off-line text-base"></i> {{ __('admin.pos.offline_banner') }}</span>
                 <span id="offlinePendingCount"
                     class="bg-amber-950 text-white text-[10px] px-2 py-0.5 rounded-full font-extrabold hidden"></span>
             </div>
@@ -50,7 +49,7 @@
                 @endif
                 <div class="hidden sm:block">
                     <div class="text-sm font-extrabold text-white leading-tight tracking-tight flex items-center gap-1.5">
-                        <span>POS Terminal</span>
+                        <span>{{ __('admin.pos.terminal') }}</span>
                         <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     </div>
                     <div class="text-[11px] text-slate-400 font-medium flex items-center gap-1.5 mt-0.5">
@@ -69,7 +68,7 @@
                         class="ri-search-2-line absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-base"></i>
                     <input id="productNameSearch" type="text"
                         class="block w-full rounded-xl border border-slate-700/80 bg-slate-900/90 px-3.5 py-2 pl-10 pr-10 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all shadow-inner"
-                        placeholder="Search menu dishes by name or keyword...">
+                        placeholder="{{ __('admin.pos.search_placeholder') }}">
                     <span
                         class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">ESC</span>
                 </div>
@@ -84,8 +83,8 @@
                             class="ri-store-2-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
                         <select name="branch_id"
                             class="rounded-xl border border-slate-700 bg-slate-900/90 pl-8 pr-7 py-1.5 text-xs font-semibold text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer"
-                            onchange="this.form.submit()" title="Active branch">
-                            <option value="" @selected(is_all_branches_mode())>All Branches</option>
+                            onchange="this.form.submit()" title="{{ __('admin.pos.active_branch') }}">
+                            <option value="" @selected(is_all_branches_mode())>{{ __('admin.navbar.all_branches') }}</option>
                             @foreach ($branches as $branch)
                                 <option value="{{ $branch->id }}" @selected((int) active_branch_id() === (int) $branch->id && !is_all_branches_mode())>
                                     {{ $branch->name }}
@@ -101,7 +100,7 @@
                 <!-- Kitchen Display Link with Ready Badge -->
                 <a href="{{ route('admin.kds.index') }}"
                     class="relative inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
-                    title="Kitchen Display System (KDS)" id="posKitchenBadgeLink">
+                    title="{{ __('admin.sidebar.kitchen_display') }}" id="posKitchenBadgeLink">
                     <i class="ri-macbook-line text-lg"></i>
                     <span id="posKitchenReadyBadge"
                         class="absolute -top-0.5 -right-0.5 min-w-[1.15rem] h-[1.15rem] px-1 rounded-full bg-emerald-500 text-white text-[10px] font-extrabold leading-[1.15rem] text-center shadow hidden">0</span>
@@ -110,7 +109,7 @@
                 <!-- Offline Sync Button -->
                 <button type="button" id="offlineSyncButton"
                     class="relative inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition hidden"
-                    title="Synchronize offline orders">
+                    title="{{ __('admin.pos.sync_offline') }}">
                     <i class="ri-cloud-line text-lg"></i>
                     <span id="offlineSyncBadge"
                         class="absolute -top-0.5 -right-0.5 min-w-[1.15rem] h-[1.15rem] px-1 rounded-full bg-amber-500 text-white text-[10px] font-extrabold leading-[1.15rem] text-center shadow">0</span>
@@ -119,7 +118,7 @@
                 <!-- Quick Barcode Scan Modal -->
                 <button type="button" id="productCodeBtn"
                     class="inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
-                    title="Scan code or search by item number"
+                    title="{{ __('admin.pos.scan_code') }}"
                     @click="barcodeOpen = true; $nextTick(() => document.getElementById('barcodeInput')?.focus())">
                     <i class="ri-barcode-line text-lg"></i>
                 </button>
@@ -127,28 +126,28 @@
                 <!-- Fullscreen -->
                 <button type="button" id="fullscreen-btn"
                     class="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
-                    title="Toggle Fullscreen">
+                    title="{{ __('admin.pos.fullscreen') }}">
                     <i class="ri-fullscreen-line text-lg"></i>
                 </button>
 
                 <!-- Refresh -->
                 <button type="button" id="refresh-btn"
                     class="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
-                    title="Refresh Terminal">
+                    title="{{ __('admin.pos.refresh_terminal') }}">
                     <i class="ri-loop-right-line text-lg"></i>
                 </button>
 
                 <!-- Dashboard -->
                 <a href="{{ route('admin.dashboard') }}"
                     class="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
-                    title="Admin Dashboard">
+                    title="{{ __('admin.pos.admin_dashboard') }}">
                     <i class="ri-dashboard-line text-lg"></i>
                 </a>
 
                 <!-- Logout -->
                 <a href="{{ route('logout') }}"
                     class="inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-400 hover:text-red-300 hover:bg-red-500/20 transition"
-                    title="Sign Out">
+                    title="{{ __('admin.pos.sign_out') }}">
                     <i class="ri-logout-box-r-line text-lg"></i>
                 </a>
             </div>
@@ -164,7 +163,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {{-- Running Orders --}}
                     @include('components.pos._order-chips', [
-                        'title' => 'Running Orders',
+                        'title' => __('admin.pos.running_orders'),
                         'icon' => 'ri-restart-line',
                         'sales' => $runningSales,
                         'routeName' => 'admin.pos.index',
@@ -173,7 +172,7 @@
 
                     {{-- Recent Invoices --}}
                     @include('components.pos._order-chips', [
-                        'title' => 'Recent Orders',
+                        'title' => __('admin.pos.recent_orders'),
                         'icon' => 'ri-receipt-2-line',
                         'sales' => $recentSales,
                         'routeName' => 'admin.sales.invoice',
@@ -185,9 +184,9 @@
                     <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-sm">
                         <div class="flex items-center justify-between mb-2.5">
                             <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
-                                <i class="ri-restaurant-fill text-orange-600"></i> Dining Tables
+                                <i class="ri-restaurant-fill text-orange-600"></i> {{ __('admin.sidebar.dining_tables') }}
                             </h3>
-                            <span class="text-[11px] font-semibold text-slate-400">Click table to update status</span>
+                            <span class="text-[11px] font-semibold text-slate-400">{{ __('admin.pos.click_table_update') }}</span>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($diningTables as $table)
@@ -202,9 +201,9 @@
                     <div class="flex items-center justify-between mb-2.5">
                         <h3
                             class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="ri-apps-2-line text-orange-600"></i> Categories
+                            <i class="ri-apps-2-line text-orange-600"></i> {{ __('admin.pos.categories') }}
                         </h3>
-                        <span class="text-xs text-slate-400">Scroll to explore</span>
+                        <span class="text-xs text-slate-400">{{ __('admin.pos.scroll_explore') }}</span>
                     </div>
 
                     <div class="flex gap-2.5 overflow-x-auto no-scrollbar py-1 -mx-1 px-1" id="categoryScroll">
@@ -212,7 +211,7 @@
                             class="category-card shrink-0 active inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-slate-200 text-slate-700 font-bold text-xs shadow-sm hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer"
                             data-category="all" onclick="window.filterCategory('all', this)" type="button">
                             <i class="ri-apps-2-line text-base text-orange-600"></i>
-                            <span class="category-name">All Items</span>
+                            <span class="category-name">{{ __('admin.pos.all_items') }}</span>
                         </button>
                         @foreach ($categories as $category)
                             @php $icon = $categoryIcons[$category->name] ?? 'ri-restaurant-line'; @endphp
@@ -232,9 +231,9 @@
                     <div class="flex items-center justify-between mb-3">
                         <h3
                             class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="ri-restaurant-2-line text-orange-600"></i> Menu Items
+                            <i class="ri-restaurant-2-line text-orange-600"></i> {{ __('admin.pos.menu_items') }}
                         </h3>
-                        <span class="text-xs text-slate-500 font-medium">{{ count($products) }} items available</span>
+                        <span class="text-xs text-slate-500 font-medium">{{ __('admin.pos.items_available', ['count' => count($products)]) }}</span>
                     </div>
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4"
                         id="productsGrid">
@@ -270,7 +269,7 @@
                 <span class="flex items-center justify-center h-8 w-8 rounded-xl bg-orange-600 text-white">
                     <i class="ri-shopping-cart-2-line text-lg"></i>
                 </span>
-                <span>View Current Ticket</span>
+                <span>{{ __('admin.pos.view_current_ticket') }}</span>
             </div>
             <div class="flex items-center gap-2">
                 <span class="px-2 py-0.5 rounded-full bg-orange-600 text-xs font-extrabold" id="mobileCartCount">0</span>
@@ -290,7 +289,7 @@
                 x-transition:leave-end="translate-y-full">
                 <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 bg-slate-50">
                     <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                        <i class="ri-receipt-line text-orange-600"></i> Order Ticket
+                        <i class="ri-receipt-line text-orange-600"></i> {{ __('admin.pos.order_ticket') }}
                     </h2>
                     <button type="button"
                         class="h-8 w-8 rounded-full hover:bg-slate-200 text-slate-500 flex items-center justify-center transition"
@@ -326,7 +325,7 @@
                         <span class="flex items-center justify-center h-8 w-8 rounded-xl bg-orange-100 text-orange-600">
                             <i class="ri-barcode-line text-lg"></i>
                         </span>
-                        <h3 class="text-base font-bold text-slate-900">Quick Barcode Add</h3>
+                        <h3 class="text-base font-bold text-slate-900">{{ __('admin.pos.quick_barcode') }}</h3>
                     </div>
                     <button type="button"
                         class="h-8 w-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition"
@@ -338,11 +337,9 @@
                     <i class="ri-qr-code-line absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
                     <input type="text" id="barcodeInput"
                         class="w-full border border-slate-200 rounded-2xl pl-11 pr-4 py-3 text-base font-mono font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-slate-50"
-                        placeholder="Scan barcode or type item name..." @keyup.enter="handleBarcode($event.target.value)">
+                        placeholder="{{ __('admin.pos.scan_placeholder') }}" @keyup.enter="handleBarcode($event.target.value)">
                 </div>
-                <p class="mt-3 text-xs text-slate-500 leading-relaxed">Press <kbd
-                        class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono">Enter</kbd>
-                    to open the matching product. Works seamlessly with handheld barcode scanners or keyboard input.</p>
+                <p class="mt-3 text-xs text-slate-500 leading-relaxed">{!! __('admin.pos.barcode_helper') !!}</p>
             </div>
         </div>
 

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Kitchen Display')
+@section('title', __('admin.kds.title'))
 
 @section('full_page')
 <div
@@ -35,12 +35,12 @@
                 <i class="ri-arrow-left-line text-xl"></i>
             </a>
             <div>
-                <div class="text-lg font-semibold leading-tight">Kitchen Display</div>
+                <div class="text-lg font-semibold leading-tight">{{ __('admin.kds.kitchen_display') }}</div>
                 <div class="text-xs text-slate-300 flex items-center gap-2">
                     <span class="inline-flex h-2 w-2 rounded-full" :class="connected ? 'bg-emerald-400' : 'bg-red-400'"></span>
-                    <span x-text="connected ? 'Auto-refreshing' : 'Offline — check network'"></span>
+                    <span x-text="connected ? '{{ __('admin.kds.auto_refreshing') }}' : '{{ __('admin.kds.offline') }}'"></span>
                     <span class="text-slate-500">·</span>
-                    <span x-text="tickets.length + ' active'"></span>
+                    <span x-text="tickets.length + ' {{ __('admin.kds.active') }}'"></span>
                 </div>
             </div>
         </div>
@@ -48,10 +48,10 @@
             <button type="button" class="btn btn-sm bg-white/10 text-white hover:bg-white/20 border-0" @click="soundEnabled = !soundEnabled">
                 <i class="ri-volume-up-line" x-show="soundEnabled"></i>
                 <i class="ri-volume-mute-line" x-show="!soundEnabled"></i>
-                <span x-text="soundEnabled ? 'Sound On' : 'Sound Off'"></span>
+                <span x-text="soundEnabled ? '{{ __('admin.kds.sound_on') }}' : '{{ __('admin.kds.sound_off') }}'"></span>
             </button>
             <button type="button" class="btn btn-sm bg-white/10 text-white hover:bg-white/20 border-0" @click="location.reload()">
-                <i class="ri-refresh-line"></i> Refresh
+                <i class="ri-refresh-line"></i> {{ __('admin.kds.refresh') }}
             </button>
         </div>
     </div>
@@ -60,8 +60,8 @@
         <template x-if="tickets.length === 0">
             <div class="flex flex-col items-center justify-center py-24 text-slate-500">
                 <i class="ri-restaurant-2-line text-5xl mb-3 opacity-40"></i>
-                <p class="text-lg font-medium text-slate-700">No active kitchen tickets</p>
-                <p class="text-sm">New orders will appear here instantly.</p>
+                <p class="text-lg font-medium text-slate-700">{{ __('admin.kds.no_tickets') }}</p>
+                <p class="text-sm">{{ __('admin.kds.no_tickets_desc') }}</p>
             </div>
         </template>
 
@@ -74,7 +74,7 @@
                     <header class="px-4 py-3 border-b border-slate-100 flex items-start justify-between gap-2"
                             :class="urgencyHeader(ticket)">
                         <div>
-                            <div class="font-bold text-lg leading-tight" x-text="ticket.table_name || 'No table'"></div>
+                            <div class="font-bold text-lg leading-tight" x-text="ticket.table_name || '{{ __('admin.kds.no_table') }}'"></div>
                             <div class="text-xs opacity-80 mt-0.5">
                                 <span x-text="ticket.ticket_number"></span>
                                 <template x-if="ticket.order_id">
@@ -82,7 +82,7 @@
                                 </template>
                             </div>
                             <div class="text-xs opacity-70 mt-0.5" x-show="ticket.waiter_name">
-                                Waiter: <span x-text="ticket.waiter_name"></span>
+                                {{ __('admin.kds.waiter') }} <span x-text="ticket.waiter_name"></span>
                             </div>
                         </div>
                         <div class="text-right shrink-0">
@@ -114,7 +114,7 @@
                                     class="btn btn-primary w-full py-3 text-base"
                                     :disabled="busyId === ticket.ticket_id"
                                     @click="setStatus(ticket, 'preparing')">
-                                Start Prep
+                                {{ __('admin.kds.start_prep') }}
                             </button>
                         </template>
                         <template x-if="ticket.status === 'preparing'">
@@ -122,7 +122,7 @@
                                     class="btn btn-success w-full py-3 text-base"
                                     :disabled="busyId === ticket.ticket_id"
                                     @click="setStatus(ticket, 'ready')">
-                                Mark Ready
+                                {{ __('admin.kds.mark_ready') }}
                             </button>
                         </template>
                         <template x-if="ticket.status === 'ready'">
@@ -130,7 +130,7 @@
                                     class="btn w-full py-3 text-base bg-slate-800 text-white hover:bg-slate-900"
                                     :disabled="busyId === ticket.ticket_id"
                                     @click="setStatus(ticket, 'served')">
-                                Serve / Clear
+                                {{ __('admin.kds.serve_clear') }}
                             </button>
                         </template>
                     </footer>
@@ -189,7 +189,7 @@ function kdsApp(initialTickets, ownerId) {
                     this.upsertTicket(t);
                     if (!known) {
                         this.chime();
-                        if (window.toast) window.toast.info(`New order: ${t.table_name || t.ticket_number}`);
+                        if (window.toast) window.toast.info(`{{ __('admin.kds.new_order') }} ${t.table_name || t.ticket_number}`);
                     }
                 }
                 this.connected = true;
@@ -262,7 +262,7 @@ function kdsApp(initialTickets, ownerId) {
                     ticket.status = status;
                 }
             } catch (err) {
-                const msg = err.response?.data?.message || 'Failed to update ticket';
+                const msg = err.response?.data?.message || '{{ __('admin.kds.failed_update') }}';
                 if (window.toast) window.toast.error(msg);
             } finally {
                 this.busyId = null;
