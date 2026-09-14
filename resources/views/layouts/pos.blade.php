@@ -11,6 +11,7 @@
     <meta name="apple-mobile-web-app-title" content="POS">
     <title>@yield('title') &middot; POS</title>
     <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('assets/images/logo.svg') }}">
     <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icons/icon-192.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
