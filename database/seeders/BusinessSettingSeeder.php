@@ -12,14 +12,15 @@ class BusinessSettingSeeder extends Seeder
     {
         $admin = User::admin()->first();
 
-        
         BusinessSetting::create([
             'user_id' => $admin->id,
             'name' => 'E-Restora',
             'email' => 'hello@erestora.com',
             'phone' => '01700000000',
-            'image' => 'images/mezban.png',
+            'image' => 'assets/images/logo.png',
             'signature' => 'images/signature.png',
         ]);
+
+        \Illuminate\Support\Facades\Cache::forget('store.branding');
     }
 }

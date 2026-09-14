@@ -270,11 +270,14 @@ if (! function_exists('is_all_branches_mode')) {
 
 if (! function_exists('store_business')) {
     // Canonical store profile (first admin's business settings), cached.
+    // TTL-cached (not forever) so a seeding-order or stale entry self-heals
+    // instead of pinning the wrong brand name/logo on the panel.
     function store_business(): ?\App\Models\BusinessSetting
     {
         try {
-            return \Illuminate\Support\Facades\Cache::rememberForever(
+            return \Illuminate\Support\Facades\Cache::remember(
                 'store.branding',
+                now()->addHours(1),
                 fn () => \App\Models\BusinessSetting::query()
                     ->whereIn('user_id', \App\Models\User::admin()->orderBy('id')->pluck('id'))
                     ->orderBy('id')
@@ -295,9 +298,17 @@ if (! function_exists('store_name')) {
 
 if (! function_exists('store_logo_url')) {
     // Uploaded business logo first, bundled Dine Master mark as fallback.
+    // A stored path that no longer exists on disk falls back too, so the
+    // sidebar/login never render a broken image.
     function store_logo_url(): string
     {
         $image = store_business()?->image;
+
+        if ($image) {
+            if (! \Illuminate\Support\Facades\Storage::disk('public')->exists($image)) {
+                $image = null;
+            }
+        }
 
         return $image ? storage_url($image) : asset('assets/images/logo.svg');
     }
