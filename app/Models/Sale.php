@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderType;
 use App\Traits\BelongsToBranch;
 use App\Traits\HasCommonScopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +19,7 @@ class Sale extends Model
         'synced_at' => 'datetime',
         'sale_date' => 'date',
         'is_hold' => 'boolean',
+        'order_type' => OrderType::class,
     ];
 
     public function customer()
@@ -52,6 +54,11 @@ class Sale extends Model
     public function kitchenTickets()
     {
         return $this->hasMany(KitchenTicket::class, 'sale_id');
+    }
+
+    public function giftCard()
+    {
+        return $this->belongsTo(GiftCard::class, 'gift_card_id');
     }
 
     public function scopeSelf($query)

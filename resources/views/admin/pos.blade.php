@@ -262,9 +262,13 @@
         const $due = document.getElementById('due');
         const $discountInput = document.getElementById('discountInput');
         const $paidInput = document.getElementById('paidInput');
-        const $customerSelect = document.getElementById('customerSelect');
+const $customerSelect = document.getElementById('customerSelect');
         const $tableSelect = document.getElementById('tableSelect');
         const $employeeSelect = document.getElementById('employeeSelect');
+        const $orderTypeSelect = document.getElementById('orderTypeSelect');
+        const $tableRow = document.getElementById('tableRow');
+        const $giftCardCode = document.getElementById('giftCardCodeInput');
+        const $giftCardStatus = document.getElementById('giftCardStatus');
         const $customerName = document.getElementById('customer_name');
         const $customerPhone = document.getElementById('customer_phone');
         const $note = document.getElementById('note');

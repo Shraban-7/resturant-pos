@@ -48,7 +48,20 @@
         <input type="text" id="customer_phone" class="form-control form-control-sm" placeholder="Phone">
     </div>
 
-    <div class="grid grid-cols-2 gap-2">
+    <div class="grid grid-cols-1 gap-2">
+        <select id="orderTypeSelect" class="form-select" onchange="window.toggleOrderType()">
+            @php
+                $saleOrderType = $sale?->order_type instanceof \App\Enums\OrderType
+                    ? $sale->order_type->value
+                    : ($sale?->order_type ?? 'dine_in');
+            @endphp
+            <option value="dine_in"{{ $saleOrderType === 'dine_in' ? ' selected' : '' }}>Dine in</option>
+            <option value="takeaway"{{ $saleOrderType === 'takeaway' ? ' selected' : '' }}>Takeaway</option>
+            <option value="delivery"{{ $saleOrderType === 'delivery' ? ' selected' : '' }}>Delivery</option>
+        </select>
+    </div>
+
+    <div class="grid grid-cols-2 gap-2" id="tableRow">
         <select id="tableSelect" class="form-select form-control-sm" required>
             <option value="">Select table</option>
             @php $cartTable = ($sale?->getRelationValue('diningTable') ?? $sale?->getRelationValue('table')) ?? $sale?->diningTable ?? $sale?->table ?? null; @endphp
@@ -118,6 +131,19 @@
             <span class="text-xs text-slate-500 mb-1 block">Paid</span>
             <input type="number" id="paidInput" class="form-control form-control-sm" value="0" min="0" step="0.01">
         </label>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 p-2.5 bg-white space-y-1">
+        <label class="text-xs font-semibold text-slate-500">Gift card</label>
+        <div class="flex items-center gap-2">
+            <input type="text" id="giftCardCodeInput" class="form-control form-control-sm uppercase"
+                placeholder="Enter code" maxlength="64"
+                onchange="window.verifyGiftCard?.()" onkeyup="if(event.key==='Enter')this.blur()">
+            <button type="button" id="verifyGiftCardBtn" class="btn btn-secondary !px-3" onclick="window.verifyGiftCard?.()">
+                <i class="ri-shield-check-line"></i>
+            </button>
+        </div>
+        <div id="giftCardStatus" class="text-[11px] text-slate-400 hidden"></div>
     </div>
 
     <input type="text" id="note" class="form-control form-control-sm" placeholder="Add a note (optional)">

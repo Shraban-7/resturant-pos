@@ -14,6 +14,8 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Customer;
 use App\Models\DiningTable;
+use App\Models\Employee;
+use App\Models\GiftCard;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Sale;
@@ -348,8 +350,29 @@ class PosController extends Controller
                 }
 
                 $discount = $request->discount_amount ?? 0;
-                $paid = $request->paid_amount ?? 0;
+                $paid = (float) ($request->paid_amount ?? 0);
                 $payable = ($subTotal - $discount);
+
+                $giftCard = null;
+                $giftCardPaid = 0.0;
+                if ($request->filled('gift_card_code') && $payable > 0) {
+                    $giftCard = GiftCard::query()
+                        ->where('admin_id', panel_owner_id())
+                        ->where('code', mb_strtoupper($request->gift_card_code))
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($giftCard && $giftCard->isRedeemable()) {
+                        $giftCardPaid = min((float) $giftCard->balance, $payable);
+                        $giftCard->redeem($giftCardPaid);
+                        $paid = min($paid + $giftCardPaid, $payable);
+                    }
+                }
+
+                $paymentOption = $request->payment_type ?? 'cash';
+                if ($giftCard && $giftCardPaid >= $payable) {
+                    $paymentOption = 'gift_card';
+                }
 
                 // Prefer request aliases used by POS UI (table_id / employee_id) with dining_* fallbacks.
                 $tableId = $request->dining_table_id ?? $request->table_id;
@@ -366,9 +389,12 @@ class PosController extends Controller
                     }
                 }
 
-                $saleData = [
+$saleData = [
                     'admin_id' => $cart->admin_id,
                     'customer_id' => $customer_id,
+                    'customer_name' => $customer_name !== '' ? $customer_name : null,
+                    'customer_phone' => $customer_phone !== '' ? $customer_phone : null,
+                    'order_type' => $request->order_type ?? 'dine_in',
                     'order_id' => $cart->order_id,
                     'client_order_id' => $request->client_order_id,
                     'device_id' => $request->device_id,
@@ -382,7 +408,9 @@ class PosController extends Controller
                     'payable' => $payable,
                     'paid' => $paid,
                     'due' => ($payable - $paid),
-                    'payment_option' => $request->payment_type ?? 'cash',
+                    'amount_paid_by_gift_card' => $giftCardPaid,
+                    'gift_card_id' => $giftCard?->id,
+                    'payment_option' => $paymentOption,
                     'note' => $request->note,
                     'branch_id' => active_branch_id(),
                 ];
@@ -474,9 +502,12 @@ class PosController extends Controller
                 $employeeId = $request->employee_id ?? $request->employee_id;
                 $payable = $subTotal;
 
-                $saleData = [
+$saleData = [
                     'admin_id' => $cart->admin_id,
                     'customer_id' => $customer_id,
+                    'customer_name' => $customer_name !== '' ? $customer_name : null,
+                    'customer_phone' => $customer_phone !== '' ? $customer_phone : null,
+                    'order_type' => $request->order_type ?? 'dine_in',
                     'is_hold' => 1,
                     'order_id' => $cart->order_id,
                     'sale_date' => date('Y-m-d'),

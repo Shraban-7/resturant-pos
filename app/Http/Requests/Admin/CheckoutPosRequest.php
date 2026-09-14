@@ -11,11 +11,11 @@ class CheckoutPosRequest extends FormRequest
         return auth()->check();
     }
 
-    public function rules(): array
+public function rules(): array
     {
         return [
             'order_id' => 'required|string|exists:carts,order_id',
-            'payment_type' => 'required|string|in:cash,card,mobile_banking',
+            'payment_type' => 'required|string|in:cash,card,mobile_banking,gift_card',
             'paid_amount' => 'required|numeric|min:0',
             'discount_amount' => 'nullable|numeric|min:0',
             'customer_id' => 'nullable|exists:customers,id',
@@ -24,6 +24,8 @@ class CheckoutPosRequest extends FormRequest
             'client_order_id' => 'nullable|uuid',
             'device_id' => 'nullable|uuid',
             'created_at_client' => 'nullable|date',
+            'order_type' => 'nullable|string|in:dine_in,takeaway,delivery',
+            'gift_card_code' => 'nullable|string|max:64',
         ];
     }
 }
