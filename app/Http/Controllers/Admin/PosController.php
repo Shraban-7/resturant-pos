@@ -19,7 +19,6 @@ use App\Models\GiftCard;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Sale;
-use App\Models\Employee;
 use App\Services\StockService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
