@@ -1,8 +1,5 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\OrderStatusController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -13,19 +10,22 @@ use App\Http\Controllers\Admin\GiftCardController;
 use App\Http\Controllers\Admin\KdsController;
 use App\Http\Controllers\Admin\LoyaltyController;
 use App\Http\Controllers\Admin\NotificationController;
-use App\Http\Controllers\Admin\PurchaseController;
-use App\Http\Controllers\Admin\StorefrontSettingController;
-use App\Http\Controllers\Admin\SupplierController;
-use App\Http\Controllers\Admin\OfflineSyncController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductModifierController;
+use App\Http\Controllers\Admin\PurchaseController;
 use App\Http\Controllers\Admin\RecipeController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ReservationController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\StorefrontSettingController;
+use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OrderStatusController;
+use App\Http\Controllers\StorefrontController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -45,9 +45,10 @@ Route::get('/lang/{locale}', function (string $locale) {
     return redirect()->back();
 })->name('lang.switch');
 
-// Public storefront (products + table reservation)
-Route::get('/store', [App\Http\Controllers\StorefrontController::class, 'index'])->name('storefront.index');
-Route::post('/reserve', [App\Http\Controllers\StorefrontController::class, 'reserve'])->name('storefront.reserve');
+// Public storefront (products + table reservation + contact inquiry)
+Route::get('/store', [StorefrontController::class, 'index'])->name('storefront.index');
+Route::post('/reserve', [StorefrontController::class, 'reserve'])->name('storefront.reserve');
+Route::post('/contact', [StorefrontController::class, 'contact'])->name('storefront.contact');
 
 // Digital QR Code Menu & Public Tracking
 Route::get('/menu/tracker/{token}', [MenuController::class, 'tracker'])->name('menu.tracker');
@@ -96,7 +97,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
         });
     });
 
-Route::get('/kds', [KdsController::class, 'index'])->name('kds.index');
+    Route::get('/kds', [KdsController::class, 'index'])->name('kds.index');
     Route::get('/kds/tickets', [KdsController::class, 'activeTickets'])->name('kds.activeTickets');
     Route::get('/kds/summary', [KdsController::class, 'summary'])->name('kds.summary');
     Route::post('/kds/tickets/{ticket}/status', [KdsController::class, 'updateStatus'])->name('kds.updateStatus');
@@ -214,9 +215,9 @@ Route::get('/kds', [KdsController::class, 'index'])->name('kds.index');
 Route::prefix('seller')->group(function () {
     Route::any('/{any?}', function () {
         $path = str_replace('/seller', '/admin', request()->path());
-        $query = request()->getQueryString() ? '?'.request()->getQueryString() : '';
+        $query = request()->getQueryString() ? '?' . request()->getQueryString() : '';
 
-        return redirect('/'.$path.$query, 301);
+        return redirect('/' . $path . $query, 301);
     })->where('any', '.*');
 });
 

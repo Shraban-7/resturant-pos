@@ -34,7 +34,7 @@ class StorefrontController extends Controller
     {
         $owner = static::owner();
 
-        if (! $owner) {
+        if (!$owner) {
             return view('storefront.empty');
         }
 
@@ -45,15 +45,17 @@ class StorefrontController extends Controller
 
         $categories = ProductCategory::query()
             ->where('admin_id', $owner->id)
-            ->with(['products' => function ($q) use ($owner) {
-                $q->where('admin_id', $owner->id)
-                    ->sellable()
-                    ->where('is_active', 1)
-                    ->orderBy('name');
-            }])
+            ->with([
+                'products' => function ($q) use ($owner) {
+                    $q->where('admin_id', $owner->id)
+                        ->sellable()
+                        ->where('is_active', 1)
+                        ->orderBy('name');
+                }
+            ])
             ->orderBy('name')
             ->get()
-            ->filter(fn ($c) => $c->products->isNotEmpty());
+            ->filter(fn($c) => $c->products->isNotEmpty());
 
         $popular = Product::query()
             ->where('admin_id', $owner->id)
@@ -90,8 +92,10 @@ class StorefrontController extends Controller
      */
     protected static function ensureDemoMenu(User $owner): void
     {
-        if (ProductCategory::where('admin_id', $owner->id)->exists()
-            || Product::where('admin_id', $owner->id)->exists()) {
+        if (
+            ProductCategory::where('admin_id', $owner->id)->exists()
+            || Product::where('admin_id', $owner->id)->exists()
+        ) {
             return;
         }
 
@@ -100,7 +104,7 @@ class StorefrontController extends Controller
             true
         );
 
-        if (! is_array($items)) {
+        if (!is_array($items)) {
             return;
         }
 
@@ -179,11 +183,11 @@ class StorefrontController extends Controller
             'reservation_time' => 'required|date|after:now',
             'branch_id' => [
                 'nullable',
-                Rule::exists('branches', 'id')->where(fn ($q) => $q->where('admin_id', $owner->id)),
+                Rule::exists('branches', 'id')->where(fn($q) => $q->where('admin_id', $owner->id)),
             ],
             'table_id' => [
                 'required',
-                Rule::exists('dining_tables', 'id')->where(fn ($q) => $q->where('admin_id', $owner->id)),
+                Rule::exists('dining_tables', 'id')->where(fn($q) => $q->where('admin_id', $owner->id)),
             ],
             'notes' => 'nullable|string|max:1000',
         ]);
@@ -231,12 +235,45 @@ class StorefrontController extends Controller
         return redirect()->route('storefront.index', ['reserved' => 1, '#reservation' => ''])
             ->with('success', 'Reservation requested.');
     }
+
+    /**
+     * Public contact & feedback inquiry submission.
+     */
+    public function contact(Request $request)
+    {
+        $owner = static::owner();
+        abort_unless($owner, 503, 'Store not ready.');
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:50',
+            'email' => 'nullable|email|max:255',
+            'subject' => 'nullable|string|max:255',
+            'message' => 'required|string|max:2000',
+        ]);
+
+        \App\Models\StaffNotification::notify(
+            $owner->id,
+            NotificationType::SYSTEM,
+            'Contact message: ' . ($data['subject'] ?: $data['name']),
+            "From: {$data['name']} ({$data['phone']}) - " . \Illuminate\Support\Str::limit($data['message'], 140),
+            [
+                'name' => $data['name'],
+                'phone' => $data['phone'],
+                'email' => $data['email'] ?? null,
+                'subject' => $data['subject'] ?? null,
+                'message' => $data['message'],
+            ]
+        );
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Thank you! Your message has been sent. Our team will contact you shortly.',
+            ]);
+        }
+
+        return redirect()->route('storefront.index', ['#contact' => ''])
+            ->with('success', 'Thank you! Your message has been sent.');
+    }
 }
-
-
-
-
-
-
-
-
