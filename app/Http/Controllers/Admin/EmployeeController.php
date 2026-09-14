@@ -43,7 +43,7 @@ class EmployeeController extends Controller
             'permissions' => $request->permissions ?? [],
         ]);
 
-        return redirect()->route('admin.employees.index')->with('success', 'Employee created successfully.');
+        return redirect()->route('admin.employees.index')->with('success', 'Employee saved.');
     }
 
     public function update(Request $request, User $employee)
@@ -72,7 +72,7 @@ class EmployeeController extends Controller
 
         $employee->update($data);
 
-        return redirect()->route('admin.employees.index')->with('success', 'Employee updated successfully.');
+        return redirect()->route('admin.employees.index')->with('success', 'Employee saved.');
     }
 }
 

@@ -63,7 +63,7 @@ class SettingController extends Controller
 
         forget_store_branding();
 
-        return redirect()->back()->with('success', 'Business settings updated');
+        return redirect()->back()->with('success', 'Settings saved.');
     }
 }
 

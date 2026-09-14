@@ -26,7 +26,7 @@ Built for restaurants that need a fast cashier terminal, live kitchen tickets, t
 ## Features
 
 - **POS terminal** — product grid, modifiers/add-ons, hold orders, table assignment, checkout, and receipts
-- **Kitchen Display (KDS)** — real-time KOTs over Laravel Reverb with pending → preparing → ready → served workflow
+- **Kitchen Display (KDS)** — auto-refreshing KOTs with pending → preparing → ready → served workflow
 - **Floors & tables** — multi-floor layout, floor map, occupancy status (`free` / `occupied` / `reserved`)
 - **Recipe BOM** — ingredients linked to menu items with automatic stock deduction on sale
 - **QR table ordering** — guest menu from table QR codes with live order status tracking
@@ -44,7 +44,7 @@ Built for restaurants that need a fast cashier terminal, live kitchen tickets, t
 | --- | --- |
 | Backend | PHP 8.2+, Laravel 11, Eloquent |
 | Frontend | Blade, Alpine.js 3, Tailwind CSS 4, Vite |
-| Realtime | Laravel Reverb, Laravel Echo, Pusher protocol |
+| Realtime | Polling-based auto-refresh (KDS, order tracker) |
 | Offline | Service Worker (`public/sw.js`), IndexedDB (`public/js/pos-idb.js`) |
 | Database | MySQL 8+ / MariaDB |
 | Tests | PHPUnit |
@@ -74,7 +74,7 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-Configure the database (and optionally Reverb) in `.env`:
+Configure the database in `.env`:
 
 ```ini
 DB_CONNECTION=mysql
@@ -83,14 +83,6 @@ DB_PORT=3306
 DB_DATABASE=restaurant_pos
 DB_USERNAME=root
 DB_PASSWORD=
-
-BROADCAST_DRIVER=reverb
-REVERB_APP_ID=local
-REVERB_APP_KEY=local-key
-REVERB_APP_SECRET=local-secret
-REVERB_HOST=localhost
-REVERB_PORT=8080
-REVERB_SCHEME=http
 ```
 
 Then:
@@ -105,7 +97,7 @@ npm run build
 
 ## Usage
 
-Run the app (three processes in development):
+Run the app (two processes in development):
 
 ```bash
 # Terminal 1 — Laravel
@@ -113,9 +105,6 @@ php artisan serve
 
 # Terminal 2 — Vite
 npm run dev
-
-# Terminal 3 — WebSockets (KDS / order status)
-php artisan reverb:start
 ```
 
 Open `http://localhost:8000` (or your Valet/Herd domain).
@@ -157,7 +146,6 @@ Change these credentials before any shared or production environment.
 ```text
 app/
   Actions/          # Domain actions (KOT, BOM deduction, modifiers)
-  Events/           # Broadcast events (KDS, table status)
   Http/Controllers/ # Auth, Seller, Supplier, Menu/QR
   Models/
   Services/         # StockService and shared services
@@ -169,7 +157,7 @@ public/
   js/pos-idb.js     # Offline IndexedDB helpers
 resources/
   views/            # Blade UI (POS, KDS, admin, supplier)
-  js/               # Alpine / Echo bootstrap
+  js/               # Alpine bootstrap / axios
   css/
 routes/
   web.php
@@ -197,7 +185,7 @@ Production-oriented compose file:
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-Typical services: app (PHP-FPM), Nginx, Reverb, MySQL, and related workers as defined in the compose file.
+Typical services: app (PHP-FPM), Nginx, MySQL, and related workers as defined in the compose file.
 
 ---
 

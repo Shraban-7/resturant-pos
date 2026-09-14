@@ -1,11 +1,13 @@
 @php
     use \App\Enums\TableStatus;
-    $statusStyles = match ($table->status) {
+    $tblStatus = $table->status instanceof TableStatus ? $table->status : TableStatus::tryFrom((string) $table->status);
+    $tblStatusValue = $tblStatus?->value ?? (string) $table->status;
+    $statusStyles = match ($tblStatus) {
         TableStatus::OCCUPIED => 'bg-red-50 text-red-700 border-red-200 hover:border-red-300',
         TableStatus::RESERVED => 'bg-amber-50 text-amber-800 border-amber-200 hover:border-amber-300',
         default              => 'bg-white text-slate-700 border-slate-200 hover:border-slate-300',
     };
-    $statusIcon = match ($table->status) {
+    $statusIcon = match ($tblStatus) {
         TableStatus::OCCUPIED => 'ri-sofa-fill',
         TableStatus::RESERVED => 'ri-time-line',
         default               => 'ri-sofa-line',
@@ -16,11 +18,11 @@
     <button type="button"
             class="dining-table-card dining-table-chip {{ $statusStyles }}"
             data-table-id="{{ $table->id }}"
-            data-status="{{ $table->status->value }}"
+            data-status="{{ $tblStatusValue }}"
             @click="open = true">
         <i class="{{ $statusIcon }} text-base"></i>
         <span class="font-semibold">{{ $table->name }}</span>
-        <span class="dining-table-card-status">{{ $table->status->label() }}</span>
+        <span class="dining-table-card-status">{{ $tblStatus?->label() ?? ucfirst($tblStatusValue) }}</span>
     </button>
 
     <template x-teleport="body">
@@ -47,7 +49,7 @@
                             <label class="form-label">Status</label>
                             <select name="status" class="form-select">
                                 @foreach (\App\Models\DiningTable::statuses() as $status)
-                                    <option value="{{ $status }}" {{ $table->status === $status ? 'selected' : '' }}>
+                                    <option value="{{ $status }}" {{ $tblStatusValue === $status ? 'selected' : '' }}>
                                         {{ ucfirst($status) }}
                                     </option>
                                 @endforeach

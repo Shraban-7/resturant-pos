@@ -34,7 +34,8 @@ class IngredientSeeder extends Seeder
         }
 
         foreach ($items as $item) {
-            if (($item['type'] ?? 'dish') !== ProductType::INGREDIENT) {
+            // $item['type'] is a plain string from JSON; compare via enum, not string !== enum.
+            if (ProductType::tryFrom((string) ($item['type'] ?? ProductType::DISH->value)) !== ProductType::INGREDIENT) {
                 continue;
             }
 

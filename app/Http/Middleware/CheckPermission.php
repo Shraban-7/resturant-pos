@@ -13,7 +13,7 @@ class CheckPermission
 
         if (! $user || ! $user->hasPermission($permission)) {
             if ($request->expectsJson() || $request->is('api/*')) {
-                return errorResponse('You are not authorized to access this resource.', 403);
+                return errorResponse('Access denied.', 403);
             }
 
             // Avoid redirect loop when the denied page IS the dashboard:
@@ -28,14 +28,14 @@ class CheckPermission
                         ];
 
                         return redirect()->route($map[$fallback])
-                            ->with('error', 'Dashboard is not part of your role.');
+                            ->with('error', 'Access denied.');
                     }
                 }
 
-                abort(403, 'Dashboard is not part of your role.');
+                abort(403, 'Access denied.');
             }
 
-            return redirect()->route('admin.dashboard')->with('error', 'You do not have permission for this section.');
+            return redirect()->route('admin.dashboard')->with('error', 'Access denied.');
         }
 
         return $next($request);

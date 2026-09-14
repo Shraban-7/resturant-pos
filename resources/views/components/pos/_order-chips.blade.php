@@ -21,9 +21,10 @@
                    title="Print Invoice">
                     <span class="font-mono text-slate-500">#{{ $sale->order_id }}</span>
                     <span class="font-semibold text-slate-800">{{ money($sale->payable) }}</span>
-                    @if($showTable && $sale?->table?->name)
+                    @php $chipTableName = ($sale->getRelationValue('diningTable') ?? $sale->getRelationValue('table'))?->name ?? $sale->diningTable?->name ?? $sale->table?->name ?? null; @endphp
+                    @if($showTable && $chipTableName)
                         <span class="text-slate-400">·</span>
-                        <span class="text-slate-500">{{ $sale->table->name }}</span>
+                        <span class="text-slate-500">{{ $chipTableName }}</span>
                     @endif
                 </a>
             @endforeach

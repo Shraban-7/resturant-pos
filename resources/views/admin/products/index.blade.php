@@ -56,7 +56,8 @@
                                 <span class="badge badge-success" title="Served all day">All day</span>
                             @else
                                 @foreach ($product->meal_times as $slot)
-                                    <span class="badge badge-light" title="Served at {{ $slot->value }}">{{ $slot->label() }}</span>
+                                    @php $slotVal = $slot instanceof \App\Enums\MealSlot ? $slot->value : (string) $slot; $slotLabel = $slot instanceof \App\Enums\MealSlot ? $slot->label() : ucfirst($slotVal); @endphp
+                                    <span class="badge badge-light" title="Served at {{ $slotVal }}">{{ $slotLabel }}</span>
                                 @endforeach
                             @endif
                         </td>
@@ -65,7 +66,8 @@
                         <td>{{ $product->stock_out }}</td>
                         <td class="text-right">
                             <div class="inline-flex items-center gap-1">
-                                @if ($product->type === \App\Enums\ProductType::DISH)
+                                @php $prodType = $product->type instanceof \App\Enums\ProductType ? $product->type : \App\Enums\ProductType::tryFrom((string) $product->type); @endphp
+                                @if ($prodType === \App\Enums\ProductType::DISH)
                                     @php $ingredientCount = $product->recipe ? $product->recipe->ingredients->count() : 0; @endphp
                                     <a href="{{ route('admin.products.recipe.edit', $product) }}"
                                        class="btn {{ $product->recipe ? 'btn-success' : 'btn-secondary' }} btn-sm"

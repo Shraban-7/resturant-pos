@@ -79,11 +79,15 @@ class ProductSeeder extends Seeder
             );
 
             // Backfill meal times + type + Bangla name on older rows.
+            // Compare enum values (collection of MealSlot) vs plain string arrays.
             $backfill = [];
             if (isset($item['name_bn']) && $product->name_bn !== $item['name_bn']) {
                 $backfill['name_bn'] = $item['name_bn'];
             }
-            if ($product->meal_times != $mealTimes) {
+            $currentMeals = $product->meal_times instanceof \Illuminate\Support\Collection
+                ? $product->meal_times->map(fn ($m) => $m instanceof \App\Enums\MealSlot ? $m->value : (string) $m)->all()
+                : $product->meal_times;
+            if ($currentMeals != $mealTimes) {
                 $backfill['meal_times'] = $mealTimes;
             }
             if (($product->type ?? ProductType::DISH) !== $type) {

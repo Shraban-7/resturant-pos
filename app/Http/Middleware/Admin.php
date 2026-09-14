@@ -26,13 +26,13 @@ class Admin
 
                 return errorResponse(
                     Auth::check()
-                        ? 'You are not authorized to access this resource.'
-                        : 'Authentication required.',
+                        ? 'Access denied.'
+                        : 'Login required.',
                     $status
                 );
             }
 
-            return redirect()->route('login')->with('error', 'You are not authorized to access this page.');
+            return redirect()->route('login')->with('error', 'Access denied.');
         }
 
         return $next($request);

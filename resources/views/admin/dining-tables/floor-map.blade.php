@@ -43,7 +43,8 @@
          style="height: 520px; background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px); background-size: 40px 40px;">
         @forelse($tables as $table)
             @php
-                $color = match ($table->status) {
+                $tblStatus = $table->status instanceof \App\Enums\TableStatus ? $table->status : \App\Enums\TableStatus::tryFrom((string) $table->status);
+                $color = match ($tblStatus) {
                     \App\Enums\TableStatus::FREE => 'bg-emerald-500',
                     \App\Enums\TableStatus::RESERVED => 'bg-amber-500',
                     \App\Enums\TableStatus::CLEANING => 'bg-sky-500',
@@ -54,7 +55,7 @@
                  data-id="{{ $table->id }}"
                  style="left: {{ (int) $table->x_position }}px; top: {{ (int) $table->y_position }}px;">
                 <span class="font-semibold text-sm">{{ $table->name }}</span>
-                <span class="text-[10px] uppercase opacity-90">{{ $table->status->value }}</span>
+                <span class="text-[10px] uppercase opacity-90">{{ $tblStatus?->value ?? (string) $table->status }}</span>
             </div>
         @empty
             <div class="absolute inset-0 flex items-center justify-center text-slate-400">

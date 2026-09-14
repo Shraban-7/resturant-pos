@@ -68,7 +68,7 @@ class BranchController extends Controller
 
         return redirect()
             ->route('admin.branches.index')
-            ->with('success', 'Branch created successfully.');
+            ->with('success', 'Branch saved.');
     }
 
     public function update(Request $request, Branch $branch)
@@ -109,7 +109,7 @@ class BranchController extends Controller
 
         return redirect()
             ->route('admin.branches.index')
-            ->with('success', 'Branch updated successfully.');
+            ->with('success', 'Branch saved.');
     }
 
     public function destroy(Branch $branch)
@@ -142,7 +142,7 @@ class BranchController extends Controller
 
         return redirect()
             ->route('admin.branches.index')
-            ->with('success', 'Branch deleted. Linked floors/tables/staff were unassigned.');
+            ->with('success', 'Branch deleted.');
     }
 
     public function switch(Request $request)
@@ -162,7 +162,7 @@ class BranchController extends Controller
             session(['active_branch_id' => (int) $data['branch_id']]);
         }
 
-        return back()->with('success', 'Active branch updated.');
+        return back()->with('success', 'Branch switched.');
     }
 }
 

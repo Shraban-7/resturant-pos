@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\KitchenStatus;
-use App\Events\KitchenStatusUpdatedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\KitchenTicket;
 use App\Models\KitchenTicketItem;
@@ -24,6 +23,42 @@ class KdsController extends Controller
         return view('admin.kds.index', [
             'tickets' => $tickets,
             'ownerId' => panel_owner_id(),
+        ]);
+    }
+
+    /**
+     * JSON payload of the active queue, polled by the KDS screen and POS.
+     */
+    public function activeTickets()
+    {
+        $tickets = KitchenTicket::self()
+            ->activeQueue()
+            ->with(['items', 'diningTable', 'sale.waiter'])
+            ->orderBy('fired_at')
+            ->orderBy('created_at')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'tickets' => $tickets->map(fn ($t) => $this->ticketPayload($t))->values(),
+        ]);
+    }
+
+    /**
+     * Lightweight counts for the POS "kitchen ready" badge.
+     */
+    public function summary()
+    {
+        $active = KitchenTicket::self()->activeQueue()->count();
+
+        $ready = KitchenTicket::self()
+            ->where('status', KitchenStatus::READY)
+            ->count();
+
+        return response()->json([
+            'status' => true,
+            'active' => $active,
+            'ready' => $ready,
         ]);
     }
 
@@ -59,17 +94,15 @@ class KdsController extends Controller
         $ticket->update($data);
         $ticket->load(['items', 'diningTable', 'sale.waiter']);
 
-        event(new KitchenStatusUpdatedEvent($ticket));
-
         if ($request->expectsJson()) {
             return response()->json([
                 'status' => true,
-                'message' => 'Ticket updated',
+                'message' => 'Status updated.',
                 'ticket' => $this->ticketPayload($ticket),
             ]);
         }
 
-        return back()->with('success', 'Ticket status updated.');
+        return back()->with('success', 'Status updated.');
     }
 
     protected function ticketPayload(KitchenTicket $ticket): array

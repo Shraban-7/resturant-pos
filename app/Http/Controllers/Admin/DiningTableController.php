@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\TableStatus;
 
-use App\Events\TableStatusChangedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\DiningTable;
 use App\Models\Floor;
@@ -55,7 +54,7 @@ class DiningTableController extends Controller
             'qr_code_token' => Str::random(48),
         ]);
 
-        return redirect()->back()->with('success', 'Table created successfully.');
+        return redirect()->back()->with('success', 'Table saved.');
     }
 
     public function update(Request $request, DiningTable $table)
@@ -89,9 +88,7 @@ class DiningTableController extends Controller
             'branch_id' => array_key_exists('branch_id', $data) ? $data['branch_id'] : $table->branch_id,
         ]);
 
-        event(new TableStatusChangedEvent($table->fresh()));
-
-        return redirect()->back()->with('success', 'Table updated successfully.');
+        return redirect()->back()->with('success', 'Table saved.');
     }
 
     public function destroy(DiningTable $table)
@@ -100,7 +97,7 @@ class DiningTableController extends Controller
 
         $table->delete();
 
-        return redirect()->route('admin.diningTables.index')->with('success', 'Table deleted successfully.');
+        return redirect()->route('admin.diningTables.index')->with('success', 'Table deleted.');
     }
 
     public function floorMap(Request $request)

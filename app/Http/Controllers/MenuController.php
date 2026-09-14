@@ -90,12 +90,12 @@ class MenuController extends Controller
                         ->firstOrFail();
 
                     if ($product->isIngredient()) {
-                        throw new RuntimeException("Item not for direct sale: {$product->name}");
+                        throw new RuntimeException("{$product->name} not for sale.");
                     }
 
                     if (! $this->deductRecipeStock->usesRecipe($product)
                         && ! $this->stockService->hasAvailableStock($product, $item['quantity'])) {
-                        throw new RuntimeException("Insufficient stock for item: {$product->name}");
+                        throw new RuntimeException("Out of stock: {$product->name}.");
                     }
 
                     $requestedIds = collect($item['modifiers'] ?? [])->all();

@@ -37,7 +37,7 @@ class LoyaltyController extends Controller
 
         $customer->increment('loyalty_points_balance', $request->points);
 
-        return back()->with('success', 'Loyalty points adjusted successfully');
+        return back()->with('success', 'Points updated.');
     }
 }
 

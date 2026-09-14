@@ -36,7 +36,7 @@ class SupplierController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        return redirect()->route('admin.suppliers.index')->with('success', 'Supplier added.');
+        return redirect()->route('admin.suppliers.index')->with('success', 'Supplier saved.');
     }
 
     public function update(Request $request, Supplier $supplier)
@@ -57,7 +57,7 @@ class SupplierController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        return redirect()->route('admin.suppliers.index')->with('success', 'Supplier updated.');
+        return redirect()->route('admin.suppliers.index')->with('success', 'Supplier saved.');
     }
 
     public function destroy(Supplier $supplier)

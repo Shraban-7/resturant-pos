@@ -27,7 +27,7 @@ class CustomerController extends Controller
 
         Customer::create($input);
 
-        return redirect()->back()->with('success', 'Customer Added Successfully');
+        return redirect()->back()->with('success', 'Customer added.');
     }
 }
 

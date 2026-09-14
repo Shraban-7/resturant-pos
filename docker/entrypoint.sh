@@ -14,8 +14,8 @@ mkdir -p \
 
 # ---------------------------------------------------------------------------
 # Per-container framework caches. Each container has its own image layer, so
-# rebuilding the caches here is safe and keeps every role (fpm, worker,
-# scheduler, reverb) consistent with the deployed code.
+# rebuilding the caches here is safe and keeps every role (fpm, queue worker,
+# scheduler) consistent with the deployed code.
 # ---------------------------------------------------------------------------
 php artisan config:cache
 php artisan route:cache

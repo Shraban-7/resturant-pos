@@ -35,7 +35,7 @@ if (!function_exists('errorResponse')) {
     {
         return response()->json([
             'status' => false,
-            'message' => $message ?? 'Something went wrong!',
+            'message' => $message ?: 'Something failed.',
         ], $statusCode);
     }
 }

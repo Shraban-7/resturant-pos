@@ -35,7 +35,7 @@ class StockService
     public function deductStock(Product $product, float $quantity): Product
     {
         if ($quantity <= 0) {
-            throw new InvalidArgumentException('Deduction quantity must be greater than zero.');
+            throw new InvalidArgumentException('Invalid quantity.');
         }
 
         // Buffet never touches inventory.
@@ -49,7 +49,7 @@ class StockService
             ->firstOrFail();
 
         if (! $this->hasAvailableStock($locked, $quantity)) {
-            throw new InvalidArgumentException("Insufficient stock available for product: {$locked->name}");
+            throw new InvalidArgumentException("Out of stock: {$locked->name}.");
         }
 
         $locked->increment('stock_out', $quantity);

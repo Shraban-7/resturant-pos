@@ -7,7 +7,6 @@ use App\Enums\TableStatus;
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
 use App\Actions\ResolveProductModifiersAction;
-use App\Events\TableStatusChangedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\BusinessSetting;
 use App\Models\Customer;
@@ -69,12 +68,11 @@ class SaleController extends Controller
 
                 if ($table) {
                     $table->update(['status' => TableStatus::FREE]);
-                    event(new TableStatusChangedEvent($table->fresh()));
                 }
             }
         });
 
-        return redirect()->back()->with('success', 'Sale Due Paid Successfully');
+        return redirect()->back()->with('success', 'Due paid.');
     }
 
     public function addItemToSale(Request $request)
@@ -107,7 +105,7 @@ class SaleController extends Controller
 
                 if (! $this->deductRecipeStock->usesRecipe($product)
                     && ! $this->stockService->hasAvailableStock($product, $qty)) {
-                    throw new RuntimeException('Insufficient stock!');
+                    throw new RuntimeException('Out of stock.');
                 }
 
                 [$modifiers, $lineUnit] = $this->resolveModifiers->execute(
@@ -269,7 +267,7 @@ class SaleController extends Controller
                 ->first();
 
             if (! $sale || count($sale->items) == 0) {
-                return errorResponse('No items added!');
+                return errorResponse('Cart is empty.');
             }
 
             $discount = $request->discount_amount ?? 0;
@@ -305,11 +303,10 @@ class SaleController extends Controller
 
                 if ($table) {
                     $table->update(['status' => TableStatus::OCCUPIED]);
-                    event(new TableStatusChangedEvent($table->fresh(), $sale->id));
                 }
             }
 
-            return successResponse('Sale complete');
+            return successResponse('Sale completed.');
         });
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -36,8 +35,6 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Throwable $e) {
             // Fresh install without tables yet — keep .env default.
         }
-
-        Broadcast::routes(['middleware' => ['web', 'auth']]);
 
         Gate::before(function ($user, $ability) {
             if ($user && method_exists($user, 'isAdmin') && $user->isAdmin()) {

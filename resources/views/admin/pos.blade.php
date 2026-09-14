@@ -966,45 +966,30 @@
         // --- Refresh ---
         document.getElementById('refresh-btn')?.addEventListener('click', () => location.reload());
 
-        // --- Real-time kitchen / order updates ---
-        (function subscribePosEcho() {
-            if (!window.Echo) return;
-            const ownerId = {{ (int) panel_owner_id() }};
+// --- Kitchen ready badge (polled; no websockets) ---
+        (function pollKitchenReady() {
             const readyBadge = document.getElementById('posKitchenReadyBadge');
-            let readyCount = 0;
 
             function setReadyCount(n) {
-                readyCount = Math.max(0, n);
+                n = Math.max(0, n);
                 if (!readyBadge) return;
-                if (readyCount > 0) {
-                    readyBadge.textContent = String(readyCount);
+                if (n > 0) {
+                    readyBadge.textContent = String(n);
                     readyBadge.classList.remove('hidden');
                 } else {
                     readyBadge.classList.add('hidden');
                 }
             }
 
-            window.Echo.private(`admin.${ownerId}.pos`)
-                .listen('.OrderPlaced', (e) => {
-                    if (window.toast) {
-                        window.toast.info(`Sent to kitchen: ${e.table_name || e.ticket_number}`);
-                    }
-                })
-                .listen('.KitchenStatusUpdated', (e) => {
-                    if (e.status === 'ready') {
-                        setReadyCount(readyCount + 1);
-                        if (window.toast) {
-                            window.toast.success(`Ready: ${e.table_name || e.ticket_number}`);
-                        }
-                    }
-                })
-                .listen('.TableStatusChanged', (e) => {
-                    const chip = document.querySelector(`.dining-table-chip[data-table-id="${e.table_id}"]`);
-                    if (!chip || !e.status) return;
-                    chip.dataset.status = e.status;
-                    const statusEl = chip.querySelector('.dining-table-card-status');
-                    if (statusEl) statusEl.textContent = e.status.charAt(0).toUpperCase() + e.status.slice(1);
-                });
+            async function refresh() {
+                try {
+                    const res = await window.axios.get('/admin/kds/summary');
+                    setReadyCount(res.data?.ready ?? 0);
+                } catch (e) { /* offline: keep last known */ }
+            }
+
+            refresh();
+            setInterval(refresh, 10000);
         })();
 
         // --- Offline status and durable queue badge ---

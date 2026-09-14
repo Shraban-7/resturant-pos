@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\NotificationType;
 use App\Enums\ReservationStatus;
 
 use App\Enums\TableStatus;
@@ -122,12 +123,17 @@ class StorefrontController extends Controller
 
             $mealTimes = ($item['meal'] ?? 'all') === 'all' ? null : array_values($item['meal']);
 
+            // Normalize JSON string type to a backed enum (Invalid strings fall back to DISH).
+            $type = $item['type'] instanceof ProductType
+                ? $item['type']
+                : ProductType::tryFrom((string) ($item['type'] ?? ProductType::DISH->value)) ?? ProductType::DISH;
+
             $product = Product::firstOrCreate(
                 ['admin_id' => $owner->id, 'name' => $item['name']],
                 [
                     'admin_id' => $owner->id,
                     'branch_id' => $branchId,
-                    'type' => $item['type'] ?? ProductType::DISH,
+                    'type' => $type,
                     'meal_times' => $mealTimes,
                     'category_id' => $category->id,
                     'unit_id' => $unit->id,
@@ -164,7 +170,7 @@ class StorefrontController extends Controller
     public function reserve(Request $request)
     {
         $owner = static::owner();
-        abort_unless($owner, 503, 'Store is not set up yet.');
+        abort_unless($owner, 503, 'Store not ready.');
 
         $data = $request->validate([
             'customer_name' => 'required|string|max:255',
@@ -205,27 +211,25 @@ class StorefrontController extends Controller
             'status' => ReservationStatus::PENDING,
         ]);
 
-        // Persist for the bell dropdown + live ping to every staff screen.
+        // Persist for the bell dropdown (staff see it on next refresh/open).
         \App\Models\StaffNotification::notify(
             $owner->id,
-            \App\Models\StaffNotification::TYPE_RESERVATION,
+            NotificationType::RESERVATION,
             "New reservation: {$reservation->customer_name}",
             "{$reservation->guest_count} guests · " . ($table->name ?? '') . ' · ' . \Carbon\Carbon::parse($reservation->reservation_time)->format('d M, h:i A'),
             ['reservation_id' => $reservation->id]
         );
 
-        event(new \App\Events\ReservationPlaced($reservation));
-
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
                 'status' => true,
-                'message' => 'Table reservation requested. We will confirm shortly.',
+                'message' => 'Reservation requested.',
                 'reservation_id' => $reservation->id,
             ]);
         }
 
         return redirect()->route('storefront.index', ['reserved' => 1, '#reservation' => ''])
-            ->with('success', 'Table reservation requested. We will confirm shortly.');
+            ->with('success', 'Reservation requested.');
     }
 }
 

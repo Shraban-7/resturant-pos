@@ -129,7 +129,6 @@
 </head>
 <body
     x-data="orderTracker(@js([
-        'token' => $token,
         'orderId' => $sale?->order_id,
         'status' => $status,
         'steps' => collect($steps)->pluck('key')->values(),
@@ -145,7 +144,7 @@
                 <div class="order-id">Order #{{ $sale->order_id }}</div>
                 <div class="live">
                     <span class="dot" :class="connected && 'on'"></span>
-                    <span x-text="connected ? 'Live updates on' : 'Connecting…'"></span>
+                    <span x-text="connected ? 'Auto-updating' : 'Status not live yet'"></span>
                 </div>
 
                 <ul class="steps">
@@ -203,7 +202,6 @@
         function orderTracker(cfg) {
             const rank = { pending: 0, preparing: 1, ready: 2, served: 3, cancelled: -1 };
             return {
-                token: cfg.token,
                 orderId: cfg.orderId,
                 status: cfg.status || 'pending',
                 stepKeys: cfg.steps || ['received', 'preparing', 'ready', 'served'],
@@ -216,28 +214,23 @@
                     return this.stepKeys.indexOf(key);
                 },
                 init() {
-                    if (!window.Echo || !this.token) return;
-                    const channel = window.Echo.channel(`table.${this.token}`);
-                    channel.listen('.OrderPlaced', (e) => {
-                            if (this.orderId && e.order_id && e.order_id !== this.orderId) return;
-                            this.status = e.status || 'pending';
-                            this.connected = true;
-                        })
-                        .listen('.KitchenStatusUpdated', (e) => {
-                            if (this.orderId && e.order_id && e.order_id !== this.orderId) return;
-                            if (rank[e.status] === undefined) return;
-                            this.status = e.status;
-                            this.connected = true;
-                        });
-                    if (window.Echo.connector?.pusher?.connection) {
-                        const conn = window.Echo.connector.pusher.connection;
-                        this.connected = conn.state === 'connected';
-                        conn.bind('connected', () => { this.connected = true; });
-                        conn.bind('disconnected', () => { this.connected = false; });
-                        conn.bind('unavailable', () => { this.connected = false; });
-                        conn.bind('failed', () => { this.connected = false; });
-                    } else {
+                    if (!this.orderId) return;
+                    this.connected = true;
+                    this.poll();
+                    this._timer = setInterval(() => this.poll(), 5000);
+                },
+                destroy() {
+                    if (this._timer) clearInterval(this._timer);
+                },
+                async poll() {
+                    try {
+                        const res = await fetch(`/order-status/${this.orderId}/status`, { headers: { 'Accept': 'application/json' } });
+                        const data = await res.json();
+                        if (!data || rank[data.status] === undefined) return;
                         this.connected = true;
+                        this.status = data.status;
+                    } catch (e) {
+                        this.connected = false;
                     }
                 },
             };

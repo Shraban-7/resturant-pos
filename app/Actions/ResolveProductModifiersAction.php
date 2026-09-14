@@ -36,7 +36,7 @@ class ResolveProductModifiersAction
 
         if ($missingGroups->isNotEmpty()) {
             $names = $missingGroups->implode(', ');
-            throw new RuntimeException("Required modifier group(s) missing: {$names}");
+            throw new RuntimeException("Select options: {$names}.");
         }
 
         $resolved = $active

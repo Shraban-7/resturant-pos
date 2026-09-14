@@ -82,7 +82,7 @@ class PurchaseController extends Controller
             ]);
         });
 
-        return redirect()->route('admin.purchases.index')->with('success', 'Purchase recorded, stock updated.');
+        return redirect()->route('admin.purchases.index')->with('success', 'Purchase saved.');
     }
 }
 

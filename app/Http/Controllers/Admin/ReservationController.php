@@ -6,7 +6,6 @@ use App\Enums\ReservationStatus;
 
 use App\Enums\TableStatus;
 
-use App\Events\TableStatusChangedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\DiningTable;
 use App\Models\Reservation;
@@ -26,7 +25,7 @@ class ReservationController extends Controller
         $reservations = Reservation::self()
             ->when($branchFilter === 'unassigned', fn ($q) => $q->whereNull('branch_id'))
             ->when($branchFilter && $branchFilter !== 'unassigned', fn ($q) => $q->where('branch_id', (int) $branchFilter))
-            ->with(['table', 'branch'])
+            ->with(['table', 'diningTable', 'branch'])
             ->orderByDesc('reservation_time')
             ->paginate(20)
             ->withQueryString();
@@ -58,7 +57,7 @@ class ReservationController extends Controller
         ]);
 
         $status = isset($data['status'])
-            ? ReservationStatus::from($data['status'])
+            ? ($data['status'] instanceof ReservationStatus ? $data['status'] : ReservationStatus::from($data['status']))
             : ReservationStatus::CONFIRMED;
 
         if ($status !== ReservationStatus::CANCELLED
@@ -108,7 +107,12 @@ class ReservationController extends Controller
             'status' => 'required|in:'.implode(',', Reservation::statuses()),
         ]);
 
-        if ($data['status'] !== ReservationStatus::CANCELLED
+        // $data['status'] is a validated string; normalize to enum before comparing.
+        $newStatus = $data['status'] instanceof ReservationStatus
+            ? $data['status']
+            : ReservationStatus::from($data['status']);
+
+        if ($newStatus !== ReservationStatus::CANCELLED
             && $conflict = Reservation::conflictingBooking((int) $data['table_id'], $data['reservation_time'], (int) $reservation->id)) {
             return redirect()->back()
                 ->withInput()
@@ -180,7 +184,6 @@ class ReservationController extends Controller
 
         if ($table->status !== $nextStatus) {
             $table->update(['status' => $nextStatus]);
-            event(new TableStatusChangedEvent($table->fresh()));
         }
     }
 
@@ -198,7 +201,6 @@ class ReservationController extends Controller
 
         if (! $hasActive && $table->status === TableStatus::RESERVED) {
             $table->update(['status' => TableStatus::FREE]);
-            event(new TableStatusChangedEvent($table->fresh()));
         }
     }
 }

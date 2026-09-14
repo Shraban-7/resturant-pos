@@ -62,7 +62,7 @@ class ProductModifierController extends Controller
 
             return redirect()
                 ->route('admin.products.modifiers.index', $product)
-                ->with('success', 'Modifier attached to product.');
+                ->with('success', 'Modifier saved.');
         }
 
         $data = $request->validate([
@@ -90,7 +90,7 @@ class ProductModifierController extends Controller
 
         return redirect()
             ->route('admin.products.modifiers.index', $product)
-            ->with('success', 'Modifier created and attached.');
+            ->with('success', 'Modifier saved.');
     }
 
     public function update(Request $request, Product $product, ProductModifier $productModifier)
@@ -108,7 +108,7 @@ class ProductModifierController extends Controller
 
         return redirect()
             ->route('admin.products.modifiers.index', $product)
-            ->with('success', 'Modifier attachment updated.');
+            ->with('success', 'Modifier saved.');
     }
 
     public function destroy(Product $product, ProductModifier $productModifier)
@@ -120,7 +120,7 @@ class ProductModifierController extends Controller
 
         return redirect()
             ->route('admin.products.modifiers.index', $product)
-            ->with('success', 'Modifier removed from product.');
+            ->with('success', 'Modifier removed.');
     }
 }
 

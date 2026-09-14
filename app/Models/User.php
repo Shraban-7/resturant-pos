@@ -59,7 +59,7 @@ class User extends Authenticatable
 
         if ($this->isAdmin()) {
             $first = static::query()
-                ->whereIn('role', [UserRole::ADMIN, 'seller', 'supplier'])
+                ->whereIn('role', [UserRole::ADMIN, UserRole::SELLER, UserRole::SUPPLIER])
                 ->orderBy('id')
                 ->value('id');
 
@@ -98,6 +98,6 @@ class User extends Authenticatable
     public function scopeAdmin($query)
     {
         // Legacy roles from before the single-panel RBAC still map to admin.
-        return $query->whereIn('role', [UserRole::ADMIN, 'seller', 'supplier']);
+        return $query->whereIn('role', [UserRole::ADMIN, UserRole::SELLER, UserRole::SUPPLIER]);
     }
 }

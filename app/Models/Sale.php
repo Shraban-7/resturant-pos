@@ -27,6 +27,15 @@ class Sale extends Model
 
     public function table()
     {
+        return $this->diningTable();
+    }
+
+    /**
+     * Primary table relation (see Reservation::diningTable for why the
+     * `table` name collides with Model::$table inside model scope).
+     */
+    public function diningTable()
+    {
         return $this->belongsTo(DiningTable::class, 'dining_table_id');
     }
 

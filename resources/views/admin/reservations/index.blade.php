@@ -50,22 +50,33 @@
             </thead>
             <tbody>
                 @forelse ($reservations as $reservation)
+                    @php
+                        // Normalize: DB cast gives enum, but be safe if a plain string slips through.
+                        $resStatus = $reservation->status instanceof \App\Enums\ReservationStatus
+                            ? $reservation->status
+                            : \App\Enums\ReservationStatus::tryFrom((string) $reservation->status);
+                        $resStatusValue = $resStatus?->value ?? (string) $reservation->status;
+                        $resTableName = ($reservation->getRelationValue('diningTable') ?? $reservation->getRelationValue('table'))?->name
+                            ?? $reservation->diningTable?->name
+                            ?? $reservation->table?->name
+                            ?? '—';
+                    @endphp
                     <tr>
                         <td class="font-medium text-slate-800">{{ $reservation->customer_name }}</td>
                         <td class="text-slate-500">{{ $reservation->customer_phone }}</td>
-                        <td>{{ $reservation->table?->name ?? '—' }}</td>
+                        <td>{{ $resTableName }}</td>
                         <td>{{ $reservation->guest_count }}</td>
                         <td>{{ human_time($reservation->reservation_time) }}</td>
                         <td>
                             @php
-                                $badge = match ($reservation->status) {
+                                $badge = match ($resStatus) {
                                     \App\Enums\ReservationStatus::CONFIRMED => 'badge-success',
                                     \App\Enums\ReservationStatus::PENDING => 'badge-warning',
                                     \App\Enums\ReservationStatus::SEATED => 'badge-primary',
                                     default => 'badge-light',
                                 };
                             @endphp
-                            <span class="{{ $badge }}">{{ $reservation->status->label() }}</span>
+                            <span class="{{ $badge }}">{{ $resStatus?->label() ?? ucfirst((string) $reservation->status) }}</span>
                         </td>
                         <td class="text-right space-x-1">
                             <button class="btn btn-primary btn-sm"
@@ -76,7 +87,7 @@
                                         customer_phone: @js($reservation->customer_phone),
                                         guest_count: {{ $reservation->guest_count }},
                                         reservation_time: @js(optional($reservation->reservation_time)->format('Y-m-d\TH:i')),
-                                        status: @js($reservation->status->value),
+                                        status: @js($resStatusValue),
                                         notes: @js($reservation->notes)
                                     } })">
                                 <i class="ri-edit-box-line"></i>
@@ -130,7 +141,8 @@
                                 <select name="table_id" class="form-select form-control" required>
                                     <option value="">Select table</option>
                                     @foreach($tables as $table)
-                                        <option value="{{ $table->id }}">{{ $table->name }} ({{ $table->status }})</option>
+                                        @php $tblStatusVal = $table->status instanceof \App\Enums\TableStatus ? $table->status->value : (string) $table->status; @endphp
+                                        <option value="{{ $table->id }}">{{ $table->name }} ({{ $tblStatusVal }})</option>
                                     @endforeach
                                 </select>
                             </div>

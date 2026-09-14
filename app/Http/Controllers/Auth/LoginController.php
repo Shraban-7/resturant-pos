@@ -22,7 +22,7 @@ class LoginController extends Controller
         ]);
 
         if (!Auth::validate($credentials)) {
-            return redirect()->back()->with('error', 'Invalid credentials!');
+            return redirect()->back()->with('error', 'Invalid login.');
         }
 
         $user = User::where('email', $credentials['email'])->first();

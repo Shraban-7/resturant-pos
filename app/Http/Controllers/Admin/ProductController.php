@@ -69,7 +69,7 @@ class ProductController extends Controller
             'selling_price' => $request->selling_price,
         ]);
 
-        return redirect()->back()->with('success', 'Product Created');
+        return redirect()->back()->with('success', 'Product saved.');
     }
 
     public function edit(Product $product)
@@ -114,7 +114,7 @@ class ProductController extends Controller
 
         $product->update($input);
 
-        return redirect()->back()->with('success', 'Product Updated');
+        return redirect()->back()->with('success', 'Product saved.');
     }
 
     /**
@@ -166,7 +166,7 @@ class ProductController extends Controller
         $product->is_active = false;
         $product->save();
 
-        return redirect()->back()->with('success', 'Product Deleted');
+        return redirect()->back()->with('success', 'Product deleted.');
     }
 }
 

@@ -82,48 +82,10 @@
                         this.items = this.items.map((n) => ({ ...n, read: true }));
                     } catch (e) { /* ignore */ }
                 },
-                prepend(e) {
-                    this.unread++;
-                    this.items.unshift({
-                        id: 'live-' + Date.now(),
-                        title: `New reservation: ${e.customer_name}`,
-                        body: `${e.guest_count} guests${e.table_name ? ' · ' + e.table_name : ''}`,
-                        time: 'just now',
-                        read: false,
-                        icon: 'ri-calendar-check-line',
-                        color: 'bg-amber-100 text-amber-600',
-                    });
-                    this.items = this.items.slice(0, 10);
-                },
             };
         }
     </script>
     @stack('footer')
-    @auth
-    <script>
-        // Global live reservation ping for every staff screen.
-        (function () {
-            if (!window.Echo) return;
-            // One friendly notice when the socket server is down (instead of console spam).
-            try {
-                window.Echo.connector?.pusher?.connection?.bind('unavailable', () => {
-                    window.toast?.warning('Realtime offline — run "php artisan reverb:start" for live updates.', 8000);
-                });
-            } catch (e) { /* pusher internals vary by version */ }
-            const ownerId = {{ (int) panel_owner_id() }};
-            window.Echo.private(`admin.${ownerId}.reservations`)
-                .listen('.ReservationPlaced', (e) => {
-                    window.dispatchEvent(new CustomEvent('notif-live', { detail: e }));
-                    const when = e.reservation_time ? new Date(e.reservation_time).toLocaleString() : '';
-                    window.toast?.warning(`New reservation: ${e.customer_name} (${e.guest_count} guests)${e.table_name ? ' · ' + e.table_name : ''}${when ? ' · ' + when : ''}`, 8000);
-                    // If staff is looking at the reservations list, refresh it.
-                    if (window.location.pathname.includes('/reservations')) {
-                        setTimeout(() => window.location.reload(), 1500);
-                    }
-                });
-        })();
-    </script>
-    @endauth
 </body>
 </html>
 

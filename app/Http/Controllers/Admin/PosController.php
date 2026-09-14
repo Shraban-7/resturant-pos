@@ -195,13 +195,13 @@ class PosController extends Controller
                 $totalPrice = ($qty * $lineUnit) - $discount;
 
                 if ($product->isIngredient()) {
-                    throw new RuntimeException('Raw ingredients are not for direct sale.');
+                    throw new RuntimeException('Ingredient not for sale.');
                 }
 
                 // Availability: finished goods when no recipe; otherwise ingredients checked inside action.
                 if (! $this->deductRecipeStock->usesRecipe($product)
                     && ! $this->stockService->hasAvailableStock($product, $qty)) {
-                    throw new RuntimeException('Insufficient stock!');
+                    throw new RuntimeException('Out of stock.');
                 }
 
                 CartItem::create([
@@ -325,7 +325,7 @@ class PosController extends Controller
                     ->first();
 
                 if (! $cart || count($cart->items) == 0) {
-                    throw new RuntimeException('No items added!');
+                    throw new RuntimeException('Cart is empty.');
                 }
 
                 $subTotal = 0;
@@ -362,7 +362,7 @@ class PosController extends Controller
                         ->first();
 
                     if ($existingSale) {
-                        return successResponse('Sale already completed');
+                        return successResponse('Sale completed.');
                     }
                 }
 
@@ -417,7 +417,7 @@ class PosController extends Controller
                 $sale->load(['items', 'table']);
                 $this->createKitchenTicket->execute($sale);
 
-                return successResponse('Sale complete');
+                return successResponse('Sale completed.');
             });
         } catch (RuntimeException|InvalidArgumentException $e) {
             return errorResponse($e->getMessage());
@@ -435,7 +435,7 @@ class PosController extends Controller
                     ->first();
 
                 if (! $cart || count($cart->items) == 0) {
-                    throw new RuntimeException('No items added!');
+                    throw new RuntimeException('Cart is empty.');
                 }
 
                 $customer_id = $request->customer_id ?: null;
@@ -519,7 +519,7 @@ class PosController extends Controller
                 $sale->load(['items', 'table']);
                 $this->createKitchenTicket->execute($sale);
 
-                return successResponse('Sale held successfully');
+                return successResponse('Sale on hold.');
             });
         } catch (RuntimeException|InvalidArgumentException $e) {
             return errorResponse($e->getMessage());

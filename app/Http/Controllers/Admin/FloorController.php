@@ -49,7 +49,7 @@ class FloorController extends Controller
 
         return redirect()
             ->route('admin.floors.index')
-            ->with('success', 'Floor created successfully.');
+            ->with('success', 'Floor saved.');
     }
 
     public function update(Request $request, Floor $floor)
@@ -80,7 +80,7 @@ class FloorController extends Controller
 
         return redirect()
             ->route('admin.floors.index')
-            ->with('success', 'Floor updated successfully.');
+            ->with('success', 'Floor saved.');
     }
 
     public function destroy(Floor $floor)
@@ -92,7 +92,7 @@ class FloorController extends Controller
 
         return redirect()
             ->route('admin.floors.index')
-            ->with('success', 'Floor deleted. Tables were unassigned.');
+            ->with('success', 'Floor deleted.');
     }
 }
 

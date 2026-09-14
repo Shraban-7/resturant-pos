@@ -54,6 +54,7 @@ Route::get('/menu/tracker/{token}', [MenuController::class, 'tracker'])->name('m
 Route::get('/menu/{table}', [MenuController::class, 'index'])->name('menu.index');
 Route::post('/menu/{table}/order', [MenuController::class, 'placeOrder'])->name('menu.placeOrder');
 Route::get('/order-status/{order}', [OrderStatusController::class, 'show'])->name('order-status.show');
+Route::get('/order-status/{order}/status', [OrderStatusController::class, 'status'])->name('order-status.status');
 
 // Guest authentication routes...
 Route::middleware('guest')->group(function () {
@@ -95,7 +96,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
         });
     });
 
-    Route::get('/kds', [KdsController::class, 'index'])->name('kds.index');
+Route::get('/kds', [KdsController::class, 'index'])->name('kds.index');
+    Route::get('/kds/tickets', [KdsController::class, 'activeTickets'])->name('kds.activeTickets');
+    Route::get('/kds/summary', [KdsController::class, 'summary'])->name('kds.summary');
     Route::post('/kds/tickets/{ticket}/status', [KdsController::class, 'updateStatus'])->name('kds.updateStatus');
 
     Route::prefix('sales')->as('sales.')->group(function () {

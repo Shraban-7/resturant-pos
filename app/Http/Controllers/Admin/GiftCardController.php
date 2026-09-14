@@ -37,7 +37,7 @@ class GiftCardController extends Controller
             'is_active' => true,
         ]);
 
-        return back()->with('success', "Gift Card created successfully: {$code}");
+        return back()->with('success', 'Gift card created.');
     }
 
     public function verify(Request $request)
@@ -56,7 +56,7 @@ class GiftCardController extends Controller
             ->first();
 
         if (!$card || $card->balance <= 0) {
-            return errorResponse('Invalid, expired, or depleted gift card');
+            return errorResponse('Invalid gift card.');
         }
 
         return apiResponse([

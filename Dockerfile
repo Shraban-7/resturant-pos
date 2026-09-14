@@ -13,11 +13,6 @@ RUN npm ci
 COPY vite.config.js ./
 COPY resources ./resources
 COPY public ./public
-# Reverb/Vite env vars are baked into the compiled bundle at build time.
-ARG VITE_REVERB_APP_KEY
-ARG VITE_REVERB_HOST
-ARG VITE_REVERB_PORT
-ARG VITE_REVERB_SCHEME
 RUN npm run build
 
 # ---------------------------------------------------------------------------

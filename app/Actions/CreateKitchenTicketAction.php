@@ -4,8 +4,6 @@ namespace App\Actions;
 
 use App\Enums\KitchenStatus;
 
-use App\Events\OrderPlacedEvent;
-use App\Events\TableStatusChangedEvent;
 use App\Models\KitchenTicket;
 use App\Models\KitchenTicketItem;
 use App\Models\Sale;
@@ -15,7 +13,7 @@ class CreateKitchenTicketAction
 {
     public function execute(Sale $sale): ?KitchenTicket
     {
-        $sale->loadMissing(['items', 'table']);
+        $sale->loadMissing(['items', 'table', 'diningTable']);
 
         if ($sale->items->isEmpty()) {
             return null;
@@ -50,11 +48,9 @@ class CreateKitchenTicketAction
             $ticket->setRelation('diningTable', $ticket->diningTable->fresh());
         }
 
-        event(new OrderPlacedEvent($ticket));
-
-        if ($sale->table) {
-            $sale->table->ensureQrToken();
-            event(new TableStatusChangedEvent($sale->table->fresh(), $sale->id));
+        $saleTable = $sale->getRelationValue('diningTable') ?? $sale->getRelationValue('table') ?? $sale->diningTable ?? $sale->table;
+        if ($saleTable) {
+            $saleTable->ensureQrToken();
         }
 
         return $ticket;
@@ -67,7 +63,7 @@ class CreateKitchenTicketAction
      */
     public function fireAdditionalItems(Sale $sale, iterable $saleItems): ?KitchenTicket
     {
-        $sale->loadMissing('table');
+        $sale->loadMissing(['table', 'diningTable']);
         $items = collect($saleItems)->filter();
 
         if ($items->isEmpty()) {
@@ -102,8 +98,6 @@ class CreateKitchenTicketAction
             $ticket->diningTable->ensureQrToken();
             $ticket->setRelation('diningTable', $ticket->diningTable->fresh());
         }
-
-        event(new OrderPlacedEvent($ticket));
 
         return $ticket;
     }

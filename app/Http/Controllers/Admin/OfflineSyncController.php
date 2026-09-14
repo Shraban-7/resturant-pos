@@ -107,7 +107,7 @@ class OfflineSyncController extends Controller
             $customerId = $order['customer_id'] ?? null;
             if ($customerId && ! Customer::query()->where('admin_id', $ownerId)->whereKey($customerId)->exists()) {
                 throw ValidationException::withMessages([
-                    'customer_id' => 'The selected customer does not belong to the store.',
+                    'customer_id' => 'Invalid customer.',
                 ]);
             }
 
@@ -122,7 +122,7 @@ class OfflineSyncController extends Controller
             $employeeId = $order['employee_id'] ?? null;
             if ($employeeId && ! Employee::query()->where('admin_id', $ownerId)->whereKey($employeeId)->exists()) {
                 throw ValidationException::withMessages([
-                    'employee_id' => 'The selected employee does not belong to the store.',
+                    'employee_id' => 'Invalid employee.',
                 ]);
             }
 

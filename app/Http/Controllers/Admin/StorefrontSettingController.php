@@ -37,6 +37,6 @@ class StorefrontSettingController extends Controller
             'footer_note' => $data['footer_note'] ?? '',
         ]);
 
-        return redirect()->route('admin.storefront-settings.index')->with('success', 'Storefront updated.');
+        return redirect()->route('admin.storefront-settings.index')->with('success', 'Settings saved.');
     }
 }

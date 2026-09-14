@@ -37,8 +37,8 @@
             <div>
                 <div class="text-lg font-semibold leading-tight">Kitchen Display</div>
                 <div class="text-xs text-slate-300 flex items-center gap-2">
-                    <span class="inline-flex h-2 w-2 rounded-full" :class="connected ? 'bg-emerald-400' : 'bg-amber-400'"></span>
-                    <span x-text="connected ? 'Live' : 'Connecting…'"></span>
+                    <span class="inline-flex h-2 w-2 rounded-full" :class="connected ? 'bg-emerald-400' : 'bg-red-400'"></span>
+                    <span x-text="connected ? 'Auto-refreshing' : 'Offline — check network'"></span>
                     <span class="text-slate-500">·</span>
                     <span x-text="tickets.length + ' active'"></span>
                 </div>
@@ -163,34 +163,39 @@ function kdsApp(initialTickets, ownerId) {
 
         init() {
             this._timer = setInterval(() => { this.now = Date.now(); }, 1000);
-            this.subscribe();
+            this._pollTimer = null;
+            this.poll();
         },
 
         destroy() {
             if (this._timer) clearInterval(this._timer);
+            if (this._pollTimer) clearInterval(this._pollTimer);
         },
 
-        subscribe() {
-            if (!window.Echo) {
-                console.warn('Echo not available');
-                return;
-            }
-            const channel = window.Echo.private(`admin.${this.ownerId}.kds`);
-            channel
-                .subscribed(() => { this.connected = true; })
-                .error(() => { this.connected = false; })
-                .listen('.OrderPlaced', (e) => {
-                    this.upsertTicket(e);
-                    this.chime();
-                    if (window.toast) window.toast.info(`New order: ${e.table_name || e.ticket_number}`);
-                })
-                .listen('.KitchenStatusUpdated', (e) => {
-                    if (e.status === 'served' || e.status === 'cancelled') {
-                        this.tickets = this.tickets.filter(t => t.ticket_id !== e.ticket_id);
-                    } else {
-                        this.upsertTicket(e);
+        poll() {
+            if (this._pollTimer) return;
+            this._pollTimer = setInterval(() => { this.fetchTickets(); }, 5000);
+        },
+
+        async fetchTickets() {
+            try {
+                const res = await window.axios.get('/admin/kds/tickets');
+                const data = res.data?.tickets || [];
+                if (!data.length && this.tickets.length) {
+                    this.tickets = [];
+                }
+                for (const t of data) {
+                    const known = this.tickets.some(x => x.ticket_id === t.ticket_id);
+                    this.upsertTicket(t);
+                    if (!known) {
+                        this.chime();
+                        if (window.toast) window.toast.info(`New order: ${t.table_name || t.ticket_number}`);
                     }
-                });
+                }
+                this.connected = true;
+            } catch (e) {
+                this.connected = false;
+            }
         },
 
         upsertTicket(payload) {

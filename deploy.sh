@@ -25,7 +25,7 @@ docker compose version >/dev/null 2>&1 || fail "Docker Compose v2 is required."
 if [ ! -f .env ]; then
     log "No .env found — creating one from .env.production.example"
     cp .env.production.example .env
-    fail "A fresh .env was created. Fill in the secrets (APP_KEY, DB_PASSWORD, REVERB_*) then re-run ./deploy.sh"
+    fail "A fresh .env was created. Fill in the secrets (APP_KEY, DB_PASSWORD) then re-run ./deploy.sh"
 fi
 
 # ---------------------------------------------------------------------------

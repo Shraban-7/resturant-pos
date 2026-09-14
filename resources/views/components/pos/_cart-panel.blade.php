@@ -51,11 +51,13 @@
     <div class="grid grid-cols-2 gap-2">
         <select id="tableSelect" class="form-select form-control-sm" required>
             <option value="">Select table</option>
-            @if($isSale && $sale?->table)
-                <option value="{{ $sale->table->id }}" selected>{{ $sale->table->name }}</option>
+            @php $cartTable = ($sale?->getRelationValue('diningTable') ?? $sale?->getRelationValue('table')) ?? $sale?->diningTable ?? $sale?->table ?? null; @endphp
+            @if($isSale && $cartTable)
+                <option value="{{ $cartTable->id }}" selected>{{ $cartTable->name }}</option>
             @endif
             @foreach ($diningTables as $table)
-                @if ($table->status !== \App\Enums\TableStatus::OCCUPIED)
+                @php $cartTblStatus = $table->status instanceof \App\Enums\TableStatus ? $table->status : \App\Enums\TableStatus::tryFrom((string) $table->status); @endphp
+                @if ($cartTblStatus !== \App\Enums\TableStatus::OCCUPIED)
                     <option value="{{ $table->id }}">{{ $table->name }}</option>
                 @endif
             @endforeach

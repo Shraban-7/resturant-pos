@@ -5,11 +5,6 @@ services:
     build:
       context: .
       target: runtime
-      args:
-        VITE_REVERB_APP_KEY: ${REVERB_APP_KEY}
-        VITE_REVERB_HOST: ${REVERB_HOST}
-        VITE_REVERB_PORT: ${REVERB_PORT}
-        VITE_REVERB_SCHEME: ${REVERB_SCHEME}
     image: restaurant-pos-app:latest
     restart: unless-stopped
     env_file: .env
@@ -35,19 +30,6 @@ services:
       - app
     ports:
       - "${APP_HTTP_PORT:-80}:80"
-    networks:
-      - pos
-
-  reverb:
-    image: restaurant-pos-app:latest
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      CONTAINER_ROLE: reverb
-    command: php artisan reverb:start --host=0.0.0.0 --port=8080
-    depends_on:
-      - app
-      - redis
     networks:
       - pos
 

@@ -67,7 +67,7 @@ class StockController extends Controller
             'stock_in' => $newStock,
         ]);
 
-        return redirect()->back()->with('success', 'Stock Updated Sucessfully');
+        return redirect()->back()->with('success', 'Stock updated.');
     }
 }
 

@@ -18,7 +18,7 @@ class RecipeController extends Controller
     public function edit(Product $product)
     {
         abort_unless((int) $product->admin_id === (int) panel_owner_id(), 403);
-        abort_if($product->isBuffet() || $product->isIngredient(), 404, 'Only dishes use recipes.');
+        abort_if($product->isBuffet() || $product->isIngredient(), 404, 'Dishes only.');
 
         $product->load(['recipe.ingredients.ingredientProduct', 'unit']);
 
@@ -35,7 +35,7 @@ class RecipeController extends Controller
     public function update(Request $request, Product $product)
     {
         abort_unless((int) $product->admin_id === (int) panel_owner_id(), 403);
-        abort_if($product->isBuffet() || $product->isIngredient(), 404, 'Only dishes use recipes.');
+        abort_if($product->isBuffet() || $product->isIngredient(), 404, 'Dishes only.');
 
         $data = $request->validate([
             'is_active' => 'nullable|boolean',
@@ -101,7 +101,7 @@ class RecipeController extends Controller
 
         return redirect()
             ->route('admin.products.index')
-            ->with('success', 'Recipe removed. Product will deduct finished-goods stock.');
+            ->with('success', 'Recipe removed.');
     }
 }
 

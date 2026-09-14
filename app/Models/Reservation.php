@@ -56,10 +56,16 @@ class Reservation extends Model
     public static function conflictMessage(self $conflict): string
     {
         $when = $conflict->reservation_time
-            ? \Carbon\Carbon::parse($conflict->reservation_time)->format('d M Y, h:i A')
+            ? \Carbon\Carbon::parse($conflict->reservation_time)->format('d M, h:i A')
             : 'that time';
 
-        return "Table {$conflict->table?->name} is already booked around {$when} ({$conflict->customer_name}). Please pick another table or time.";
+        // IMPORTANT: never use `$conflict->table` in here. Inside this class
+        // `table` resolves to Model::$table (string "reservations"), not the
+        // relation, so `?->name` warns "Attempt to read property on string".
+        // `diningTable` has no property collision and lazy-loads safely.
+        $tableName = $conflict->diningTable?->name ?? 'that table';
+
+        return 'Table ' . $tableName . ' booked at ' . $when . '.';
     }
 
     public function admin(): BelongsTo
@@ -68,6 +74,18 @@ class Reservation extends Model
     }
 
     public function table(): BelongsTo
+    {
+        return $this->diningTable();
+    }
+
+    /**
+     * Primary table relation. Named `diningTable` (not `table`) so that
+     * `$model->diningTable` works even inside this class scope, where
+     * `$model->table` would resolve to Model::$table (string) instead of
+     * the BelongsTo relation. `table()` above is kept as an alias so
+     * existing `with(['table'])` / Blade `$reservation->table` keep working.
+     */
+    public function diningTable(): BelongsTo
     {
         return $this->belongsTo(DiningTable::class, 'table_id');
     }
