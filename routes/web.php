@@ -209,7 +209,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
     });
 
     Route::prefix('settings')->as('settings.')->middleware('permission:settings')->group(function () {
-        Route::match(['get', 'post'], 'business', [SettingController::class, 'index'])->name('index');
+        Route::get('/', [SettingController::class, 'index'])->name('index');
+
+        // Backward compatible: the settings page previously lived at /settings/business.
+        Route::get('/business', fn () => redirect()->route('admin.settings.index', ['tab' => 'business']))
+            ->name('legacy.business');
+
+        Route::post('/business', [SettingController::class, 'updateBusiness'])->name('business');
+        Route::post('/profile', [SettingController::class, 'updateProfile'])->name('profile');
+        Route::post('/pos', [SettingController::class, 'updatePos'])->name('pos');
+        Route::post('/receipt', [SettingController::class, 'updateReceipt'])->name('receipt');
     });
 
     Route::prefix('dining-tables')->as('diningTables.')->middleware('permission:floors')->group(function () {

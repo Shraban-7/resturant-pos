@@ -17,201 +17,338 @@
 
 @section('content')
 
-<form method="POST" enctype="multipart/form-data" action="{{ route('admin.settings.index') }}" id="form"
-      x-data="{ preview: '{{ isset($business->image) ? storage_url($business->image) : '' }}' }">
-    @csrf
+<div x-data="{ tab: '{{ $activeTab ?? 'business' }}' }" x-cloak>
+    {{-- ==================== TAB BAR ==================== --}}
+    <div class="mb-6 overflow-x-auto">
+        <div class="flex items-center gap-1 border-b border-slate-200 min-w-max" role="tablist" aria-label="Settings sections">
+            @php
+                $tabs = [
+                    'business' => ['ri-store-2-line', __('Business Settings')],
+                    'profile'  => ['ri-user-settings-line', __('Profile Settings')],
+                    'pos'      => ['ri-computer-line', __('POS Settings')],
+                    'receipt'  => ['ri-receipt-2-line', __('Receipt Settings')],
+                ];
+            @endphp
 
-    <div class="card mb-4">
-        <div class="card-body flex flex-col sm:flex-row items-end gap-4">
-            <div>
-                <div class="border bg-slate-50 bg-no-repeat bg-center bg-cover rounded-lg"
-                     id="img-preview"
-                     style="background-image: url('{{ isset($business->image) ? storage_url($business->image) : '' }}'); height: 120px; width: 120px;">
-                </div>
-            </div>
-            <div class="flex-1">
-                <label class="form-label">Business Logo</label>
-                <p class="form-hint">Size: 500x500px or 1000x1000px (square), PNG/JPEG only.</p>
-                <input class="form-control" name="image" type="file" id="img-input" accept="image/*"
-                       @change="const r=new FileReader(); r.onload=e=>{ document.getElementById('img-preview').style.backgroundImage='url('+e.target.result+')'; }; r.readAsDataURL($event.target.files[0]);">
-            </div>
+            @foreach ($tabs as $key => [$icon, $label])
+                <button type="button" role="tab" aria-selected="false"
+                        :aria-selected="tab === '{{ $key }}'"
+                        :class="tab === '{{ $key }}'
+                            ? 'border-indigo-600 text-indigo-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'"
+                        class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 transition"
+                        @click="tab = '{{ $key }}'">
+                    <i class="{{ $icon }} text-base"></i>
+                    {{ $label }}
+                </button>
+            @endforeach
         </div>
     </div>
+{{-- ==================== BUSINESS SETTINGS ==================== --}}
+    <div x-show="tab === 'business'" x-transition.opacity>
+        <form method="POST" enctype="multipart/form-data" action="{{ route('admin.settings.business') }}"
+              x-data="{ preview: '{{ isset($business->image) ? storage_url($business->image) : '' }}' }">
+            @csrf
+            <input type="hidden" name="tab" value="business">
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title">Business Information</h6>
-            </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <label class="form-label">Business Name</label>
-                    <input type="text" name="name" class="form-control" required autocomplete="off" value="{{ $business->name ?? '' }}">
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="card mb-4">
+                <div class="card-body flex flex-col sm:flex-row items-end gap-4">
                     <div>
-                        <label class="form-label">Business Email</label>
-                        <input type="email" name="email" class="form-control" required autocomplete="off" value="{{ $business->email ?? '' }}">
+                        <div class="border bg-slate-50 bg-no-repeat bg-center bg-cover rounded-lg"
+                             id="img-preview"
+                             style="background-image: url('{{ isset($business->image) ? storage_url($business->image) : '' }}'); height: 120px; width: 120px;">
+                        </div>
                     </div>
-                    <div>
-                        <label class="form-label">Business Phone</label>
-                        <input type="text" name="phone" class="form-control" required autocomplete="off" value="{{ $business->phone ?? '' }}">
+                    <div class="flex-1">
+                        <label class="form-label">Business Logo</label>
+                        <p class="form-hint">Size: 500x500px or 1000x1000px (square), PNG/JPEG only.</p>
+                        <input class="form-control" name="image" type="file" id="img-input" accept="image/*"
+                               @change="const r=new FileReader(); r.onload=e=>{ document.getElementById('img-preview').style.backgroundImage='url('+e.target.result+')'; }; r.readAsDataURL($event.target.files[0]);">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Address</label>
-                    <input type="text" name="address" class="form-control" required autocomplete="off" value="{{ $business->address ?? '' }}">
-                </div>
-                <div class="form-group mb-0">
-                    <label class="form-label">VAT Number</label>
-                    <input type="text" name="vat_number" class="form-control" autocomplete="off" value="{{ $business->vat_number ?? '' }}">
-                </div>
             </div>
-        </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title">Bank Information</h6>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title">Business Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Business Name</label>
+                            <input type="text" name="name" class="form-control" required autocomplete="off" value="{{ $business->name ?? '' }}">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label class="form-label">Business Email</label>
+                                <input type="email" name="email" class="form-control" required autocomplete="off" value="{{ $business->email ?? '' }}">
+                            </div>
+                            <div>
+                                <label class="form-label">Business Phone</label>
+                                <input type="text" name="phone" class="form-control" required autocomplete="off" value="{{ $business->phone ?? '' }}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <input type="text" name="address" class="form-control" required autocomplete="off" value="{{ $business->address ?? '' }}">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="form-label">VAT Number</label>
+                            <input type="text" name="vat_number" class="form-control" autocomplete="off" value="{{ $business->vat_number ?? '' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title">Bank Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Bank Name</label>
+                            <input type="text" name="bank_name" class="form-control" autocomplete="off" value="{{ $business->bank_name ?? '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Account Holder Name</label>
+                            <input type="text" name="account_holder" class="form-control" autocomplete="off" value="{{ $business->account_holder ?? '' }}">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="form-label">Account No.</label>
+                            <input type="text" name="account_number" class="form-control" autocomplete="off" value="{{ $business->account_number ?? '' }}">
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <label class="form-label">Bank Name</label>
-                    <input type="text" name="bank_name" class="form-control" autocomplete="off" value="{{ $business->bank_name ?? '' }}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Account Holder Name</label>
-                    <input type="text" name="account_holder" class="form-control" autocomplete="off" value="{{ $business->account_holder ?? '' }}">
-                </div>
-                <div class="form-group mb-0">
-                    <label class="form-label">Account No.</label>
-                    <input type="text" name="account_number" class="form-control" autocomplete="off" value="{{ $business->account_number ?? '' }}">
-                </div>
+
+            <div class="mt-4 flex justify-end gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ri-save-line"></i> Save Business Settings
+                </button>
             </div>
-        </div>
+        </form>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"
-         x-data="{
-            canvas: null,
-            pad: null,
-            init() {
-                this.canvas = document.getElementById('signature-pad');
-                window.addEventListener('resize', () => this.resize());
-                requestAnimationFrame(() => {
-                    if (!this.canvas) return;
-                    this.resize();
-                    this.pad = new SignaturePad(this.canvas, { onEnd: () => this.setSig() });
-                });
-            },
-            resize() {
-                if (!this.canvas || this.canvas.offsetWidth === 0) return;
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                this.canvas.width = this.canvas.offsetWidth * ratio;
-                this.canvas.height = this.canvas.offsetHeight * ratio;
-                this.canvas.getContext('2d').scale(ratio, ratio);
-            },
-            setSig() {
-                if (!this.pad) return;
-                document.getElementById('signature').value = this.pad.toDataURL('image/png');
-            },
-            clear() {
-                if (!this.pad) return;
-                this.pad.clear();
-                document.getElementById('signature').value = '';
-            }
-         }">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title">Draw Signature</h6>
-            </div>
-            <div class="card-body">
-                <div class="border border-slate-200 bg-white rounded-lg overflow-hidden" style="max-width: 400px;">
-                    <canvas id="signature-pad" class="signature-pad block w-full" style="height: 200px; touch-action: none;"></canvas>
-                </div>
-                <div class="mt-3 flex items-center gap-2">
-                    <button type="button" class="btn btn-dark btn-sm" @click="clear()">
-                        <i class="ri-eraser-line"></i> Clear
-                    </button>
-                </div>
-                <input type="hidden" id="signature" name="signature">
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title">Saved Signature</h6>
-            </div>
-            <div class="card-body">
-                @isset($business->signature)
-                    <img src="{{ storage_url($business->signature) }}" alt="signature" class="rounded border border-slate-200 max-w-full" style="max-width: 400px;">
-                @else
-                    <p class="text-sm text-slate-500">No signature saved yet.</p>
-                @endisset
-            </div>
-        </div>
-    </div>
+{{-- ==================== PROFILE SETTINGS ==================== --}}
+    <div x-show="tab === 'profile'" x-transition.opacity>
+        <form method="POST" action="{{ route('admin.settings.profile') }}">
+            @csrf
+            <input type="hidden" name="tab" value="profile">
 
-    <div class="card mt-4">
-        <div class="card-header">
-            <h6 class="card-title">VAT / Tax</h6>
-        </div>
-        <div class="card-body">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                    <input type="checkbox" name="vat_enabled" value="1" class="rounded border-slate-300"
-                           @checked((bool) ($business->vat_enabled ?? false))>
-                    Enable VAT on POS orders
-                </label>
-                <div>
-                    <label class="form-label">VAT Rate (%)</label>
-                    <input type="number" name="vat_rate" class="form-control" min="0" max="100" step="0.01"
-                           value="{{ $business->vat_rate ?? 0 }}">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title">Account Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Your Name</label>
+                            <input type="text" name="name" class="form-control" required autocomplete="off" value="{{ old('name', $user->name ?? '') }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" name="email" class="form-control" required autocomplete="off" value="{{ old('email', $user->email ?? '') }}">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" name="phone" class="form-control" autocomplete="off" value="{{ old('phone', $user->phone ?? '') }}">
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="form-label">VAT Mode</label>
-                    <select name="vat_mode" class="form-control">
-                        <option value="exclusive" @selected(($business->vat_mode ?? 'exclusive') === 'exclusive')>Without product price (added on top)</option>
-                        <option value="inclusive" @selected(($business->vat_mode ?? '') === 'inclusive')>With product price (included)</option>
-                    </select>
-                    <p class="form-hint">Exclusive adds VAT above the bill; inclusive treats prices as VAT-included and shows the VAT portion.</p>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title">Change Password</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="form-hint mb-3">Leave blank to keep your current password.</p>
+                        <div class="form-group">
+                            <label class="form-label">Current Password</label>
+                            <input type="password" name="current_password" class="form-control" autocomplete="current-password">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">New Password</label>
+                            <input type="password" name="password" class="form-control" autocomplete="new-password">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" name="password_confirmation" class="form-control" autocomplete="new-password">
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="card mt-4">
-        <div class="card-header">
-            <h6 class="card-title">Discount (all products)</h6>
-        </div>
-        <div class="card-body">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                    <input type="checkbox" name="global_discount_enabled" value="1" class="rounded border-slate-300"
-                           @checked((bool) ($business->global_discount_enabled ?? false))>
-                    Enable discount on POS orders
-                </label>
-                <div>
-                    <label class="form-label">Discount Type</label>
-                    <select name="global_discount_type" class="form-control">
-                        <option value="percentage" @selected(($business->global_discount_type ?? 'percentage') === 'percentage')>Percentage (%)</option>
-                        <option value="flat" @selected(($business->global_discount_type ?? '') === 'flat')>Flat (৳)</option>
-                    </select>
+            <div class="mt-4 flex justify-end gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ri-save-line"></i> Save Profile Settings
+                </button>
+            </div>
+        </form>
+    </div>
+{{-- ==================== POS SETTINGS ==================== --}}
+    <div x-show="tab === 'pos'" x-transition.opacity>
+        <form method="POST" action="{{ route('admin.settings.pos') }}">
+            @csrf
+            <input type="hidden" name="tab" value="pos">
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="card-title">VAT / Tax</h6>
                 </div>
-                <div>
-                    <label class="form-label">Discount Value</label>
-                    <input type="number" name="global_discount_rate" class="form-control" min="0" step="0.01"
-                           value="{{ $business->global_discount_rate ?? 0 }}">
-                    <p class="form-hint">Percentage = % off subtotal; Flat = fixed ৳ off. POS manual discount overrides this when entered.</p>
+                <div class="card-body">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                            <input type="checkbox" name="vat_enabled" value="1" class="rounded border-slate-300"
+                                   @checked((bool) ($business->vat_enabled ?? false))>
+                            Enable VAT on POS orders
+                        </label>
+                        <div>
+                            <label class="form-label">VAT Rate (%)</label>
+                            <input type="number" name="vat_rate" class="form-control" min="0" max="100" step="0.01"
+                                   value="{{ $business->vat_rate ?? 0 }}">
+                        </div>
+                        <div>
+                            <label class="form-label">VAT Mode</label>
+                            <select name="vat_mode" class="form-control">
+                                <option value="exclusive" @selected(($business->vat_mode ?? 'exclusive') === 'exclusive')>Without product price (added on top)</option>
+                                <option value="inclusive" @selected(($business->vat_mode ?? '') === 'inclusive')>With product price (included)</option>
+                            </select>
+                            <p class="form-hint">Exclusive adds VAT above the bill; inclusive treats prices as VAT-included and shows the VAT portion.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="mt-4 flex justify-end gap-2">
-        <button type="submit" class="btn btn-primary">
-            <i class="ri-save-line"></i> {{ is_null($business) ? 'Save Settings' : 'Update Settings' }}
-        </button>
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title">Discount (all products)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                            <input type="checkbox" name="global_discount_enabled" value="1" class="rounded border-slate-300"
+                                   @checked((bool) ($business->global_discount_enabled ?? false))>
+                            Enable discount on POS orders
+                        </label>
+                        <div>
+                            <label class="form-label">Discount Type</label>
+                            <select name="global_discount_type" class="form-control">
+                                <option value="percentage" @selected(($business->global_discount_type ?? 'percentage') === 'percentage')>Percentage (%)</option>
+                                <option value="flat" @selected(($business->global_discount_type ?? '') === 'flat')>Flat (৳)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Discount Value</label>
+                            <input type="number" name="global_discount_rate" class="form-control" min="0" step="0.01"
+                                   value="{{ $business->global_discount_rate ?? 0 }}">
+                            <p class="form-hint">Percentage = % off subtotal; Flat = fixed ৳ off. POS manual discount overrides this when entered.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 flex justify-end gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ri-save-line"></i> Save POS Settings
+                </button>
+            </div>
+        </form>
     </div>
-</form>
+{{-- ==================== RECEIPT SETTINGS ==================== --}}
+    <div x-show="tab === 'receipt'" x-transition.opacity>
+        <form method="POST" action="{{ route('admin.settings.receipt') }}">
+            @csrf
+            <input type="hidden" name="tab" value="receipt">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4"
+                 x-data="{
+                    canvas: null,
+                    pad: null,
+                    init() {
+                        this.canvas = document.getElementById('signature-pad');
+                        window.addEventListener('resize', () => this.resize());
+                        // The receipt tab may be hidden on first load; initialise
+                        // the pad as soon as the canvas becomes visible.
+                        const timer = setInterval(() => {
+                            if (!this.canvas || this.canvas.offsetWidth === 0) return;
+                            clearInterval(timer);
+                            this.resize();
+                            this.pad = new SignaturePad(this.canvas, { onEnd: () => this.setSig() });
+                        }, 100);
+                    },
+                    resize() {
+                        if (!this.canvas || this.canvas.offsetWidth === 0) return;
+                        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                        this.canvas.width = this.canvas.offsetWidth * ratio;
+                        this.canvas.height = this.canvas.offsetHeight * ratio;
+                        this.canvas.getContext('2d').scale(ratio, ratio);
+                    },
+                    setSig() {
+                        if (!this.pad) return;
+                        document.getElementById('signature').value = this.pad.toDataURL('image/png');
+                    },
+                    clear() {
+                        if (!this.pad) return;
+                        this.pad.clear();
+                        document.getElementById('signature').value = '';
+                    }
+                 }">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title">Draw Signature</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="border border-slate-200 bg-white rounded-lg overflow-hidden" style="max-width: 400px;">
+                            <canvas id="signature-pad" class="signature-pad block w-full" style="height: 200px; touch-action: none;"></canvas>
+                        </div>
+                        <div class="mt-3 flex items-center gap-2">
+                            <button type="button" class="btn btn-dark btn-sm" @click="clear()">
+                                <i class="ri-eraser-line"></i> Clear
+                            </button>
+                        </div>
+                        <input type="hidden" id="signature" name="signature">
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title">Saved Signature</h6>
+                        </div>
+                        <div class="card-body">
+                            @isset($business->signature)
+                                <img src="{{ storage_url($business->signature) }}" alt="signature" class="rounded border border-slate-200 max-w-full" style="max-width: 400px;">
+                            @else
+                                <p class="text-sm text-slate-500">No signature saved yet.</p>
+                            @endisset
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title">Receipt Options</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Footer / Thank-you Message</label>
+                                <input type="text" name="receipt_footer" class="form-control" maxlength="255"
+                                       placeholder="e.g. THANK YOU!" value="{{ $business->receipt_footer ?? '' }}">
+                                <p class="form-hint">Shown at the bottom of the printed POS receipt.</p>
+                            </div>
+                            <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 mb-0">
+                                <input type="checkbox" name="receipt_show_signature" value="1" class="rounded border-slate-300"
+                                       @checked((bool) ($business->receipt_show_signature ?? false))>
+                                Print signature on receipts
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 flex justify-end gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ri-save-line"></i> Save Receipt Settings
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 @endsection
-

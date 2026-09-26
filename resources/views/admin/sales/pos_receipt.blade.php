@@ -173,7 +173,13 @@
         </div>
     </div>
 
-    <div class="thank-you">THANK YOU!</div>
+    @if(($settings->receipt_show_signature ?? false) && ! empty($settings->signature))
+        <div style="text-align: center; margin: 2mm 0;">
+            <img src="{{ storage_url($settings->signature) }}" alt="signature" style="max-height: 22mm; max-width: 60mm;">
+        </div>
+        @endif
+
+    <div class="thank-you">{{ $settings->receipt_footer ?: 'THANK YOU!' }}</div>
 </body>
 
 <script>
