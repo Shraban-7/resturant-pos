@@ -103,10 +103,12 @@ class SaleController extends Controller
                 $qty = (float) $request->quantity;
                 $discount = (float) $request->discount;
 
-                if (! $this->deductRecipeStock->usesRecipe($product)
-                    && ! $this->stockService->hasAvailableStock($product, $qty)) {
-                    throw new RuntimeException('Out of stock.');
+                if ($product->isIngredient()) {
+                    throw new RuntimeException('Ingredient not for sale.');
                 }
+
+                // Pure menu: recipe-less dishes are always available;
+                // ingredient shortages surface from execute() below.
 
                 [$modifiers, $lineUnit] = $this->resolveModifiers->execute(
                     $product,
@@ -142,10 +144,14 @@ class SaleController extends Controller
                     $itemHtml .= View::make('components.pos.sale-item', ['item' => $line])->render();
                 }
 
+                $product->loadMissing(['recipe.ingredients.ingredientProduct']);
+                $servings = $this->deductRecipeStock->availableServings($product->fresh());
+
                 return apiResponse([
                     'item' => [
                         'id' => $product->id,
-                        'stock' => $this->stockService->availableQuantity($product->fresh()),
+                        'stock' => $servings ?? 0,
+                        'unlimited' => $servings === null,
                     ],
                     'cart_item_html' => $itemHtml,
                 ], 'Item added successfully');
@@ -165,11 +171,14 @@ class SaleController extends Controller
 
             $item = $saleItem->product;
             $this->deductRecipeStock->restore($item, (float) $saleItem->quantity);
+            $item->loadMissing(['recipe.ingredients.ingredientProduct']);
+            $servings = $this->deductRecipeStock->availableServings($item->fresh());
 
             $response = [
                 'item' => [
                     'id' => $item->id,
-                    'stock' => $this->stockService->availableQuantity($item->fresh()),
+                    'stock' => $servings ?? 0,
+                    'unlimited' => $servings === null,
                 ],
             ];
 
@@ -220,8 +229,11 @@ class SaleController extends Controller
                 $saleItem->total_price = $saleItem->unit_price * $quantity;
                 $saleItem->save();
 
+                $item->loadMissing(['recipe.ingredients.ingredientProduct']);
+                $servings = $this->deductRecipeStock->availableServings($item->fresh());
+
                 return apiResponse([
-                    'item' => ['id' => $item->id, 'stock' => $this->stockService->availableQuantity($item->fresh())],
+                    'item' => ['id' => $item->id, 'stock' => $servings ?? 0, 'unlimited' => $servings === null],
                     'sale_item' => ['total_price' => $saleItem->total_price],
                 ], 'Sale updated successfully');
             });

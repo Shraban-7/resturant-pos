@@ -1,8 +1,8 @@
 @extends('layouts.admin')
-@section('title', 'Edit Product')
-@section('page_title', 'Edit Product')
+@section('title', 'Edit Menu Product')
+@section('page_title', 'Edit Menu Product')
 @section('breadcrumb')
-<a href="{{ route('admin.products.index') }}">Products</a>
+<a href="{{ route('admin.products.index') }}">Menu Products</a>
 <span class="separator">/</span>
 <span class="current">Edit</span>
 @endsection
@@ -16,7 +16,7 @@
             <div class="card">
                 <div class="card-header">
                     <div>
-                        <h6 class="card-title">Product Information</h6>
+                        <h6 class="card-title">Menu Product Information</h6>
                         <p class="card-subtitle">Update the details for {{ $product->name }}</p>
                     </div>
                 </div>
@@ -43,9 +43,8 @@
                         <div>
                             <label class="form-label">Type</label>
                             <select name="type" class="form-select">
-                                <option value="dish" @selected($product->type === \App\Enums\ProductType::DISH)>Dish (sellable, stock tracked)</option>
+                                <option value="dish" @selected($product->type === \App\Enums\ProductType::DISH)>Dish (sellable)</option>
                                 <option value="buffet" @selected($product->type === \App\Enums\ProductType::BUFFET)>Buffet (per person, unlimited)</option>
-                                <option value="ingredient" @selected($product->type === \App\Enums\ProductType::INGREDIENT)>Raw ingredient (recipe use only, never sold)</option>
                             </select>
                         </div>
 
@@ -59,13 +58,6 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div>
-                            <label class="form-label">Buying Price</label>
-                            <div class="input-group">
-                                <span class="input-group-text">BDT</span>
-                                <input type="text" name="buying_price" class="form-control" value="{{ $product->buying_price }}">
-                            </div>
-                        </div>
 
                         <div>
                             <label class="form-label">Selling Price</label>
@@ -73,10 +65,6 @@
                                 <span class="input-group-text">BDT</span>
                                 <input type="text" name="selling_price" class="form-control" value="{{ $product->selling_price }}" required>
                             </div>
-                        </div>
-                        <div>
-                            <label class="form-label">Opening Stock</label>
-                            <input type="text" name="stock_in" class="form-control" value="{{ $product->stock_in }}" required>
                         </div>
 
                         <div class="md:col-span-2">
@@ -121,7 +109,3 @@
 </form>
 
 @endsection
-
-
-
-

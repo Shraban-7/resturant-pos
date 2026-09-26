@@ -1,15 +1,22 @@
+@props(['item', 'available' => null, 'unlimited' => null])
+@php
+    // Pure menu: recipe-less dishes & buffets are always available.
+    // Falls back to finished-stock display when props are not provided.
+    $isUnlimited = $unlimited ?? false;
+    $stock = $available ?? $item->availableStock;
+@endphp
 <div class="item-card group relative bg-white border border-slate-200/90 rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 hover:border-orange-400 hover:shadow-lg hover:shadow-orange-500/10 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] flex flex-col h-full w-full select-none"
     id="item-{{ $item->id }}" data-id="{{ $item->id }}" data-code="{{ $item->item_code ?? '' }}"
     data-category="{{ $item->category_id }}" data-price="{{ $item->selling_price }}"
-    data-stock="{{ $item->availableStock }}">
+    data-stock="{{ $isUnlimited ? 999999 : $stock }}" @if($isUnlimited) data-unlimited="1" @endif>
 
     {{-- Product Image & Floating Price --}}
     <div class="h-24 sm:h-28 w-full bg-slate-100 overflow-hidden relative shrink-0">
         <img src="{{ $item->imageUrl() }}" alt="{{ $item->displayName() }}"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
 
-        {{-- Stock Out Overlay --}}
-        @if ($item->availableStock <= 0)
+        {{-- Stock Out Overlay (recipe dishes only — unlimited items never sell out) --}}
+        @if (!$isUnlimited && $stock <= 0)
             <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-[2px] flex items-center justify-center p-2">
                 <span
                     class="inline-flex items-center gap-1 bg-red-600/90 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow">
@@ -42,11 +49,15 @@
         <div class="flex items-center justify-between pt-1 border-t border-slate-100/80">
             <div class="flex items-center gap-1.5 text-[10px] font-medium text-slate-500">
                 <span
-                    class="flex h-1.5 w-1.5 rounded-full {{ $item->availableStock > 0 ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
-                <span>Stock:</span>
-                <span
-                    class="stock font-bold {{ $item->availableStock > 0 ? 'text-slate-800' : 'text-red-600' }}">{{ $item->availableStock }}</span>
-                <span class="text-slate-400 font-normal">{{ $item->unit?->short_name ?? 'pcs' }}</span>
+                    class="flex h-1.5 w-1.5 rounded-full {{ $isUnlimited || $stock > 0 ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
+                @if ($isUnlimited)
+                    <span class="stock font-bold text-emerald-600">Available</span>
+                @else
+                    <span>Stock:</span>
+                    <span
+                        class="stock font-bold {{ $stock > 0 ? 'text-slate-800' : 'text-red-600' }}">{{ $stock }}</span>
+                    <span class="text-slate-400 font-normal">servings</span>
+                @endif
             </div>
 
             <span

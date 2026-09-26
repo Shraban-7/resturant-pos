@@ -15,6 +15,7 @@ class ProductModifierController extends Controller
     public function index(Product $product)
     {
         abort_unless($product->admin_id === panel_owner_id(), 403);
+        abort_if($product->isIngredient(), 404);
 
         $product->load(['productModifiers.modifier']);
 
@@ -40,6 +41,7 @@ class ProductModifierController extends Controller
     public function store(Request $request, Product $product)
     {
         abort_unless($product->admin_id === panel_owner_id(), 403);
+        abort_if($product->isIngredient(), 404);
 
         if ($request->filled('modifier_id')) {
             $data = $request->validate([
@@ -96,6 +98,7 @@ class ProductModifierController extends Controller
     public function update(Request $request, Product $product, ProductModifier $productModifier)
     {
         abort_unless($product->admin_id === panel_owner_id(), 403);
+        abort_if($product->isIngredient(), 404);
         abort_unless($productModifier->product_id === $product->id, 404);
 
         $data = $request->validate([
@@ -114,6 +117,7 @@ class ProductModifierController extends Controller
     public function destroy(Product $product, ProductModifier $productModifier)
     {
         abort_unless($product->admin_id === panel_owner_id(), 403);
+        abort_if($product->isIngredient(), 404);
         abort_unless($productModifier->product_id === $product->id, 404);
 
         $productModifier->delete();

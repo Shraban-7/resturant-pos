@@ -6,19 +6,28 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductStock;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Enums\ProductType;
 
 class StockController extends Controller
 {
+    /**
+     * Raw-material stock ledger only. Menu products carry no inventory.
+     */
     public function index(Request $request)
     {
-        $stocks = ProductStock::self()->latest('id')->paginate(20)->withQueryString();
+        $stocks = ProductStock::self()
+            ->whereHas('product', fn ($q) => $q->where('type', ProductType::INGREDIENT))
+            ->latest('id')
+            ->paginate(20)
+            ->withQueryString();
 
         return view('admin.stocks.index', compact('stocks'));
     }
 
     public function create()
     {
-        $products = Product::self()->get();
+        $products = Product::self()->rawIngredients()->with('unit')->orderBy('name')->get();
 
         return view('admin.stocks.create', compact('products'));
     }
@@ -26,29 +35,25 @@ class StockController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'product_id' => 'required',
-            'stock_in' => 'required|numeric',
-            'buying_price' => 'nullable|numeric',
-            'selling_price' => 'nullable|numeric',
+            'product_id' => [
+                'required',
+                Rule::exists('products', 'id')->where(fn ($q) => $q
+                    ->where('admin_id', panel_owner_id())
+                    ->where('type', ProductType::INGREDIENT)),
+            ],
+            'stock_in' => 'required|numeric|min:0.001',
+            'buying_price' => 'nullable|numeric|min:0',
         ]);
 
-        $product = Product::find($request->product_id);
+        $product = Product::self()->whereKey($request->product_id)->firstOrFail();
 
         $quantity = $request->stock_in;
         $oldStock = $product->stock_in;
         $newStock = $oldStock + $quantity;
 
-        if ($request->buying_price) {
-            $buying_price = $request->buying_price;
-        } else {
-            $buying_price = $product->buying_price;
-        }
-
-        if ($request->selling_price) {
-            $selling_price = $request->selling_price;
-        } else {
-            $selling_price = $product->selling_price;
-        }
+        $buying_price = $request->filled('buying_price')
+            ? $request->buying_price
+            : $product->buying_price;
 
         ProductStock::create([
             'product_id' => $product->id,
@@ -58,18 +63,14 @@ class StockController extends Controller
             'old_stock' => $oldStock,
             'new_stock' => $newStock,
             'buying_price' => $buying_price,
-            'selling_price' => $selling_price,
+            'selling_price' => $product->selling_price,
         ]);
 
         $product->update([
             'buying_price' => $buying_price,
-            'selling_price' => $selling_price,
             'stock_in' => $newStock,
         ]);
 
         return redirect()->back()->with('success', 'Stock updated.');
     }
 }
-
-
-

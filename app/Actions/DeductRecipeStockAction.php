@@ -14,7 +14,9 @@ class DeductRecipeStockAction
 
     /**
      * Deduct inventory for a sold quantity.
-     * Uses recipe BOM ingredients when present; otherwise deducts the sellable product.
+     * Menu products are pure: buffet never touches inventory, dishes
+     * deduct raw ingredients via recipe BOM, and dishes without a
+     * recipe are always available (no finished-goods stock).
      */
     public function execute(Product $product, float $quantity): void
     {
@@ -43,7 +45,8 @@ class DeductRecipeStockAction
             return;
         }
 
-        $this->stockService->deductStock($product, $quantity);
+        // Pure menu: dishes without a recipe carry no finished stock.
+        return;
     }
 
     /**
@@ -52,6 +55,10 @@ class DeductRecipeStockAction
     public function restore(Product $product, float $quantity): void
     {
         if ($quantity <= 0) {
+            return;
+        }
+
+        if ($product->isBuffet()) {
             return;
         }
 
@@ -71,7 +78,8 @@ class DeductRecipeStockAction
             return;
         }
 
-        $this->stockService->restoreStock($product, $quantity);
+        // Nothing was deducted for recipe-less dishes.
+        return;
     }
 
     /**
@@ -82,6 +90,43 @@ class DeductRecipeStockAction
         $recipe = $this->resolveRecipe($product);
 
         return $recipe && $recipe->ingredients->isNotEmpty();
+    }
+
+    /**
+     * Servings still producible from raw-material availability.
+     * Null = unlimited (buffet or recipe-less menu item).
+     */
+    public function availableServings(Product $product): ?int
+    {
+        if ($product->isBuffet()) {
+            return null;
+        }
+
+        $recipe = $this->resolveRecipe($product);
+
+        if (! $recipe || $recipe->ingredients->isEmpty()) {
+            return null;
+        }
+
+        $servings = null;
+
+        foreach ($recipe->ingredients as $line) {
+            $ingredient = $line->ingredientProduct;
+            if (! $ingredient) {
+                continue;
+            }
+
+            $perServing = (float) $line->quantity;
+            if ($perServing <= 0) {
+                continue;
+            }
+
+            $available = (float) $ingredient->stock_in - (float) $ingredient->stock_out;
+            $possible = (int) floor($available / $perServing);
+            $servings = $servings === null ? $possible : min($servings, $possible);
+        }
+
+        return max(0, (int) ($servings ?? 0));
     }
 
     private function resolveRecipe(Product $product): ?Recipe

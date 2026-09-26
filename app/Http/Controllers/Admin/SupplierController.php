@@ -36,7 +36,7 @@ class SupplierController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        return redirect()->route('admin.suppliers.index')->with('success', 'Supplier saved.');
+        return redirect()->back()->with('success', 'Supplier saved.');
     }
 
     public function update(Request $request, Supplier $supplier)

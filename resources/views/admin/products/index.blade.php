@@ -1,21 +1,21 @@
 @extends('layouts.admin')
-@section('title', 'Products')
-@section('page_title', 'Products')
+@section('title', 'Menu Products')
+@section('page_title', 'Menu Products')
 @section('breadcrumb')
 <a href="{{ route('admin.dashboard') }}">Home</a>
 <span class="separator">/</span>
-<span class="current">Products</span>
+<span class="current">Menu Products</span>
 @endsection
 
 @section('content')
 
 <div class="page-header">
     <div>
-        <p class="page-subtitle">{{ $products->total() }} {{ Str::plural('product', $products->total()) }} in your catalog</p>
+        <p class="page-subtitle">{{ $products->total() }} {{ Str::plural('dish', $products->total()) }} on your menu · stock lives on raw materials</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-primary" href="{{ route('admin.products.create') }}">
-            <i class="ri-add-line"></i> Add Product
+            <i class="ri-add-line"></i> Add Menu Product
         </a>
     </div>
 </div>
@@ -28,8 +28,7 @@
                     <th>Product</th>
                     <th>Category</th>
                     <th>Price</th>
-                    <th>Current Stock</th>
-                    <th>Total Sold</th>
+                    <th>Recipe</th>
                     <th class="text-right">Action</th>
                 </tr>
             </thead>
@@ -45,8 +44,6 @@
                                 @endif
                                 @if ($product->type === \App\Enums\ProductType::BUFFET)
                                     <span class="badge badge-success" title="Per-person buffet, unlimited">Buffet</span>
-                                @elseif ($product->type === \App\Enums\ProductType::INGREDIENT)
-                                    <span class="badge badge-light" title="Raw material for recipes, never sold">Raw</span>
                                 @endif
                             </div>
                         </td>
@@ -62,13 +59,22 @@
                             @endif
                         </td>
                         <td class="font-medium">{{ money($product->selling_price) }}</td>
-                        <td>{{ $product->availableStock }}</td>
-                        <td>{{ $product->stock_out }}</td>
+                        <td>
+                            @php $ingredientCount = $product->recipe ? $product->recipe->ingredients->count() : 0; @endphp
+                            @if ($product->type === \App\Enums\ProductType::DISH)
+                                @if ($product->recipe)
+                                    <span class="badge badge-success" title="Recipe BOM drives raw-material deduction">{{ $ingredientCount }} ingredients</span>
+                                @else
+                                    <span class="badge badge-light" title="No recipe — always available, no stock impact">No recipe</span>
+                                @endif
+                            @else
+                                <span class="badge badge-light" title="Buffet never touches inventory">—</span>
+                            @endif
+                        </td>
                         <td class="text-right">
                             <div class="inline-flex items-center gap-1">
                                 @php $prodType = $product->type instanceof \App\Enums\ProductType ? $product->type : \App\Enums\ProductType::tryFrom((string) $product->type); @endphp
                                 @if ($prodType === \App\Enums\ProductType::DISH)
-                                    @php $ingredientCount = $product->recipe ? $product->recipe->ingredients->count() : 0; @endphp
                                     <a href="{{ route('admin.products.recipe.edit', $product) }}"
                                        class="btn {{ $product->recipe ? 'btn-success' : 'btn-secondary' }} btn-sm"
                                        title="{{ $product->recipe ? "Recipe BOM ({$ingredientCount} ingredients)" : 'Add recipe BOM' }}">
@@ -93,13 +99,13 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6">
+                    <tr><td colspan="5">
                         <div class="empty-state">
-                            <i class="ri-box-3-line"></i>
-                            <h3>No products yet</h3>
-                            <p>Start by adding your first product to the catalog.</p>
+                            <i class="ri-restaurant-2-line"></i>
+                            <h3>No menu products yet</h3>
+                            <p>Start by adding your first dish to the menu.</p>
                             <a href="{{ route('admin.products.create') }}" class="btn btn-primary mt-4">
-                                <i class="ri-add-line"></i> Add Product
+                                <i class="ri-add-line"></i> Add Menu Product
                             </a>
                         </div>
                     </td></tr>
@@ -116,5 +122,3 @@
 </div>
 
 @endsection
-
-

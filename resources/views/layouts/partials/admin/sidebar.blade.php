@@ -24,11 +24,19 @@
             @endcan
         </ul>
 
+        @can('products')
+            <div class="sidebar-section">{{ __('admin.sidebar.menu') }}</div>
+            <ul class="sidebar-list">
+                <x-sidebar-list-item :title="__('admin.sidebar.menu_products')" :icon="'ri-restaurant-2-line'" :route="'admin.products.index'" />
+                <x-sidebar-list-item :title="__('admin.sidebar.categories')" :icon="'ri-list-ordered'" :route="'admin.categories.index'" />
+            </ul>
+        @endcan
+
         @canany(['products', 'stocks'])
             <div class="sidebar-section">{{ __('admin.sidebar.inventory') }}</div>
             <ul class="sidebar-list">
                 @can('products')
-                    <x-sidebar-list-item :title="__('admin.sidebar.products')" :icon="'ri-box-3-line'" :route="'admin.products.index'" />
+                    <x-sidebar-list-item :title="__('admin.sidebar.products')" :icon="'ri-box-3-line'" :route="'admin.inventory.index'" />
                     <x-sidebar-list-item :title="__('admin.sidebar.suppliers')" :icon="'ri-truck-line'" :route="'admin.suppliers.index'" />
                     <x-sidebar-list-item :title="__('admin.sidebar.purchases')" :icon="'ri-shopping-basket-line'" :route="'admin.purchases.index'" />
                 @endcan

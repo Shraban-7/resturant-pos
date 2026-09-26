@@ -1,8 +1,8 @@
 @extends('layouts.admin')
-@section('title', 'Add Product')
-@section('page_title', 'Add Product')
+@section('title', 'Add Menu Product')
+@section('page_title', 'Add Menu Product')
 @section('breadcrumb')
-<a href="{{ route('admin.products.index') }}">Products</a>
+<a href="{{ route('admin.products.index') }}">Menu Products</a>
 <span class="separator">/</span>
 <span class="current">Add</span>
 @endsection
@@ -16,8 +16,8 @@
             <div class="card">
                 <div class="card-header">
                     <div>
-                        <h6 class="card-title">Product Information</h6>
-                        <p class="card-subtitle">Add the basic details of your new product</p>
+                        <h6 class="card-title">Menu Product Information</h6>
+                        <p class="card-subtitle">Dishes sell at the POS · inventory is tracked on raw materials via recipes</p>
                     </div>
                 </div>
                 <div class="card-body">
@@ -41,9 +41,8 @@
                         <div>
                             <label class="form-label">Type</label>
                             <select name="type" class="form-select">
-                                <option value="dish">Dish (sellable, stock tracked)</option>
+                                <option value="dish">Dish (sellable)</option>
                                 <option value="buffet">Buffet (per person, unlimited)</option>
-                                <option value="ingredient">Raw ingredient (recipe use only, never sold)</option>
                             </select>
                         </div>
 
@@ -55,13 +54,6 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div>
-                            <label class="form-label">Buying Price</label>
-                            <div class="input-group">
-                                <span class="input-group-text">BDT</span>
-                                <input type="text" name="buying_price" class="form-control" placeholder="1000" required>
-                            </div>
-                        </div>
 
                         <div>
                             <label class="form-label">Selling Price</label>
@@ -69,10 +61,6 @@
                                 <span class="input-group-text">BDT</span>
                                 <input type="text" name="selling_price" class="form-control" placeholder="1500" required>
                             </div>
-                        </div>
-                        <div>
-                            <label class="form-label">Opening Stock</label>
-                            <input type="text" name="stock_in" class="form-control" placeholder="Initial stock" required>
                         </div>
 
                         <div class="md:col-span-2">
@@ -116,6 +104,3 @@
 </form>
 
 @endsection
-
-
-

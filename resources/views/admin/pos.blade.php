@@ -238,7 +238,7 @@
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4"
                         id="productsGrid">
                         @foreach ($products as $product)
-                            <x-pos.item :item="$product" />
+                            <x-pos.item :item="$product" :available="$product->pos_available" :unlimited="$product->pos_unlimited" />
                         @endforeach
                     </div>
                 </div>
@@ -566,9 +566,10 @@
 
                 function setItemToCart(item, cartHtml) {
                     const itemEl = document.getElementById('item-' + item.id);
-                    if (itemEl) {
+                    if (itemEl && !item.unlimited) {
                         const stockEl = itemEl.querySelector('.stock');
                         if (stockEl) stockEl.textContent = item.stock;
+                        itemEl.dataset.stock = item.stock;
                     }
                     $cart.innerHTML = cartHtml;
                     updateCartTotals();
@@ -619,7 +620,7 @@
                         showError('Already added! Use the +/- buttons in the cart to change quantity.');
                         return;
                     }
-                    if (stock <= 0 && !(window.recipeProductIds || []).includes(parseInt(id, 10))) {
+                    if (stock <= 0 && card.dataset.unlimited !== '1' && !(window.recipeProductIds || []).includes(parseInt(id, 10))) {
                         showError('Stock out!');
                         return;
                     }
@@ -849,9 +850,11 @@
                             const el = document.querySelector(sel + cartItemId);
                             if (el) el.remove();
                             const item = d.data?.item;
-                            if (item) {
+                            if (item && !item.unlimited) {
                                 const stockEl = document.querySelector('#item-' + item.id + ' .stock');
                                 if (stockEl) stockEl.textContent = item.stock;
+                                const card = document.getElementById('item-' + item.id);
+                                if (card) card.dataset.stock = item.stock;
                             }
                             updateCartTotals();
                         })
@@ -872,6 +875,13 @@
                         const input = wrap.querySelector('.quantityInput, .saleQuantityInput');
                         const cartItem = btn.closest('.cart-item, .sale-item');
                         const itemId = cartItem.dataset.itemid;
+                        const card = document.getElementById('item-' + itemId);
+                        if (card && card.dataset.unlimited === '1') {
+                            input.value = parseInt(input.value) + 1;
+                            if (isSale) updateSaleQuantity(cartItem.dataset.id);
+                            else updateCartQuantity(cartItem.dataset.id);
+                            return;
+                        }
                         const stock = parseInt(document.querySelector('#item-' + itemId + ' .stock')
                             ?.textContent) || 0;
                         if (stock <= 0) {
@@ -921,8 +931,12 @@
                         .then(r => r.json())
                         .then(d => {
                             const item = d.data.item;
-                            const stockEl = document.querySelector('#item-' + item.id + ' .stock');
-                            if (stockEl) stockEl.textContent = item.stock;
+                            if (item && !item.unlimited) {
+                                const stockEl = document.querySelector('#item-' + item.id + ' .stock');
+                                if (stockEl) stockEl.textContent = item.stock;
+                                const card = document.getElementById('item-' + item.id);
+                                if (card) card.dataset.stock = item.stock;
+                            }
                             cartItem.querySelector('.price').textContent = d.data.cart_item.total_price;
                             updateCartTotals();
                         })
@@ -950,8 +964,12 @@
                         .then(r => r.json())
                         .then(d => {
                             const item = d.data.item;
-                            const stockEl = document.querySelector('#item-' + item.id + ' .stock');
-                            if (stockEl) stockEl.textContent = item.stock;
+                            if (item && !item.unlimited) {
+                                const stockEl = document.querySelector('#item-' + item.id + ' .stock');
+                                if (stockEl) stockEl.textContent = item.stock;
+                                const card = document.getElementById('item-' + item.id);
+                                if (card) card.dataset.stock = item.stock;
+                            }
                             saleItem.querySelector('.price').textContent = d.data.sale_item.total_price;
                             updateCartTotals();
                         });

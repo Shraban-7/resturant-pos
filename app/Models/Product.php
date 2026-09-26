@@ -154,6 +154,11 @@ class Product extends Model
         return $this->belongsTo(ProductUnit::class);
     }
 
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(ProductCategory::class);

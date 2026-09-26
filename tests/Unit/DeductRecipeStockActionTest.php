@@ -46,13 +46,15 @@ class DeductRecipeStockActionTest extends TestCase
         ]);
     }
 
-    public function test_deducts_finished_product_stock_when_no_recipe(): void
+    public function test_menu_without_recipe_does_not_touch_finished_stock(): void
     {
+        // Pure menu: dishes without a recipe are always available and
+        // carry no finished-goods stock. Only recipe BOMs move inventory.
         $product = $this->product('Bottled Water', stockIn: 50);
 
         $this->action->execute($product, 4);
 
-        $this->assertSame(4, (int) $product->fresh()->stock_out);
+        $this->assertSame(0, (int) $product->fresh()->stock_out);
         $this->assertFalse($this->action->usesRecipe($product));
     }
 

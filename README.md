@@ -26,6 +26,8 @@ Built for restaurants that need a fast cashier terminal, live kitchen tickets, t
 ## Features
 
 - **POS terminal** — product grid, modifiers/add-ons, hold orders, table assignment, checkout, and receipts
+- **Menu** — sellable dishes/buffets with categories, modifiers, and recipe BOM (no finished-goods stock)
+- **Inventory** — raw materials with suppliers, purchases, and stock ledger; recipes deduct raw stock on sale
 - **Kitchen Display (KDS)** — auto-refreshing KOTs with pending → preparing → ready → served workflow
 - **Floors & tables** — multi-floor layout, floor map, occupancy status (`free` / `occupied` / `reserved`)
 - **Recipe BOM** — ingredients linked to menu items with automatic stock deduction on sale

@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\Admin\BranchController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DiningTableController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\FloorController;
 use App\Http\Controllers\Admin\GiftCardController;
+use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\KdsController;
 use App\Http\Controllers\Admin\LoyaltyController;
 use App\Http\Controllers\Admin\NotificationController;
@@ -119,6 +121,22 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
             Route::put('/', [RecipeController::class, 'update'])->name('update');
             Route::delete('/', [RecipeController::class, 'destroy'])->name('destroy');
         });
+    });
+
+    Route::prefix('inventory')->as('inventory.')->middleware('permission:products')->group(function () {
+        Route::get('/', [InventoryController::class, 'index'])->name('index');
+        Route::get('/create', [InventoryController::class, 'create'])->name('create');
+        Route::post('/store', [InventoryController::class, 'store'])->name('store');
+        Route::get('/{product}/edit', [InventoryController::class, 'edit'])->name('edit');
+        Route::post('/{product}/update', [InventoryController::class, 'update'])->name('update');
+        Route::get('/{product}/delete', [InventoryController::class, 'delete'])->name('delete');
+    });
+
+    Route::prefix('categories')->as('categories.')->middleware('permission:products')->group(function () {
+        Route::get('/', [CategoryController::class, 'index'])->name('index');
+        Route::post('/', [CategoryController::class, 'store'])->name('store');
+        Route::put('/{category}', [CategoryController::class, 'update'])->name('update');
+        Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('floors')->as('floors.')->group(function () {

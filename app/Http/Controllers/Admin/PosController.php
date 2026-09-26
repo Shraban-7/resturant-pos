@@ -43,6 +43,7 @@ class PosController extends Controller
             ->with([
                 'category',
                 'unit',
+                'recipe.ingredients.ingredientProduct',
                 'modifiers' => fn ($q) => $q->where('modifiers.is_active', true)->orderBy('group_name')->orderBy('sort_order'),
             ])
             ->latest('id')
@@ -110,12 +111,20 @@ class PosController extends Controller
             ->whereHas('recipe.ingredients')
             ->pluck('id');
 
+        // Pure menu: servings left per recipe, null = always available.
+        foreach ($products as $product) {
+            $servings = $this->deductRecipeStock->availableServings($product);
+            $product->setAttribute('pos_unlimited', $servings === null);
+            $product->setAttribute('pos_available', $servings ?? 0);
+        }
+
         $offlineProducts = $products->map(fn ($product) => [
             'product_id' => $product->id,
             'name' => $product->name,
             'selling_price' => (float) $product->selling_price,
             'buying_price' => (float) $product->buying_price,
-            'available_stock' => (float) $product->availableStock,
+            'available_stock' => (float) $product->pos_available,
+            'unlimited' => (bool) $product->pos_unlimited,
             'category_id' => $product->product_category_id ?? $product->category_id,
             'unit' => $product->unit?->short_name,
             'image' => $product->image,
@@ -199,11 +208,8 @@ class PosController extends Controller
                     throw new RuntimeException('Ingredient not for sale.');
                 }
 
-                // Availability: finished goods when no recipe; otherwise ingredients checked inside action.
-                if (! $this->deductRecipeStock->usesRecipe($product)
-                    && ! $this->stockService->hasAvailableStock($product, $qty)) {
-                    throw new RuntimeException('Out of stock.');
-                }
+                // Pure menu: recipe-less dishes are always available;
+                // ingredient shortages surface from execute() below.
 
                 CartItem::create([
                     'cart_id' => $cart->id,
@@ -226,11 +232,14 @@ class PosController extends Controller
                 }
 
                 $product->refresh();
+                $product->loadMissing(['recipe.ingredients.ingredientProduct']);
+                $servings = $this->deductRecipeStock->availableServings($product);
 
                 return apiResponse([
                     'item' => [
                         'id' => $product->id,
-                        'stock' => $this->stockService->availableQuantity($product),
+                        'stock' => $servings ?? 0,
+                        'unlimited' => $servings === null,
                     ],
                     'cart_item_html' => $itemHtml,
                 ], 'Item added successfully');
@@ -250,11 +259,14 @@ class PosController extends Controller
 
                 $item = $cart_item->item;
                 $this->deductRecipeStock->restore($item, $cart_item->quantity);
+                $item->loadMissing(['recipe.ingredients.ingredientProduct']);
+                $servings = $this->deductRecipeStock->availableServings($item->fresh());
 
                 $response = [
                     'item' => [
                         'id' => $item->id,
-                        'stock' => $this->stockService->availableQuantity($item->fresh()),
+                        'stock' => $servings ?? 0,
+                        'unlimited' => $servings === null,
                     ],
                 ];
 
@@ -290,8 +302,11 @@ class PosController extends Controller
                 $cart_item->total_price = ($cart_item->unit_price * $quantity) - ($cart_item->discount ?? 0);
                 $cart_item->save();
 
+                $item->loadMissing(['recipe.ingredients.ingredientProduct']);
+                $servings = $this->deductRecipeStock->availableServings($item->fresh());
+
                 $response = [
-                    'item' => ['id' => $item->id, 'stock' => $this->stockService->availableQuantity($item->fresh())],
+                    'item' => ['id' => $item->id, 'stock' => $servings ?? 0, 'unlimited' => $servings === null],
                     'cart_item' => ['total_price' => $cart_item->total_price],
                 ];
 

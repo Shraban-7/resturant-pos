@@ -1,6 +1,6 @@
 @extends('layouts.admin')
-@section('title', 'Stock History')
-@section('page_title', 'Stock History')
+@section('title', 'Raw Stock History')
+@section('page_title', 'Raw Stock History')
 @section('breadcrumb')
 <a href="{{ route('admin.dashboard') }}">Home</a>
 <span class="separator">/</span>

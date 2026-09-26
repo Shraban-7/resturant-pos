@@ -7,15 +7,25 @@ use App\Enums\ProductType;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategory;
-use App\Models\ProductStock;
 use App\Models\ProductUnit;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    /**
+     * Menu products only (dishes + buffets). Raw ingredients live
+     * under Inventory (InventoryController). Stock is tracked on
+     * raw materials via recipes — menu rows carry no inventory.
+     */
     public function index(Request $request)
     {
-        $products = Product::self()->with(['category', 'recipe.ingredients'])->active()->latest('id')->paginate(20)->withQueryString();
+        $products = Product::self()
+            ->sellable()
+            ->with(['category', 'recipe.ingredients'])
+            ->active()
+            ->latest('id')
+            ->paginate(20)
+            ->withQueryString();
 
         return view('admin.products.index', compact('products'));
     }
@@ -35,13 +45,11 @@ class ProductController extends Controller
             'unit_id' => 'required',
             'name' => 'required|min:2',
             'name_bn' => 'nullable|string|max:255',
-            'buying_price' => 'required|numeric',
-            'selling_price' => 'required|numeric',
-            'stock_in' => 'required|numeric',
+            'selling_price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
             'meal_times' => 'nullable|array',
             'meal_times.*' => 'in:breakfast,lunch,dinner',
-            'type' => 'nullable|in:dish,buffet,ingredient',
+            'type' => 'nullable|in:dish,buffet',
         ]);
 
         $input['admin_id'] = panel_owner_id();
@@ -51,29 +59,25 @@ class ProductController extends Controller
             $input['type'] = ProductType::DISH;
         }
 
-        if ($request->hasFile('image')) {
+        // Pure menu row: no inventory of its own.
+        $input['buying_price'] = 0;
+        $input['stock_in'] = 0;
+        $input['stock_out'] = 0;
 
+        if ($request->hasFile('image')) {
             $input['image'] = upload_file($request->file('image'), 'images/products');
         }
 
-        $product = Product::create($input);
+        Product::create($input);
 
-        ProductStock::create([
-            'product_id' => $product->id,
-            'admin_id' => $product->admin_id,
-            'type' => 'increment',
-            'quantity' => $request->stock_in,
-            'old_stock' => 0,
-            'new_stock' => $request->stock_in,
-            'buying_price' => $request->buying_price,
-            'selling_price' => $request->selling_price,
-        ]);
-
-        return redirect()->back()->with('success', 'Product saved.');
+        return redirect()->back()->with('success', 'Menu product saved.');
     }
 
     public function edit(Product $product)
     {
+        abort_if($product->isIngredient(), 404);
+        abort_unless((int) $product->admin_id === (int) panel_owner_id(), 403);
+
         $units = ProductUnit::get();
         $categories = ProductCategory::get();
 
@@ -82,18 +86,19 @@ class ProductController extends Controller
 
     public function update(Product $product, Request $request)
     {
+        abort_if($product->isIngredient(), 404);
+        abort_unless((int) $product->admin_id === (int) panel_owner_id(), 403);
+
         $input = $request->validate([
             'category_id' => 'required',
             'unit_id' => 'required',
             'name' => 'required|min:2',
             'name_bn' => 'nullable|string|max:255',
-            'buying_price' => 'required|numeric',
-            'selling_price' => 'required|numeric',
-            'stock_in' => 'required|numeric',
+            'selling_price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
             'meal_times' => 'nullable|array',
             'meal_times.*' => 'in:breakfast,lunch,dinner',
-            'type' => 'nullable|in:dish,buffet,ingredient',
+            'type' => 'nullable|in:dish,buffet',
         ]);
 
         $input['meal_times'] = $this->normalizeMealTimes($request->input('meal_times'));
@@ -110,11 +115,9 @@ class ProductController extends Controller
             $input['image'] = upload_file($request->file('image'), 'images/products');
         }
 
-        $this->updateStock($product, $request);
-
         $product->update($input);
 
-        return redirect()->back()->with('success', 'Product saved.');
+        return redirect()->back()->with('success', 'Menu product saved.');
     }
 
     /**
@@ -131,49 +134,14 @@ class ProductController extends Controller
         return $slots;
     }
 
-    private function updateStock($product, $request)
-    {
-        $newStock = $request->stock_in;
-        $oldStockQuantity = $product->stock_in;
-
-        if ($newStock == $oldStockQuantity) {
-            return;
-        }
-
-        $productStock = new ProductStock;
-        $productStock->admin_id = $product->admin_id;
-        $productStock->product_id = $product->id;
-        $productStock->old_stock = $oldStockQuantity;
-        $productStock->buying_price = $request->buying_price;
-        $productStock->selling_price = $request->selling_price;
-        $productStock->new_stock = $newStock;
-
-        if ($newStock > $oldStockQuantity) {
-            $productStock->type = 'increment';
-            $productStock->quantity = $newStock - $oldStockQuantity;
-        }
-
-        if ($newStock < $oldStockQuantity) {
-            $productStock->type = 'decrement';
-            $productStock->quantity = $oldStockQuantity - $newStock;
-        }
-
-        $productStock->save();
-    }
-
     public function delete(Product $product)
     {
+        abort_if($product->isIngredient(), 404);
+        abort_unless((int) $product->admin_id === (int) panel_owner_id(), 403);
+
         $product->is_active = false;
         $product->save();
 
-        return redirect()->back()->with('success', 'Product deleted.');
+        return redirect()->back()->with('success', 'Menu product deleted.');
     }
 }
-
-
-
-
-
-
-
-
