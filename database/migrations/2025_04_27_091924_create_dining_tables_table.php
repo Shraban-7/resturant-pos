@@ -23,7 +23,6 @@ return new class extends Migration
             $table->unsignedBigInteger('floor_id')->nullable();
             $table->string('name');
             $table->string('status')->default(TableStatus::FREE->value);
-            $table->string('qr_code_token', 64)->nullable()->unique();
             $table->integer('x_position')->default(0);
             $table->integer('y_position')->default(0);
             $table->timestamps();

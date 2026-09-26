@@ -40,7 +40,6 @@ return [
         'report' => 'রিপোর্ট',
         'system' => 'সিস্টেম',
         'settings' => 'সেটিংস',
-        'storefront' => 'স্টোরফ্রন্ট',
         'logout' => 'লগ আউট',
     ],
 

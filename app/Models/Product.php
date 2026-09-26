@@ -62,7 +62,7 @@ class Product extends Model
         return ($this->type ?? ProductType::DISH) === ProductType::DISH;
     }
 
-    /** Sellable items only (dishes + buffets) for POS / menus / storefront. */
+    /** Sellable items only (dishes + buffets) for POS. */
     public function scopeSellable($query)
     {
         return $query->whereIn(
@@ -77,7 +77,7 @@ class Product extends Model
     }
 
     /**
-     * Meal slots with serving hours (24h). Used by the storefront to show
+     * Meal slots with serving hours (24h). Used to show
      * "available now" dishes: breakfast-only, lunch-only, dinner-only, or all-day.
      */
     public static function mealSlotHours(): array

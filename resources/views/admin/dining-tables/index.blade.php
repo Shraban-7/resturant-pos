@@ -55,14 +55,6 @@
                 @if($table->branch)
                     <p class="text-[10px] text-slate-400">{{ $table->branch->name }}</p>
                 @endif
-                <div class="mt-3 flex flex-col gap-2">
-                    <a href="{{ route('admin.diningTables.qrCard', $table) }}" class="btn btn-secondary btn-sm w-full" target="_blank">
-                        <i class="ri-qr-code-line"></i> QR Card
-                    </a>
-                    <a href="{{ route('menu.index', $table) }}" class="btn btn-ghost btn-sm w-full" target="_blank">
-                        <i class="ri-external-link-line"></i> Open Menu
-                    </a>
-                </div>
             </div>
         </div>
     @empty

@@ -9,16 +9,13 @@ use App\Models\DiningTable;
 use App\Models\Floor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class DiningTableController extends Controller
 {
     public function index()
     {
         $tables = DiningTable::self()->forActiveBranch()->with(['floor', 'branch'])->orderBy('name')->get();
-        $tables->each(fn (DiningTable $table) => $table->ensureQrToken());
         $tableStatus = DiningTable::statuses();
         $floors = Floor::self()->forActiveBranch()->orderBy('priority')->orderBy('name')->get();
         $branches = admin_branches();
@@ -51,7 +48,6 @@ class DiningTableController extends Controller
             'name' => $data['name'],
             'floor_id' => $data['floor_id'] ?? null,
             'status' => TableStatus::FREE,
-            'qr_code_token' => Str::random(48),
         ]);
 
         return redirect()->back()->with('success', 'Table saved.');
@@ -146,31 +142,6 @@ class DiningTableController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Floor plan saved.',
-        ]);
-    }
-
-    public function qrCard(DiningTable $table)
-    {
-        abort_unless((int) $table->admin_id === (int) panel_owner_id(), 403);
-
-        $token = $table->ensureQrToken();
-        $menuUrl = route('menu.index', $table);
-        $trackerUrl = route('menu.tracker', $token);
-        $qrSvg = QrCode::size(280)->margin(1)->generate($menuUrl);
-
-        return view('admin.dining-tables.qr-card', compact('table', 'menuUrl', 'trackerUrl', 'qrSvg'));
-    }
-
-    public function qrSvg(DiningTable $table)
-    {
-        abort_unless((int) $table->admin_id === (int) panel_owner_id(), 403);
-
-        $table->ensureQrToken();
-        $svg = QrCode::size(400)->margin(1)->generate(route('menu.index', $table));
-
-        return response($svg, 200, [
-            'Content-Type' => 'image/svg+xml',
-            'Content-Disposition' => 'attachment; filename="table-'.$table->id.'-qr.svg"',
         ]);
     }
 }

@@ -20,12 +20,8 @@ use App\Http\Controllers\Admin\ReservationController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StockController;
-use App\Http\Controllers\Admin\StorefrontSettingController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\OrderStatusController;
-use App\Http\Controllers\StorefrontController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -33,7 +29,7 @@ Route::get('/', function () {
         return redirect()->route('admin.dashboard');
     }
 
-    return app(App\Http\Controllers\StorefrontController::class)->index(request());
+    return redirect()->route('login');
 })->name('home');
 
 // Language switcher (English / Bangla)
@@ -44,18 +40,6 @@ Route::get('/lang/{locale}', function (string $locale) {
 
     return redirect()->back();
 })->name('lang.switch');
-
-// Public storefront (products + table reservation + contact inquiry)
-Route::get('/store', [StorefrontController::class, 'index'])->name('storefront.index');
-Route::post('/reserve', [StorefrontController::class, 'reserve'])->name('storefront.reserve');
-Route::post('/contact', [StorefrontController::class, 'contact'])->name('storefront.contact');
-
-// Digital QR Code Menu & Public Tracking
-Route::get('/menu/tracker/{token}', [MenuController::class, 'tracker'])->name('menu.tracker');
-Route::get('/menu/{table}', [MenuController::class, 'index'])->name('menu.index');
-Route::post('/menu/{table}/order', [MenuController::class, 'placeOrder'])->name('menu.placeOrder');
-Route::get('/order-status/{order}', [OrderStatusController::class, 'show'])->name('order-status.show');
-Route::get('/order-status/{order}/status', [OrderStatusController::class, 'status'])->name('order-status.status');
 
 // Guest authentication routes...
 Route::middleware('guest')->group(function () {
@@ -69,11 +53,6 @@ Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:dashboard');
-
-    Route::prefix('storefront-settings')->as('storefront-settings.')->middleware('permission:settings')->group(function () {
-        Route::get('/', [StorefrontSettingController::class, 'index'])->name('index');
-        Route::put('/', [StorefrontSettingController::class, 'update'])->name('update');
-    });
 
     Route::prefix('notifications')->as('notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
@@ -199,8 +178,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
         Route::post('/store', [DiningTableController::class, 'store'])->name('store');
         Route::post('/{table}/update', [DiningTableController::class, 'update'])->name('update');
         Route::delete('/{table}/destroy', [DiningTableController::class, 'destroy'])->name('destroy');
-        Route::get('/{table}/qr-card', [DiningTableController::class, 'qrCard'])->name('qrCard');
-        Route::get('/{table}/qr.svg', [DiningTableController::class, 'qrSvg'])->name('qrSvg');
     });
 
     Route::prefix('employees')->as('employees.')->middleware('permission:employees')->group(function () {

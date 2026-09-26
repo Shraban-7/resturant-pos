@@ -46,8 +46,7 @@ class User extends Authenticatable
     /**
      * Canonical owner id for scoping. Single restaurant = single dataset:
      * every admin shares the first admin's data, employees inherit through
-     * their parent chain. This keeps the public storefront (which books
-     * under the first admin) visible to whichever admin is logged in.
+     * their parent chain.
      */
     public function ownerId(): int
     {
@@ -67,12 +66,6 @@ class User extends Authenticatable
         }
 
         return (int) $this->id;
-    }
-
-    /** First admin = canonical store owner (used by the public storefront). */
-    public static function storeOwner(): ?self
-    {
-        return static::admin()->orderBy('id')->first();
     }
 
     public function isAdmin(): bool

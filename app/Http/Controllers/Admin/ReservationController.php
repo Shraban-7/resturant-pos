@@ -18,8 +18,7 @@ class ReservationController extends Controller
 {
     public function index()
     {
-        // Explicit branch filter (default: all). The old session-scope hid
-        // storefront bookings made for other branches.
+        // Explicit branch filter (default: all).
         $branchFilter = request()->get('branch_id');
 
         $reservations = Reservation::self()

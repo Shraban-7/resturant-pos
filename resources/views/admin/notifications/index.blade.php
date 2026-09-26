@@ -34,7 +34,7 @@
             <div class="empty-state py-10">
                 <i class="ri-notification-off-line"></i>
                 <h3>No notifications yet</h3>
-                <p>Storefront reservations and orders will appear here instantly.</p>
+                <p>Reservations and orders will appear here instantly.</p>
             </div>
         @endforelse
     </div>

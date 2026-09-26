@@ -29,7 +29,6 @@ Built for restaurants that need a fast cashier terminal, live kitchen tickets, t
 - **Kitchen Display (KDS)** — auto-refreshing KOTs with pending → preparing → ready → served workflow
 - **Floors & tables** — multi-floor layout, floor map, occupancy status (`free` / `occupied` / `reserved`)
 - **Recipe BOM** — ingredients linked to menu items with automatic stock deduction on sale
-- **QR table ordering** — guest menu from table QR codes with live order status tracking
 - **Offline PWA** — service worker + IndexedDB queue with idempotent sync when back online
 - **Reservations** — bookings with guest count and table locking
 - **Loyalty & gift cards** — points/tiers and gift-card issue + verify (POS redemption still evolving)
@@ -44,7 +43,7 @@ Built for restaurants that need a fast cashier terminal, live kitchen tickets, t
 | --- | --- |
 | Backend | PHP 8.2+, Laravel 11, Eloquent |
 | Frontend | Blade, Alpine.js 3, Tailwind CSS 4, Vite |
-| Realtime | Polling-based auto-refresh (KDS, order tracker) |
+| Realtime | Polling-based auto-refresh (KDS) |
 | Offline | Service Worker (`public/sw.js`), IndexedDB (`public/js/pos-idb.js`) |
 | Database | MySQL 8+ / MariaDB |
 | Tests | PHPUnit |
@@ -146,7 +145,7 @@ Change these credentials before any shared or production environment.
 ```text
 app/
   Actions/          # Domain actions (KOT, BOM deduction, modifiers)
-  Http/Controllers/ # Auth, Seller, Supplier, Menu/QR
+  Http/Controllers/ # Auth, Admin (POS, KDS, inventory, branches)
   Models/
   Services/         # StockService and shared services
 database/

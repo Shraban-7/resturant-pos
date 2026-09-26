@@ -40,7 +40,6 @@ return [
         'report' => 'Report',
         'system' => 'System',
         'settings' => 'Settings',
-        'storefront' => 'Storefront',
         'logout' => 'Logout',
     ],
 

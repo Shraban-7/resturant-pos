@@ -43,16 +43,6 @@ class CreateKitchenTicketAction
 
         $ticket->load(['items', 'diningTable', 'sale.waiter']);
 
-        if ($ticket->diningTable) {
-            $ticket->diningTable->ensureQrToken();
-            $ticket->setRelation('diningTable', $ticket->diningTable->fresh());
-        }
-
-        $saleTable = $sale->getRelationValue('diningTable') ?? $sale->getRelationValue('table') ?? $sale->diningTable ?? $sale->table;
-        if ($saleTable) {
-            $saleTable->ensureQrToken();
-        }
-
         return $ticket;
     }
 
@@ -93,11 +83,6 @@ class CreateKitchenTicketAction
         }
 
         $ticket->load(['items', 'diningTable', 'sale.waiter']);
-
-        if ($ticket->diningTable) {
-            $ticket->diningTable->ensureQrToken();
-            $ticket->setRelation('diningTable', $ticket->diningTable->fresh());
-        }
 
         return $ticket;
     }

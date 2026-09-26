@@ -95,7 +95,6 @@
             <div class="sidebar-section">{{ __('admin.sidebar.system') }}</div>
             <ul class="sidebar-list">
                 <x-sidebar-list-item :title="__('admin.sidebar.settings')" :icon="'ri-settings-3-line'" :route="'admin.settings.index'" />
-                <x-sidebar-list-item :title="__('admin.sidebar.storefront')" :icon="'ri-global-line'" :route="'admin.storefront-settings.index'" />
             </ul>
         @endcan
     </nav>
