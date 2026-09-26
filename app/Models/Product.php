@@ -62,12 +62,12 @@ class Product extends Model
         return ($this->type ?? ProductType::DISH) === ProductType::DISH;
     }
 
-    /** Sellable items for POS (dishes + buffets + raw ingredients). */
+    /** Sellable menu items for POS (dishes + buffets only; raw excluded). */
     public function scopeSellable($query)
     {
         return $query->whereIn(
             $query->getModel()->getTable().'.type',
-            [ProductType::DISH, ProductType::BUFFET, ProductType::INGREDIENT]
+            [ProductType::DISH, ProductType::BUFFET]
         );
     }
 

@@ -1,31 +1,51 @@
 <style>
-    /* Multiselect pills (plain CSS so selection state works without a frontend rebuild) */
+    /* Multiselect click-to-add pills (plain CSS so selection works without rebuild) */
     .addition-pill, .addon-pill {
         display: inline-flex;
         align-items: center;
-        gap: 0.25rem;
+        gap: 0.35rem;
         padding: 0.375rem 0.75rem;
         border-radius: 9999px;
-        border: 1px solid #e2e8f0;
+        border: 1.5px solid #e2e8f0;
         background: #fff;
         color: #475569;
         font-size: 0.75rem;
         font-weight: 700;
-        transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s;
     }
-    .addition-pill:hover { border-color: #6ee7b7; }
-    .addon-pill:hover { border-color: #7dd3fc; }
+    .addition-pill:hover { border-color: #059669; color: #047857; }
+    .addon-pill:hover { border-color: #0284c7; color: #0369a1; }
+    .addition-pill:active, .addon-pill:active { transform: scale(0.96); }
+    .addition-pill .tick, .addon-pill .tick {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        height: 1rem;
+        width: 1rem;
+        border-radius: 9999px;
+        background: rgba(255,255,255,0.25);
+        font-size: 0.7rem;
+    }
     .addition-check:checked + .addition-pill {
         background: #059669;
         color: #fff;
         border-color: #059669;
-        box-shadow: 0 4px 10px -2px rgb(5 150 105 / 0.35);
+        box-shadow: 0 4px 10px -2px rgb(5 150 105 / 0.45);
     }
+    .addition-check:checked + .addition-pill .tick { display: inline-flex; }
     .addon-check:checked + .addon-pill {
         background: #0284c7;
         color: #fff;
         border-color: #0284c7;
-        box-shadow: 0 4px 10px -2px rgb(2 132 199 / 0.35);
+        box-shadow: 0 4px 10px -2px rgb(2 132 199 / 0.45);
+    }
+    .addon-check:checked + .addon-pill .tick { display: inline-flex; }
+    .addition-check:focus-visible + .addition-pill,
+    .addon-check:focus-visible + .addon-pill {
+        outline: 2px solid #f97316;
+        outline-offset: 2px;
     }
 </style>
 <div x-data="{ open: false }" @keydown.escape.window="open = false" @open-item-modal.window="open = true"
@@ -108,37 +128,9 @@
                             <label
                                 class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
                                 <span>Additions</span>
-                                <span class="flex items-center gap-2">
-                                    <span class="text-[11px] font-normal text-slate-400">Tick to add</span>
-                                    @can('products')
-                                        <button type="button" onclick="window.toggleQuickAddition(event)"
-                                            class="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-700 hover:text-emerald-800"
-                                            title="Create a new addition on the fly">
-                                            <i class="ri-add-circle-line text-sm"></i> New
-                                        </button>
-                                    @endcan
-                                </span>
+                                <span class="text-[11px] font-normal text-slate-400">Tick to add</span>
                             </label>
                             <div id="extrasList" class="flex flex-wrap gap-2"></div>
-                            @can('products')
-                                <div id="quickAdditionForm" class="hidden mt-2 p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-2">
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <input type="text" id="quickAdditionName" placeholder="Name, e.g. Cheese"
-                                            class="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
-                                        <div class="relative">
-                                            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">৳</span>
-                                            <input type="number" id="quickAdditionPrice" placeholder="Price" min="0" step="0.01" value="0"
-                                                class="w-full border border-slate-200 rounded-xl pl-7 pr-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-end gap-2">
-                                        <button type="button" onclick="window.toggleQuickAddition(event, true)"
-                                            class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">Cancel</button>
-                                        <button type="button" onclick="window.saveQuickAddition()"
-                                            class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white">Save Addition</button>
-                                    </div>
-                                </div>
-                            @endcan
                         </div>
 
                         {{-- Suggested add-ons (multiselect, priced) --}}

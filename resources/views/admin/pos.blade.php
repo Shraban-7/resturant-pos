@@ -180,32 +180,47 @@
                       </div>
                   </div>
 
-                  {{-- Running Orders (compact, under categories) --}}
-                  <div class="flex items-center gap-2 mb-1">
-                      <h3
-                          class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                          <i class="ri-restart-line text-orange-600"></i> {{ __('admin.pos.running_orders') }}
-                      </h3>
-                      <span class="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full {{ count($runningSales ?? []) > 0 ? 'bg-orange-100 text-orange-700' : 'bg-slate-200 text-slate-500' }}">
-                          {{ count($runningSales ?? []) }}
-                      </span>
-                  </div>
+                  {{-- Running Orders (highlighted) --}}
                   @if(count($runningSales ?? []) > 0)
-                      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1 mb-2">
-                          @foreach ($runningSales as $sale)
-                              @php
-                                  $chipTableName = ($sale->getRelationValue('diningTable') ?? $sale->getRelationValue('table'))?->name ?? $sale->diningTable?->name ?? $sale->table?->name ?? null;
-                              @endphp
-                              <a href="{{ route('admin.pos.index', ['sale' => $sale->order_id]) }}"
-                                 class="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 hover:border-orange-400 hover:bg-orange-50/50 shadow-sm transition-all group">
-                                  <span class="text-[11px] font-bold font-mono text-slate-500 group-hover:text-orange-600">#{{ $sale->order_id }}</span>
-                                  @if($chipTableName)
-                                      <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60 flex items-center gap-0.5">
-                                          <i class="ri-restaurant-line text-[9px]"></i>{{ $chipTableName }}
-                                      </span>
-                                  @endif
-                              </a>
-                          @endforeach
+                      <div class="rounded-xl border border-amber-300/80 bg-amber-50/80 px-2.5 py-2 shadow-sm">
+                          <div class="flex items-center gap-2 mb-1.5">
+                              <h3 class="text-[11px] font-extrabold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                                  <span class="relative flex h-2 w-2">
+                                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-500 opacity-60"></span>
+                                      <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-600"></span>
+                                  </span>
+                                  <i class="ri-restart-line text-orange-600"></i> {{ __('admin.pos.running_orders') }}
+                              </h3>
+                              <span class="text-[10px] font-extrabold px-1.5 py-px rounded-full bg-orange-600 text-white shadow-sm">
+                                  {{ count($runningSales ?? []) }}
+                              </span>
+                          </div>
+                          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1">
+                              @foreach ($runningSales as $sale)
+                                  @php
+                                      $chipTableName = ($sale->getRelationValue('diningTable') ?? $sale->getRelationValue('table'))?->name ?? $sale->diningTable?->name ?? $sale->table?->name ?? null;
+                                  @endphp
+                                  <a href="{{ route('admin.pos.index', ['sale' => $sale->order_id]) }}"
+                                     class="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border-2 border-amber-300 hover:border-orange-500 hover:bg-orange-50 shadow-sm transition-all group">
+                                      <span class="text-[11px] font-extrabold font-mono text-slate-800 group-hover:text-orange-700">#{{ $sale->order_id }}</span>
+                                      @if($chipTableName)
+                                          <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60 flex items-center gap-0.5">
+                                              <i class="ri-restaurant-line text-[9px]"></i>{{ $chipTableName }}
+                                          </span>
+                                      @endif
+                                  </a>
+                              @endforeach
+                          </div>
+                      </div>
+                  @else
+                      <div class="flex items-center gap-2 mb-1">
+                          <h3
+                              class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                              <i class="ri-restart-line text-orange-600"></i> {{ __('admin.pos.running_orders') }}
+                          </h3>
+                          <span class="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-500">
+                              0
+                          </span>
                       </div>
                   @endif
 
@@ -729,6 +744,7 @@
                 const productModifiersMap = @json($productModifiersMap ?? []);
                 const productAddonsMap = @json($productAddonsMap ?? []);
                 const productExtrasMap = @json($productExtrasMap ?? []);
+                const allAdditions = @json($allAdditions ?? []);
                 const posVat = @json($vatConfig ?? ['mode' => 'disabled', 'rate' => 0]);
 
                 function round2(n) {
@@ -851,19 +867,21 @@
                     const section = document.getElementById('extrasSection');
                     const list = document.getElementById('extrasList');
                     if (!section || !list) return;
-                    const extras = (productExtrasMap[productId] || []).filter(a => a && a.id);
-                    if (!extras.length && !canManageAdditions) {
+                    const attached = (productExtrasMap[productId] || []).filter(a => a && a.id);
+                    // Multiselect should always show: per-dish first, global fallback otherwise.
+                    const extras = attached.length ? attached : (allAdditions || []).filter(a => a && a.id);
+                    if (!extras.length) {
                         section.style.display = 'none';
                         list.innerHTML = '';
                         return;
                     }
                     section.style.display = '';
                     list.innerHTML = extras.map(a => `
-                    <label class="cursor-pointer inline-block">
-                        <input type="checkbox" class="hidden peer addition-check" name="addition_ids[]" value="${a.id}"
+                    <label class="cursor-pointer inline-block select-none">
+                        <input type="checkbox" class="sr-only addition-check" name="addition_ids[]" value="${a.id}"
                                data-name="${String(a.name).replace(/"/g, '&quot;')}"
                                data-price="${a.price}">
-                        <span class="addition-pill">+ ${a.name} · ৳${Number(a.price).toFixed(2)}</span>
+                        <span class="addition-pill"><i class="ri-check-line tick"></i><span>+ ${a.name} · ৳${Number(a.price).toFixed(2)}</span></span>
                     </label>`).join('');
                     list.querySelectorAll('.addition-check').forEach(el => {
                         el.addEventListener('change', recalcModalTotal);
@@ -882,11 +900,11 @@
                     }
                     section.style.display = '';
                     list.innerHTML = addons.map(a => `
-                    <label class="cursor-pointer inline-block">
-                        <input type="checkbox" class="hidden peer addon-check" name="addon_ids[]" value="${a.id}"
+                    <label class="cursor-pointer inline-block select-none">
+                        <input type="checkbox" class="sr-only addon-check" name="addon_ids[]" value="${a.id}"
                                data-name="${String(a.name).replace(/"/g, '&quot;')}"
                                data-price="${a.price}">
-                        <span class="addon-pill">⊕ ${a.name} · ৳${Number(a.price).toFixed(2)}</span>
+                        <span class="addon-pill"><i class="ri-check-line tick"></i><span>⊕ ${a.name} · ৳${Number(a.price).toFixed(2)}</span></span>
                     </label>`).join('');
                     list.querySelectorAll('.addon-check').forEach(el => {
                         el.addEventListener('change', recalcModalTotal);

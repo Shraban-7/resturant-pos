@@ -176,6 +176,15 @@ class PosController extends Controller
             ];
         });
 
+        // Global fallback so the modal multiselect always has options,
+        // even for dishes with nothing attached yet.
+        $allAdditions = \App\Models\Addition::self()->active()->orderBy('sort_order')->orderBy('name')
+            ->get()->map(fn ($a) => [
+                'id' => $a->id,
+                'name' => $a->name,
+                'price' => (float) $a->price,
+            ])->values();
+
         $offlineProducts = $products->map(fn ($product) => [
             'product_id' => $product->id,
             'name' => $product->name,
@@ -241,6 +250,7 @@ class PosController extends Controller
             'productModifiersMap',
             'productAddonsMap',
             'productExtrasMap',
+            'allAdditions',
             'recipeProductIds',
             'offlineProducts',
             'offlineCategories',
