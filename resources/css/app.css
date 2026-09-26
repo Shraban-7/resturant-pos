@@ -31,6 +31,15 @@ body {
     letter-spacing: -0.006em;
 }
 
+/* Hide scrollbar for horizontal scroll areas */
+.no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
 /* ====== Component layer (utility classes) ====== */
 /* NOTE: In Tailwind v4, @apply can ONLY reference built-in Tailwind utilities,
    not custom component classes. Each variant below inlines the base class's

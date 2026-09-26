@@ -5,19 +5,6 @@
 
     @php
         $subtotal = $totalPrice = 0;
-        $categoryIcons = [
-            'Bengali Food' => 'ri-bowl-line',
-            'Indian Food' => 'ri-restaurant-2-line',
-            'Chinese Food' => 'ri-takeaway-line',
-            'Fast Food' => 'ri-goblet-line',
-            'Drinks' => 'ri-cup-line',
-            'Beverages' => 'ri-cup-line',
-            'Desserts' => 'ri-cake-2-line',
-            'Buffet' => 'ri-restaurant-line',
-            'Appetizers' => 'ri-fingerprint-line',
-            'Main Course' => 'ri-bowl-fill',
-            'Raw Ingredients' => 'ri-seedling-line',
-        ];
     @endphp
 
     <x-error-modal />
@@ -156,92 +143,88 @@
         {{-- =================== MAIN WORKSPACE SPLIT =================== --}}
         <div class="flex-1 flex overflow-hidden">
 
-            {{-- ===== LEFT CANVAS: ORDER STATUS + TABLES + CATEGORIES + PRODUCTS ===== --}}
+            {{-- ===== LEFT CANVAS: ORDER STATUS + CATEGORIES + PRODUCTS ===== --}}
             <main class="flex-1 overflow-y-auto p-4 lg:p-5 pb-24 lg:pb-6 space-y-5">
 
-                {{-- Running & Recent Orders Ribbon --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {{-- Running Orders --}}
-                    @include('components.pos._order-chips', [
-                        'title' => __('admin.pos.running_orders'),
-                        'icon' => 'ri-restart-line',
-                        'sales' => $runningSales,
-                        'routeName' => 'admin.pos.index',
-                        'showTable' => true,
-                    ])
+                  {{-- Categories Filter Tabs Carousel --}}
+                  <div>
+                      <div class="flex items-center justify-between mb-2">
+                          <h3
+                              class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                              {{ __('admin.pos.categories') }}
+                          </h3>
+                          @if(count($recentSales ?? []) > 0)
+                              <button type="button"
+                                  class="text-[11px] font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1 shrink-0"
+                                  @click="$dispatch('open-recent-sales')">
+                                  <i class="ri-receipt-2-line"></i> {{ __('admin.pos.recent_orders') }}
+                                  <span class="bg-orange-100 text-orange-700 text-[10px] font-extrabold px-1.5 py-0.2 rounded-full">{{ count($recentSales) }}</span>
+                              </button>
+                          @endif
+                      </div>
 
-                    {{-- Recent Invoices --}}
-                    @include('components.pos._order-chips', [
-                        'title' => __('admin.pos.recent_orders'),
-                        'icon' => 'ri-receipt-2-line',
-                        'sales' => $recentSales,
-                        'routeName' => 'admin.sales.invoice',
-                    ])
-                </div>
+                      <div class="flex gap-1.5 overflow-x-auto no-scrollbar py-1 -mx-1 px-1" id="categoryScroll">
+                          <button
+                              class="category-card shrink-0 active inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 font-semibold text-[11px] shadow-sm hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer"
+                              data-category="all" onclick="window.filterCategory('all', this)" type="button">
+                              {{ __('admin.pos.all_items') }}
+                          </button>
+                          @foreach ($categories as $category)
+                              <button
+                                  class="category-card shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 font-semibold text-[11px] shadow-sm hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer"
+                                  data-category="{{ $category->id }}"
+                                  onclick="window.filterCategory({{ $category->id }}, this)" type="button">
+                                  {{ $category->name }}
+                              </button>
+                          @endforeach
+                      </div>
+                  </div>
 
-                {{-- Dining Tables Status Bar --}}
-                @if (count($diningTables ?? []) > 0)
-                    <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-sm">
-                        <div class="flex items-center justify-between mb-2.5">
-                            <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
-                                <i class="ri-restaurant-fill text-orange-600"></i> {{ __('admin.sidebar.dining_tables') }}
-                            </h3>
-                            <span class="text-[11px] font-semibold text-slate-400">{{ __('admin.pos.click_table_update') }}</span>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach ($diningTables as $table)
-                                <x-admin.dining-table-card :table="$table" />
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
+                  {{-- Running Orders (compact, under categories) --}}
+                  <div class="flex items-center gap-2 mb-2">
+                      <h3
+                          class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                          <i class="ri-restart-line text-orange-600"></i> {{ __('admin.pos.running_orders') }}
+                      </h3>
+                      <span class="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full {{ count($runningSales ?? []) > 0 ? 'bg-orange-100 text-orange-700' : 'bg-slate-200 text-slate-500' }}">
+                          {{ count($runningSales ?? []) }}
+                      </span>
+                  </div>
+                  @if(count($runningSales ?? []) > 0)
+                      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1 mb-4">
+                          @foreach ($runningSales as $sale)
+                              @php
+                                  $chipTableName = ($sale->getRelationValue('diningTable') ?? $sale->getRelationValue('table'))?->name ?? $sale->diningTable?->name ?? $sale->table?->name ?? null;
+                              @endphp
+                              <a href="{{ route('admin.pos.index', ['sale' => $sale->order_id]) }}"
+                                 class="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 hover:border-orange-400 hover:bg-orange-50/50 shadow-sm transition-all group">
+                                  <span class="text-[11px] font-bold font-mono text-slate-500 group-hover:text-orange-600">#{{ $sale->order_id }}</span>
+                                  @if($chipTableName)
+                                      <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60 flex items-center gap-0.5">
+                                          <i class="ri-restaurant-line text-[9px]"></i>{{ $chipTableName }}
+                                      </span>
+                                  @endif
+                              </a>
+                          @endforeach
+                      </div>
+                  @endif
 
-                {{-- Categories Filter Tabs Carousel --}}
-                <div>
-                    <div class="flex items-center justify-between mb-2.5">
-                        <h3
-                            class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="ri-apps-2-line text-orange-600"></i> {{ __('admin.pos.categories') }}
-                        </h3>
-                        <span class="text-xs text-slate-400">{{ __('admin.pos.scroll_explore') }}</span>
-                    </div>
-
-                    <div class="flex gap-2.5 overflow-x-auto no-scrollbar py-1 -mx-1 px-1" id="categoryScroll">
-                        <button
-                            class="category-card shrink-0 active inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-slate-200 text-slate-700 font-bold text-xs shadow-sm hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer"
-                            data-category="all" onclick="window.filterCategory('all', this)" type="button">
-                            <i class="ri-apps-2-line text-base text-orange-600"></i>
-                            <span class="category-name">{{ __('admin.pos.all_items') }}</span>
-                        </button>
-                        @foreach ($categories as $category)
-                            @php $icon = $categoryIcons[$category->name] ?? 'ri-restaurant-line'; @endphp
-                            <button
-                                class="category-card shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-slate-200 text-slate-700 font-bold text-xs shadow-sm hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer"
-                                data-category="{{ $category->id }}"
-                                onclick="window.filterCategory({{ $category->id }}, this)" type="button">
-                                <i class="{{ $icon }} text-base text-orange-600"></i>
-                                <span class="category-name">{{ $category->name }}</span>
-                            </button>
-                        @endforeach
-                    </div>
-                </div>
-
-                {{-- Products Menu Grid --}}
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <h3
-                            class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="ri-restaurant-2-line text-orange-600"></i> {{ __('admin.pos.menu_items') }}
-                        </h3>
-                        <span class="text-xs text-slate-500 font-medium">{{ __('admin.pos.items_available', ['count' => count($products)]) }}</span>
-                    </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4"
-                        id="productsGrid">
-                        @foreach ($products as $product)
-                            <x-pos.item :item="$product" :available="$product->pos_available" :unlimited="$product->pos_unlimited" :addons-count="count($productAddonsMap[$product->id] ?? [])" />
-                        @endforeach
-                    </div>
-                </div>
+                 {{-- Products Menu Grid --}}
+                 <div>
+                     <div class="flex items-center justify-between mb-2">
+                         <h3
+                             class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                             <i class="ri-restaurant-2-line text-orange-600"></i> {{ __('admin.pos.menu_items') }}
+                         </h3>
+                         <span class="text-[11px] text-slate-400 font-medium">{{ __('admin.pos.items_available', ['count' => count($products)]) }}</span>
+                     </div>
+                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-2.5"
+                         id="productsGrid">
+                         @foreach ($products as $product)
+                             <x-pos.item :item="$product" :available="$product->pos_available" :unlimited="$product->pos_unlimited" :addons-count="count($productAddonsMap[$product->id] ?? [])" />
+                         @endforeach
+                     </div>
+                 </div>
             </main>
 
             {{-- ===== RIGHT PANEL: DESKTOP TICKET & CART ===== --}}

@@ -288,10 +288,6 @@ class PosController extends Controller
                 $discount = (float) $request->discount;
                 $totalPrice = ($qty * $lineUnit) - $discount;
 
-                if ($product->isIngredient()) {
-                    throw new RuntimeException('Ingredient not for sale.');
-                }
-
                 // Pure menu: recipe-less dishes are always available;
                 // ingredient shortages surface from execute() below.
 

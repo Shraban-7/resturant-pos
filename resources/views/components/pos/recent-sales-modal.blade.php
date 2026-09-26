@@ -1,6 +1,6 @@
-<div x-data="{ open: false }" @keydown.escape.window="open = false">
+<div x-data="{ open: false }" @open-recent-sales.window="open = true" @keydown.escape.window="open = false">
     <template x-teleport="body">
-        <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none">
+        <div x-show="open" x-cloak x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none">
             <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="open = false"></div>
             <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200/90 max-h-[85vh] flex flex-col overflow-hidden"
                 @click.stop>
@@ -12,7 +12,7 @@
                             <i class="ri-receipt-2-line text-base"></i>
                         </span>
                         <div>
-                            <h3 class="text-base font-bold text-slate-900 leading-tight">Recent Sales</h3>
+                            <h3 class="text-base font-bold text-slate-900 leading-tight">Recent Orders</h3>
                             <p class="text-[11px] text-slate-500">Quick invoice access</p>
                         </div>
                     </div>
@@ -29,9 +29,9 @@
                                 class="h-12 w-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center text-xl mx-auto mb-2">
                                 <i class="ri-inbox-line"></i>
                             </div>
-                            <h3 class="text-sm font-bold text-slate-700">No Recent Sales</h3>
-                            <p class="text-xs text-slate-400 mt-1">Completed orders will show here for instant
-                                re-printing.</p>
+                            <h3 class="text-sm font-bold text-slate-700">No Recent Orders</h3>
+                            <p class="text-xs text-slate-400 mt-1">Completed orders will show here for
+                                quick re-printing.</p>
                         </div>
                     @else
                         <ul class="space-y-2">
