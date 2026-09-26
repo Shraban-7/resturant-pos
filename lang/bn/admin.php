@@ -21,7 +21,7 @@ return [
         'inventory' => 'ইনভেন্টরি',
         'products' => 'প্রোডাক্ট',
         'menu' => 'মেনু',
-        'menu_products' => 'মেনু প্রোডাক্ট',
+        'menu_products' => 'মেনু আইটেম',
         'categories' => 'ক্যাটাগরি',
         'suppliers' => 'সরবরাহকারী',
         'purchases' => 'ক্রয়',

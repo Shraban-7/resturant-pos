@@ -44,6 +44,7 @@ class PosController extends Controller
                 'category',
                 'unit',
                 'recipe.ingredients.ingredientProduct',
+                'addons:id,name,selling_price,is_active',
                 'modifiers' => fn ($q) => $q->where('modifiers.is_active', true)->orderBy('group_name')->orderBy('sort_order'),
             ])
             ->latest('id')
@@ -104,6 +105,18 @@ class PosController extends Controller
                     'price' => (float) $m->price,
                     'is_required' => (bool) $m->pivot->is_required,
                 ])->values(),
+            ];
+        });
+
+        $productAddonsMap = $products->mapWithKeys(function (Product $product) {
+            return [
+                $product->id => $product->addons
+                    ->filter(fn ($a) => (bool) $a->is_active)
+                    ->map(fn ($a) => [
+                        'id' => $a->id,
+                        'name' => $a->name,
+                        'price' => (float) $a->selling_price,
+                    ])->values(),
             ];
         });
 
@@ -170,6 +183,7 @@ class PosController extends Controller
             'sale',
             'saleItems',
             'productModifiersMap',
+            'productAddonsMap',
             'recipeProductIds',
             'offlineProducts',
             'offlineCategories',

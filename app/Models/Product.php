@@ -114,6 +114,26 @@ class Product extends Model
         return $this->meal_times->contains(fn (MealSlot $m) => $m->value === $slot);
     }
 
+    /**
+     * Plain string values of meal_times (the cast returns a Collection,
+     * which cannot go directly into in_array()).
+     */
+    public function mealTimeValues(): array
+    {
+        if (empty($this->meal_times)) {
+            return [];
+        }
+
+        if ($this->meal_times instanceof \Illuminate\Support\Collection) {
+            return $this->meal_times
+                ->map(fn ($m) => $m instanceof MealSlot ? $m->value : (string) $m)
+                ->values()
+                ->all();
+        }
+
+        return array_values((array) $this->meal_times);
+    }
+
     public function scopeForMealSlot($query, ?string $slot)
     {
         if (! $slot) {
@@ -178,6 +198,16 @@ class Product extends Model
     {
         return $this->belongsToMany(Modifier::class, 'product_modifiers', 'product_id', 'modifier_id')
             ->withPivot(['is_required', 'max_select'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Suggested extra items for this menu item (e.g. Burger → Coke).
+     * Add-ons are real sellable products added as their own sale lines.
+     */
+    public function addons(): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'product_addons', 'product_id', 'addon_product_id')
             ->withTimestamps();
     }
 

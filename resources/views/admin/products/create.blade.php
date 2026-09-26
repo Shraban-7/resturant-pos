@@ -1,8 +1,8 @@
 @extends('layouts.admin')
-@section('title', 'Add Menu Product')
-@section('page_title', 'Add Menu Product')
+@section('title', 'Add Menu Item')
+@section('page_title', 'Add Menu Item')
 @section('breadcrumb')
-<a href="{{ route('admin.products.index') }}">Menu Products</a>
+<a href="{{ route('admin.products.index') }}">Menu Items</a>
 <span class="separator">/</span>
 <span class="current">Add</span>
 @endsection
@@ -16,7 +16,7 @@
             <div class="card">
                 <div class="card-header">
                     <div>
-                        <h6 class="card-title">Menu Product Information</h6>
+                        <h6 class="card-title">Menu Item Information</h6>
                         <p class="card-subtitle">Dishes sell at the POS · inventory is tracked on raw materials via recipes</p>
                     </div>
                 </div>

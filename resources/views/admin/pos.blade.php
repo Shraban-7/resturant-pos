@@ -641,12 +641,14 @@
                         const title = document.getElementById('productModalLabel');
                         if (title) title.textContent = name;
                         renderModifiers(id);
+                        renderAddons(id);
                         recalcModalTotal();
                     }
                 });
 
                 window.recipeProductIds = @json(($recipeProductIds ?? collect())->values());
                 const productModifiersMap = @json($productModifiersMap ?? []);
+                const productAddonsMap = @json($productAddonsMap ?? []);
 
                 function selectedModifiers() {
                     const modal = document.getElementById('itemModal');
@@ -702,8 +704,75 @@
                     });
                 }
 
-                function recalcModalTotal() {
-                    const modal = document.getElementById('itemModal');
+                // --- Suggested add-ons (e.g. Coke with Burger): one-tap add ---
+                function renderAddons(productId) {
+                    const section = document.getElementById('addonsSection');
+                    const list = document.getElementById('addonsList');
+                    if (!section || !list) return;
+                    const addons = (productAddonsMap[productId] || []).filter(a => a && a.id);
+                    if (!addons.length) {
+                        section.style.display = 'none';
+                        list.innerHTML = '';
+                        return;
+                    }
+                    section.style.display = '';
+                    list.innerHTML = addons.map(a => `
+                    <button type="button" onclick="window.quickAddAddon(${a.id})"
+                        class="w-full flex items-center justify-between gap-2 p-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 cursor-pointer hover:border-orange-400 hover:bg-orange-50/50 transition">
+                        <span class="font-semibold text-slate-800 flex items-center gap-1.5">
+                            <i class="ri-add-circle-line text-orange-600 text-sm"></i>${a.name}
+                        </span>
+                        <span class="text-orange-600 font-bold">+৳${a.price}</span>
+                    </button>`).join('');
+                }
+
+                window.quickAddAddon = function(addonId) {
+                    if (!navigator.onLine) {
+                        window.toast?.warning('You are offline. Add-ons can be added after reconnect.');
+                        return;
+                    }
+                    let addon = null;
+                    Object.values(productAddonsMap || {}).forEach(list => {
+                        (list || []).forEach(a => { if (parseInt(a.id, 10) === parseInt(addonId, 10)) addon = a; });
+                    });
+                    if (!addon) {
+                        showError('Add-on not found.');
+                        return;
+                    }
+                    const url = isSale ?
+                        "{{ route('admin.pos.saleItem.add') }}" :
+                        "{{ route('admin.pos.addItem') }}";
+                    const oid = isSale ? saleOrderId : orderId;
+                    fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrf,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                order_id: oid,
+                                product_id: addon.id,
+                                quantity: 1,
+                                unit_price: addon.price,
+                                discount: 0,
+                                note: '',
+                                modifiers: [],
+                            })
+                        })
+                        .then(r => r.json().then(d => ({ ok: r.ok, d })))
+                        .then(({ ok, d }) => {
+                            if (!ok) {
+                                showError(d.message || 'Could not add add-on.');
+                                return;
+                            }
+                            setItemToCart(d.data.item, d.data.cart_item_html);
+                            window.toast?.success(addon.name + ' added.');
+                        })
+                        .catch(err => showError(err.message || 'Network error'));
+                };
+
+                function recalcModalTotal() {                    const modal = document.getElementById('itemModal');
                     if (!modal) return;
                     const q = parseFloat(modal.querySelector('input[name="quantity"]').value) || 0;
                     const p = parseFloat(modal.querySelector('input[name="price"]').value) || 0;

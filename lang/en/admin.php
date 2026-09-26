@@ -21,7 +21,7 @@ return [
         'inventory' => 'Inventory',
         'products' => 'Products',
         'menu' => 'Menu',
-        'menu_products' => 'Menu Products',
+        'menu_products' => 'Menu Items',
         'categories' => 'Categories',
         'suppliers' => 'Suppliers',
         'purchases' => 'Purchases',

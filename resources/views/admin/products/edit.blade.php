@@ -1,8 +1,8 @@
 @extends('layouts.admin')
-@section('title', 'Edit Menu Product')
-@section('page_title', 'Edit Menu Product')
+@section('title', 'Edit Menu Item')
+@section('page_title', 'Edit Menu Item')
 @section('breadcrumb')
-<a href="{{ route('admin.products.index') }}">Menu Products</a>
+<a href="{{ route('admin.products.index') }}">Menu Items</a>
 <span class="separator">/</span>
 <span class="current">Edit</span>
 @endsection
@@ -16,7 +16,7 @@
             <div class="card">
                 <div class="card-header">
                     <div>
-                        <h6 class="card-title">Menu Product Information</h6>
+                        <h6 class="card-title">Menu Item Information</h6>
                         <p class="card-subtitle">Update the details for {{ $product->name }}</p>
                     </div>
                 </div>
@@ -70,10 +70,11 @@
                         <div class="md:col-span-2">
                             <label class="form-label">Served at <span class="text-slate-500 text-xs">(all ticked or unticked = all day)</span></label>
                             <div class="flex flex-wrap gap-4">
+                                @php $mealVals = $product->mealTimeValues(); @endphp
                                 @foreach (\App\Enums\MealSlot::values() as $slot)
                                     <label class="flex items-center gap-1.5 text-sm text-slate-700">
                                         <input type="checkbox" name="meal_times[]" value="{{ $slot }}" class="rounded"
-                                            @checked(empty($product->meal_times) || in_array($slot, $product->meal_times ?? []))>
+                                            @checked(empty($mealVals) || in_array($slot, $mealVals))>
                                         {{ ucfirst($slot) }}
                                     </label>
                                 @endforeach

@@ -73,6 +73,16 @@
                             </div>
                         </div>
 
+                        {{-- Suggested add-ons (pairs well with) --}}
+                        <div class="col-span-2" id="addonsSection" style="display:none">
+                            <label
+                                class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                                <span>Pairs well with</span>
+                                <span class="text-[11px] font-normal text-slate-400">One-tap add</span>
+                            </label>
+                            <div id="addonsList" class="space-y-2"></div>
+                        </div>
+
                         {{-- Special Note --}}
                         <div class="col-span-2">
                             <label class="block text-xs font-bold text-slate-700 mb-1">Special Instructions</label>

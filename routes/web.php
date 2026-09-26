@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\KdsController;
 use App\Http\Controllers\Admin\LoyaltyController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PosController;
+use App\Http\Controllers\Admin\ProductAddonController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductModifierController;
 use App\Http\Controllers\Admin\PurchaseController;
@@ -114,6 +115,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
             Route::post('/', [ProductModifierController::class, 'store'])->name('store');
             Route::put('/{productModifier}', [ProductModifierController::class, 'update'])->name('update');
             Route::delete('/{productModifier}', [ProductModifierController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('{product}/addons')->as('addons.')->group(function () {
+            Route::get('/', [ProductAddonController::class, 'index'])->name('index');
+            Route::post('/', [ProductAddonController::class, 'store'])->name('store');
+            Route::delete('/{addon}', [ProductAddonController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('{product}/recipe')->as('recipe.')->group(function () {

@@ -1,10 +1,10 @@
 @extends('layouts.admin')
-@section('title', 'Menu Products')
-@section('page_title', 'Menu Products')
+@section('title', 'Menu Items')
+@section('page_title', 'Menu Items')
 @section('breadcrumb')
 <a href="{{ route('admin.dashboard') }}">Home</a>
 <span class="separator">/</span>
-<span class="current">Menu Products</span>
+<span class="current">Menu Items</span>
 @endsection
 
 @section('content')
@@ -15,7 +15,7 @@
     </div>
     <div class="page-actions">
         <a class="btn btn-primary" href="{{ route('admin.products.create') }}">
-            <i class="ri-add-line"></i> Add Menu Product
+            <i class="ri-add-line"></i> Add Menu Item
         </a>
     </div>
 </div>
@@ -87,6 +87,12 @@
                                 <a href="{{ route('admin.products.modifiers.index', $product) }}" class="btn btn-secondary btn-sm" title="Modifiers">
                                     <i class="ri-list-settings-line"></i>
                                 </a>
+                                <a href="{{ route('admin.products.addons.index', $product) }}" class="btn {{ ($product->addons_count ?? 0) ? 'btn-success' : 'btn-secondary' }} btn-sm" title="Add-ons (suggested extra items)">
+                                    <i class="ri-add-circle-line"></i>
+                                    @if (($product->addons_count ?? 0))
+                                        <span class="text-[10px] font-bold">{{ $product->addons_count }}</span>
+                                    @endif
+                                </a>
                                 <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-primary btn-sm" title="Edit">
                                     <i class="ri-edit-box-line"></i>
                                 </a>
@@ -102,10 +108,10 @@
                     <tr><td colspan="5">
                         <div class="empty-state">
                             <i class="ri-restaurant-2-line"></i>
-                            <h3>No menu products yet</h3>
+                            <h3>No menu items yet</h3>
                             <p>Start by adding your first dish to the menu.</p>
                             <a href="{{ route('admin.products.create') }}" class="btn btn-primary mt-4">
-                                <i class="ri-add-line"></i> Add Menu Product
+                                <i class="ri-add-line"></i> Add Menu Item
                             </a>
                         </div>
                     </td></tr>

@@ -11,7 +11,7 @@
 
 <div class="page-header">
     <div>
-        <p class="page-subtitle">Group menu products and raw materials · shared by both sections</p>
+        <p class="page-subtitle">Group menu items and products · shared by both sections</p>
     </div>
     <div class="page-actions">
         <button type="button" class="btn btn-primary" @click="$dispatch('open-modal', { id: 'addCategory' })">

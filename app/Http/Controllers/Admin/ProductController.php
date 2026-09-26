@@ -22,6 +22,7 @@ class ProductController extends Controller
         $products = Product::self()
             ->sellable()
             ->with(['category', 'recipe.ingredients'])
+            ->withCount('addons')
             ->active()
             ->latest('id')
             ->paginate(20)
@@ -70,7 +71,7 @@ class ProductController extends Controller
 
         Product::create($input);
 
-        return redirect()->back()->with('success', 'Menu product saved.');
+        return redirect()->back()->with('success', 'Menu item saved.');
     }
 
     public function edit(Product $product)
@@ -117,7 +118,7 @@ class ProductController extends Controller
 
         $product->update($input);
 
-        return redirect()->back()->with('success', 'Menu product saved.');
+        return redirect()->back()->with('success', 'Menu item saved.');
     }
 
     /**
@@ -142,6 +143,6 @@ class ProductController extends Controller
         $product->is_active = false;
         $product->save();
 
-        return redirect()->back()->with('success', 'Menu product deleted.');
+        return redirect()->back()->with('success', 'Menu item deleted.');
     }
 }

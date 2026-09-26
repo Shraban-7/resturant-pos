@@ -114,6 +114,16 @@ class MenuInventorySplitTest extends TestCase
         $response->assertSessionHasErrors('supplier_id');
     }
 
+    public function test_menu_edit_renders_with_meal_times_set(): void
+    {
+        $admin = $this->createAdmin();
+        $this->actingAs($admin);
+        $dish = $this->createProduct($admin, ['type' => 'dish', 'meal_times' => ['lunch', 'dinner']]);
+
+        // Regression: meal_times casts to a Collection — must not hit in_array() on it.
+        $this->get(route('admin.products.edit', $dish))->assertOk();
+    }
+
     public function test_menu_edit_blocks_raw_and_inventory_edit_blocks_dish(): void
     {
         $admin = $this->createAdmin();
