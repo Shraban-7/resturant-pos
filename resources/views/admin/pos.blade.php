@@ -22,24 +22,24 @@
 
         {{-- =================== TOP WORKSTATION BAR =================== --}}
         <header
-            class="bg-slate-950 text-white h-16 flex items-center gap-3 px-4 shrink-0 z-20 border-b border-slate-800 shadow-md">
+            class="bg-slate-950 text-white h-12 flex items-center gap-2 px-3 shrink-0 z-20 border-b border-slate-800 shadow-md">
             <!-- Logo & Cashier Profile -->
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 shrink-0 group">
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 shrink-0 group">
                 @if (store_logo_url())
                     <img src="{{ store_logo_url() }}" alt="{{ store_name() }}"
-                        class="h-9 w-9 rounded-xl object-cover ring-1 ring-white/20 shrink-0">
+                        class="h-7 w-7 rounded-lg object-cover ring-1 ring-white/20 shrink-0">
                 @else
                     <span
-                        class="flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700 text-white shadow-md shadow-orange-950/40">
-                        <i class="ri-restaurant-2-line text-lg"></i>
+                        class="flex items-center justify-center h-7 w-7 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 text-white shadow-md shadow-orange-950/40">
+                        <i class="ri-restaurant-2-line text-base"></i>
                     </span>
                 @endif
                 <div class="hidden sm:block">
-                    <div class="text-sm font-extrabold text-white leading-tight tracking-tight flex items-center gap-1.5">
+                    <div class="text-xs font-extrabold text-white leading-tight tracking-tight flex items-center gap-1.5">
                         <span>{{ __('admin.pos.terminal') }}</span>
-                        <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                     </div>
-                    <div class="text-[11px] text-slate-400 font-medium flex items-center gap-1.5 mt-0.5">
+                    <div class="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-px">
                         <span
                             class="text-orange-400 font-bold uppercase tracking-wider text-[10px]">{{ auth()->user()->name }}</span>
                         <span>·</span>
@@ -54,7 +54,7 @@
                     <i
                         class="ri-search-2-line absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-base"></i>
                     <input id="productNameSearch" type="text"
-                        class="block w-full rounded-xl border border-slate-700/80 bg-slate-900/90 px-3.5 py-2 pl-10 pr-10 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all shadow-inner"
+                        class="block w-full rounded-lg border border-slate-700/80 bg-slate-900/90 px-3 py-1.5 pl-9 pr-9 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all shadow-inner"
                         placeholder="{{ __('admin.pos.search_placeholder') }}">
                     <span
                         class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">ESC</span>
@@ -83,10 +83,10 @@
             @endif
 
             <!-- Quick Action Toolbar -->
-            <div class="flex items-center gap-1.5 ml-auto">
+            <div class="flex items-center gap-1 ml-auto">
                 <!-- Kitchen Display Link with Ready Badge -->
                 <a href="{{ route('admin.kds.index') }}"
-                    class="relative inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                    class="relative inline-flex items-center justify-center h-8 w-8 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
                     title="{{ __('admin.sidebar.kitchen_display') }}" id="posKitchenBadgeLink">
                     <i class="ri-macbook-line text-lg"></i>
                     <span id="posKitchenReadyBadge"
@@ -95,7 +95,7 @@
 
                 <!-- Offline Sync Button -->
                 <button type="button" id="offlineSyncButton"
-                    class="relative inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition hidden"
+                    class="relative inline-flex items-center justify-center h-8 w-8 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition hidden"
                     title="{{ __('admin.pos.sync_offline') }}">
                     <i class="ri-cloud-line text-lg"></i>
                     <span id="offlineSyncBadge"
@@ -104,7 +104,7 @@
 
                 <!-- Quick Barcode Scan Modal -->
                 <button type="button" id="productCodeBtn"
-                    class="inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                    class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
                     title="{{ __('admin.pos.scan_code') }}"
                     @click="barcodeOpen = true; $nextTick(() => document.getElementById('barcodeInput')?.focus())">
                     <i class="ri-barcode-line text-lg"></i>
@@ -112,28 +112,28 @@
 
                 <!-- Fullscreen -->
                 <button type="button" id="fullscreen-btn"
-                    class="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                    class="hidden sm:inline-flex items-center justify-center h-8 w-8 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
                     title="{{ __('admin.pos.fullscreen') }}">
                     <i class="ri-fullscreen-line text-lg"></i>
                 </button>
 
                 <!-- Refresh -->
                 <button type="button" id="refresh-btn"
-                    class="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                    class="hidden sm:inline-flex items-center justify-center h-8 w-8 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
                     title="{{ __('admin.pos.refresh_terminal') }}">
                     <i class="ri-loop-right-line text-lg"></i>
                 </button>
 
                 <!-- Dashboard -->
                 <a href="{{ route('admin.dashboard') }}"
-                    class="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                    class="hidden sm:inline-flex items-center justify-center h-8 w-8 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
                     title="{{ __('admin.pos.admin_dashboard') }}">
                     <i class="ri-dashboard-line text-lg"></i>
                 </a>
 
                 <!-- Logout -->
                 <a href="{{ route('logout') }}"
-                    class="inline-flex items-center justify-center h-9 w-9 rounded-xl text-slate-400 hover:text-red-300 hover:bg-red-500/20 transition"
+                    class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-slate-400 hover:text-red-300 hover:bg-red-500/20 transition"
                     title="{{ __('admin.pos.sign_out') }}">
                     <i class="ri-logout-box-r-line text-lg"></i>
                 </a>
@@ -144,7 +144,7 @@
         <div class="flex-1 flex overflow-hidden">
 
             {{-- ===== LEFT CANVAS: ORDER STATUS + CATEGORIES + PRODUCTS ===== --}}
-            <main class="flex-1 overflow-y-auto p-4 lg:p-5 pb-24 lg:pb-6 space-y-5">
+            <main class="flex-1 overflow-y-auto p-2.5 lg:p-3 pb-20 lg:pb-4 space-y-3">
 
                   {{-- Categories Filter Tabs Carousel --}}
                   <div>
@@ -155,23 +155,23 @@
                           </h3>
                           @if(count($recentSales ?? []) > 0)
                               <button type="button"
-                                  class="text-[11px] font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1 shrink-0"
+                                  class="shrink-0 inline-flex items-center gap-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow-md shadow-orange-600/30 active:scale-95 transition"
                                   @click="$dispatch('open-recent-sales')">
-                                  <i class="ri-receipt-2-line"></i> {{ __('admin.pos.recent_orders') }}
-                                  <span class="bg-orange-100 text-orange-700 text-[10px] font-extrabold px-1.5 py-0.2 rounded-full">{{ count($recentSales) }}</span>
+                                  <i class="ri-history-line text-sm"></i> {{ __('admin.pos.recent_orders') }}
+                                  <span class="bg-white text-orange-700 text-[10px] font-extrabold px-1.5 py-px rounded-full leading-none">{{ count($recentSales) }}</span>
                               </button>
                           @endif
                       </div>
 
-                      <div class="flex gap-1.5 overflow-x-auto no-scrollbar py-1 -mx-1 px-1" id="categoryScroll">
+                      <div class="flex gap-1 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1" id="categoryScroll">
                           <button
-                              class="category-card shrink-0 active inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 font-semibold text-[11px] shadow-sm hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer"
+                              class="category-card shrink-0 active inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 font-semibold text-[11px] shadow-sm hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer"
                               data-category="all" onclick="window.filterCategory('all', this)" type="button">
                               {{ __('admin.pos.all_items') }}
                           </button>
                           @foreach ($categories as $category)
                               <button
-                                  class="category-card shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 font-semibold text-[11px] shadow-sm hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer"
+                                  class="category-card shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 font-semibold text-[11px] shadow-sm hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer"
                                   data-category="{{ $category->id }}"
                                   onclick="window.filterCategory({{ $category->id }}, this)" type="button">
                                   {{ $category->name }}
@@ -181,7 +181,7 @@
                   </div>
 
                   {{-- Running Orders (compact, under categories) --}}
-                  <div class="flex items-center gap-2 mb-2">
+                  <div class="flex items-center gap-2 mb-1">
                       <h3
                           class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                           <i class="ri-restart-line text-orange-600"></i> {{ __('admin.pos.running_orders') }}
@@ -191,7 +191,7 @@
                       </span>
                   </div>
                   @if(count($runningSales ?? []) > 0)
-                      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1 mb-4">
+                      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1 mb-2">
                           @foreach ($runningSales as $sale)
                               @php
                                   $chipTableName = ($sale->getRelationValue('diningTable') ?? $sale->getRelationValue('table'))?->name ?? $sale->diningTable?->name ?? $sale->table?->name ?? null;
@@ -211,14 +211,14 @@
 
                  {{-- Products Menu Grid --}}
                  <div>
-                     <div class="flex items-center justify-between mb-2">
+                     <div class="flex items-center justify-between mb-1">
                          <h3
                              class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                              <i class="ri-restaurant-2-line text-orange-600"></i> {{ __('admin.pos.menu_items') }}
                          </h3>
                          <span class="text-[11px] text-slate-400 font-medium">{{ __('admin.pos.items_available', ['count' => count($products)]) }}</span>
                      </div>
-                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-2.5"
+                      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-1.5 sm:gap-2"
                          id="productsGrid">
                          @foreach ($products as $product)
                              <x-pos.item :item="$product" :available="$product->pos_available" :unlimited="$product->pos_unlimited" :addons-count="count($productAddonsMap[$product->id] ?? [])" />
@@ -229,7 +229,7 @@
 
             {{-- ===== RIGHT PANEL: DESKTOP TICKET & CART ===== --}}
             <aside
-                class="hidden lg:flex w-[400px] xl:w-[450px] bg-white border-l border-slate-200/90 flex-col shrink-0 shadow-xl shadow-slate-200/50">
+                class="hidden lg:flex w-[320px] xl:w-[360px] bg-white border-l border-slate-200/90 flex-col shrink-0 shadow-xl shadow-slate-200/50">
                 @include('components.pos._cart-panel', [
                     'subtotal' => $subtotal,
                     'totalPrice' => $totalPrice,
@@ -247,17 +247,17 @@
 
         {{-- =================== MOBILE FLOATING CART BUTTON =================== --}}
         <button
-            class="lg:hidden fixed bottom-4 left-4 right-4 z-30 bg-slate-950 text-white shadow-2xl shadow-slate-950/50 rounded-2xl h-14 px-5 flex items-center justify-between font-bold text-sm active:scale-95 transition"
+            class="lg:hidden fixed bottom-3 left-3 right-3 z-30 bg-slate-950 text-white shadow-2xl shadow-slate-950/50 rounded-xl h-12 px-4 flex items-center justify-between font-bold text-sm active:scale-95 transition"
             @click="cartOpen = true">
-            <div class="flex items-center gap-2.5">
-                <span class="flex items-center justify-center h-8 w-8 rounded-xl bg-orange-600 text-white">
-                    <i class="ri-shopping-cart-2-line text-lg"></i>
+            <div class="flex items-center gap-2">
+                <span class="flex items-center justify-center h-7 w-7 rounded-lg bg-orange-600 text-white">
+                    <i class="ri-shopping-cart-2-line text-base"></i>
                 </span>
                 <span>{{ __('admin.pos.view_current_ticket') }}</span>
             </div>
             <div class="flex items-center gap-2">
                 <span class="px-2 py-0.5 rounded-full bg-orange-600 text-xs font-extrabold" id="mobileCartCount">0</span>
-                <i class="ri-arrow-up-s-line text-lg"></i>
+                <i class="ri-arrow-up-s-line text-base"></i>
             </div>
         </button>
 
@@ -271,7 +271,7 @@
                 x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
                 x-transition:leave="transition transform ease-in duration-200" x-transition:leave-start="translate-y-0"
                 x-transition:leave-end="translate-y-full">
-                <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 bg-slate-50">
+                <div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-200 bg-slate-50">
                     <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                         <i class="ri-receipt-line text-orange-600"></i> {{ __('admin.pos.order_ticket') }}
                     </h2>
@@ -403,11 +403,8 @@
                 const $customerSelect = document.getElementById('customerSelect');
                 const $tableSelect = document.getElementById('tableSelect');
                 const $employeeSelect = document.getElementById('employeeSelect');
-                const $giftCardCode = document.getElementById('giftCardCodeInput');
-                const $giftCardStatus = document.getElementById('giftCardStatus');
                 const $customerName = document.getElementById('customer_name');
                 const $customerPhone = document.getElementById('customer_phone');
-                const $note = document.getElementById('note');
                 const $mobileCartCount = document.getElementById('mobileCartCount');
 
                 function showError(msg) {
@@ -500,7 +497,7 @@
                             due: payable - paid,
                             payment_type: 'cash',
                         },
-                        note: $note.value || null,
+                        note: null,
                         created_at_client: new Date().toISOString(),
                         schema_version: 1,
                     };
@@ -1305,7 +1302,7 @@
                         employee_id: $employeeSelect?.value,
                         discount_amount: $discountInput.value,
                         paid_amount: $paidInput.value,
-                        note: $note.value,
+                        note: null,
                         payment_type: 'cash',
                         client_order_id: clientOrderId,
                         device_id: deviceId,
@@ -1402,7 +1399,7 @@
                                 employee_id: $employeeSelect?.value,
                                 discount_amount: $discountInput.value,
                                 paid_amount: $paidInput.value,
-                                note: $note.value,
+                                note: null,
                             })
                         })
                         .then(r => r.json().then(d => ({
@@ -1451,7 +1448,7 @@
                                 employee_id: $employeeSelect?.value,
                                 discount_amount: $discountInput.value,
                                 paid_amount: $paidInput.value,
-                                note: $note.value,
+                                note: null,
                             })
                         })
                         .then(r => r.json().then(d => ({

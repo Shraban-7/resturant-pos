@@ -69,17 +69,12 @@
             </ul>
         @endcanany
 
-        @canany(['loyalty', 'gift-cards'])
+        @can('loyalty')
             <div class="sidebar-section">{{ __('admin.sidebar.marketing') }}</div>
             <ul class="sidebar-list">
-                @can('loyalty')
-                    <x-sidebar-list-item :title="__('admin.sidebar.loyalty_program')" :icon="'ri-gift-line'" :route="'admin.loyalty.index'" />
-                @endcan
-                @can('gift-cards')
-                    <x-sidebar-list-item :title="__('admin.sidebar.gift_cards')" :icon="'ri-coupon-3-line'" :route="'admin.gift-cards.index'" />
-                @endcan
+                <x-sidebar-list-item :title="__('admin.sidebar.loyalty_program')" :icon="'ri-gift-line'" :route="'admin.loyalty.index'" />
             </ul>
-        @endcanany
+        @endcan
 
         @canany(['customers', 'employees'])
             <div class="sidebar-section">{{ __('admin.sidebar.people') }}</div>

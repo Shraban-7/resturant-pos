@@ -37,7 +37,7 @@
                 @click.stop>
                 {{-- Header --}}
                 <div
-                    class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/60 shrink-0">
+                    class="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 bg-slate-50/60 shrink-0">
                     <div class="flex items-center gap-2.5">
                         <span
                             class="flex items-center justify-center h-9 w-9 rounded-xl bg-orange-600 text-white shadow-sm">
@@ -58,12 +58,12 @@
                 </div>
 
                 {{-- Form Fields --}}
-                <div class="px-6 py-5 space-y-4 overflow-y-auto" id="itemModal">
+                <div class="px-4 py-3 space-y-3 overflow-y-auto" id="itemModal">
                     <input type="hidden" name="id" value="">
                     <input type="hidden" name="stock" value="">
                     <input type="hidden" name="base_price" value="">
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-2.5">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Quantity</label>
                             <input type="number"
@@ -155,19 +155,19 @@
 
                 {{-- Footer Summary & Action --}}
                 <div
-                    class="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50 rounded-b-3xl shrink-0">
+                    class="flex items-center justify-between px-4 py-2.5 border-t border-slate-100 bg-slate-50 rounded-b-3xl shrink-0">
                     <div>
                         <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400 block">Item
                             Total</span>
                         <div class="flex items-baseline gap-1">
                             <span class="text-sm font-bold text-orange-600">৳</span>
-                            <span class="text-2xl font-extrabold text-slate-900 tracking-tight"
+                            <span class="text-xl font-extrabold text-slate-900 tracking-tight"
                                 id="product-total-price">0</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
                         <button type="button" id="addToCartBtn"
-                            class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition shadow-lg shadow-orange-600/20 active:scale-95 flex items-center gap-2"
+                            class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow-lg shadow-orange-600/20 active:scale-95 flex items-center gap-2"
                             onclick="window.addItem()">
                             <i class="ri-shopping-cart-2-line"></i> Add to Order
                         </button>

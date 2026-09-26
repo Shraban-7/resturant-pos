@@ -11,7 +11,7 @@
      data-stock="{{ $isUnlimited ? 999999 : $stock }}" @if($isUnlimited) data-unlimited="1" @endif>
 
     {{-- Product Image & Floating Price --}}
-    <div class="h-16 sm:h-18 w-full bg-slate-100 overflow-hidden relative shrink-0">
+    <div class="h-12 w-full bg-slate-100 overflow-hidden relative shrink-0">
         <div class="absolute top-1 right-1.5 flex items-center gap-0.5">
             <div class="ticket-qty-tag" style="display:none" data-qty-badge="{{ $item->id }}" title="Quantity in ticket">×<span>0</span></div>
         </div>
@@ -39,7 +39,7 @@
     </div>
 
     {{-- Card Content --}}
-    <div class="p-1.5 flex-1 flex flex-col justify-between gap-1 min-h-[42px]">
+    <div class="p-1 flex-1 flex flex-col justify-between gap-0.5 min-h-[34px]">
         <div>
             <h4 class="text-[11px] font-bold text-slate-800 name line-clamp-1 leading-snug group-hover:text-orange-600 transition-colors"
                 title="{{ $item->displayName() }}">

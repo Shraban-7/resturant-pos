@@ -1,9 +1,9 @@
-<div class="sale-item bg-white border border-amber-200/80 rounded-xl p-2.5 flex items-center gap-3 hover:border-amber-300 hover:shadow-sm transition-all"
+<div class="sale-item bg-white border border-amber-200/80 rounded-lg p-1.5 flex items-center gap-2 hover:border-amber-300 hover:shadow-sm transition-all"
     data-id="{{ $item->id }}" id="sale-item-{{ $item->id }}" data-itemid="{{ $item->item_id }}"
     data-name="{{ $item->item_name }}" data-unit="{{ $item->unit }}" data-unit-price="{{ $item->unit_price }}">
 
     <img src="{{ $item->product?->imageUrl() ?? asset('storage/' . $item->product?->image) }}" alt=""
-        class="h-12 w-12 object-cover rounded-lg shrink-0 bg-slate-100 border border-slate-100">
+        class="h-9 w-9 object-cover rounded-md shrink-0 bg-slate-100 border border-slate-100">
 
     <div class="flex-1 min-w-0">
         <div class="text-xs sm:text-sm font-bold text-slate-800 truncate leading-snug">{{ $item->product->name }}</div>
@@ -21,19 +21,19 @@
             </div>
         @endif
 
-        <div class="flex items-center gap-1 mt-1.5">
+        <div class="flex items-center gap-1 mt-1">
             <button type="button"
-                class="qty-btn saleDecrement inline-flex items-center justify-center h-6 w-6 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-200 active:scale-95 transition"
+                class="qty-btn saleDecrement inline-flex items-center justify-center h-5 w-5 rounded border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-200 active:scale-95 transition"
                 aria-label="Decrease">
-                <i class="ri-subtract-line text-xs pointer-events-none"></i>
+                <i class="ri-subtract-line text-[11px] pointer-events-none"></i>
             </button>
             <input type="text"
-                class="saleQuantityInput qty-input h-6 w-8 text-center text-xs font-bold text-slate-800 border-0 bg-transparent focus:ring-0 p-0"
+                class="saleQuantityInput qty-input h-5 w-7 text-center text-xs font-bold text-slate-800 border-0 bg-transparent focus:ring-0 p-0"
                 value="{{ $item->quantity }}" min="1" readonly>
             <button type="button"
-                class="qty-btn saleIncrement inline-flex items-center justify-center h-6 w-6 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-200 active:scale-95 transition"
+                class="qty-btn saleIncrement inline-flex items-center justify-center h-5 w-5 rounded border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-200 active:scale-95 transition"
                 aria-label="Increase">
-                <i class="ri-add-line text-xs pointer-events-none"></i>
+                <i class="ri-add-line text-[11px] pointer-events-none"></i>
             </button>
         </div>
     </div>
