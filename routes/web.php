@@ -11,7 +11,6 @@ use App\Http\Controllers\Admin\FloorController;
 use App\Http\Controllers\Admin\GiftCardController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\KdsController;
-use App\Http\Controllers\Admin\LoyaltyController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ProductAddonController;
@@ -184,10 +183,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
         Route::delete('/{reservation}', [ReservationController::class, 'destroy'])->name('destroy');
     });
 
-    Route::prefix('loyalty')->as('loyalty.')->group(function () {
-        Route::get('/', [LoyaltyController::class, 'index'])->name('index');
-        Route::post('/adjust', [LoyaltyController::class, 'adjust'])->name('adjust');
-    });
 
     Route::prefix('gift-cards')->as('gift-cards.')->group(function () {
         Route::get('/', [GiftCardController::class, 'index'])->name('index');

@@ -6,7 +6,6 @@ use App\Enums\ProductType;
 
 use App\Models\Customer;
 use App\Models\GiftCard;
-use App\Models\LoyaltyPoint;
 use App\Models\Modifier;
 use App\Models\Product;
 use App\Models\ProductModifier;
@@ -77,12 +76,6 @@ class CatalogExtrasSeeder extends Seeder
             }
         }
 
-        foreach (Customer::where('admin_id', $ownerId)->take(3)->get() as $customer) {
-            LoyaltyPoint::firstOrCreate(
-                ['admin_id' => $ownerId, 'customer_id' => $customer->id, 'type' => 'earned'],
-                ['admin_id' => $ownerId, 'customer_id' => $customer->id, 'type' => 'earned', 'points' => 100, 'equivalent_amount' => 100, 'description' => 'Welcome bonus']
-            );
-        }
 
         foreach ([['code' => 'GIFT-1000', 'value' => 1000], ['code' => 'GIFT-500', 'value' => 500]] as $data) {
             GiftCard::firstOrCreate(

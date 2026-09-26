@@ -35,7 +35,6 @@ return [
         'branches' => 'শাখা',
         'reservations' => 'রিজার্ভেশন',
         'marketing' => 'মার্কেটিং ও প্রবৃদ্ধি',
-        'loyalty_program' => 'লয়ালটি প্রোগ্রাম',
         'gift_cards' => 'গিফট কার্ড',
         'people' => 'ব্যবহারকারী',
         'customers' => 'গ্রাহক',

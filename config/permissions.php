@@ -10,7 +10,6 @@ return [
     'floors' => 'Manage floors & tables',
     'branches' => 'Manage branches',
     'reservations' => 'Manage reservations',
-    'loyalty' => 'Loyalty program',
     'gift-cards' => 'Gift cards',
     'customers' => 'Manage customers',
     'employees' => 'Manage employees',

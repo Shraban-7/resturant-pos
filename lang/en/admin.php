@@ -35,7 +35,6 @@ return [
         'branches' => 'Branches',
         'reservations' => 'Reservations',
         'marketing' => 'Marketing & Growth',
-        'loyalty_program' => 'Loyalty Program',
         'gift_cards' => 'Gift Cards',
         'people' => 'People',
         'customers' => 'Customers',
