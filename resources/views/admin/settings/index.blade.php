@@ -178,6 +178,34 @@
         </div>
     </div>
 
+    <div class="card mt-4">
+        <div class="card-header">
+            <h6 class="card-title">Discount (all products)</h6>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                    <input type="checkbox" name="global_discount_enabled" value="1" class="rounded border-slate-300"
+                           @checked((bool) ($business->global_discount_enabled ?? false))>
+                    Enable discount on POS orders
+                </label>
+                <div>
+                    <label class="form-label">Discount Type</label>
+                    <select name="global_discount_type" class="form-control">
+                        <option value="percentage" @selected(($business->global_discount_type ?? 'percentage') === 'percentage')>Percentage (%)</option>
+                        <option value="flat" @selected(($business->global_discount_type ?? '') === 'flat')>Flat (৳)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Discount Value</label>
+                    <input type="number" name="global_discount_rate" class="form-control" min="0" step="0.01"
+                           value="{{ $business->global_discount_rate ?? 0 }}">
+                    <p class="form-hint">Percentage = % off subtotal; Flat = fixed ৳ off. POS manual discount overrides this when entered.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="mt-4 flex justify-end gap-2">
         <button type="submit" class="btn btn-primary">
             <i class="ri-save-line"></i> {{ is_null($business) ? 'Save Settings' : 'Update Settings' }}

@@ -234,6 +234,8 @@ class PosController extends Controller
             $vatConfig['mode'] = \App\Support\VatCalculator::MODE_DISABLED;
         }
 
+        $discountConfig = \App\Support\GlobalDiscount::configFor((int) panel_owner_id());
+
         return view('admin.pos', compact(
             'products',
             'cart',
@@ -257,7 +259,8 @@ class PosController extends Controller
             'offlineTables',
             'offlineFloors',
             'offlineCustomers',
-            'vatConfig'
+            'vatConfig',
+            'discountConfig'
         ));
     }
 
@@ -469,9 +472,10 @@ class PosController extends Controller
                     ];
                 }
 
-                $discount = $request->discount_amount ?? 0;
+                $settings = \App\Support\VatCalculator::settingsFor((int) panel_owner_id());
+                $discount = \App\Support\GlobalDiscount::totalDiscount($subTotal, (float) ($request->discount_amount ?? 0), $settings);
                 $paid = (float) ($request->paid_amount ?? 0);
-                $vat = \App\Support\VatCalculator::calculate($subTotal, (float) $discount, \App\Support\VatCalculator::settingsFor((int) panel_owner_id()));
+                $vat = \App\Support\VatCalculator::calculate($subTotal, (float) $discount, $settings);
                 $payable = $vat['payable'];
 
                 $giftCard = null;
@@ -642,7 +646,9 @@ $saleData = [
 
                 $tableId = $request->dining_table_id ?? $request->table_id;
                 $employeeId = $request->employee_id ?? $request->employee_id;
-                $vat = \App\Support\VatCalculator::calculate($subTotal, 0, \App\Support\VatCalculator::settingsFor((int) panel_owner_id()));
+                $holdSettings = \App\Support\VatCalculator::settingsFor((int) panel_owner_id());
+                $holdDiscount = \App\Support\GlobalDiscount::totalDiscount($subTotal, (float) ($request->discount_amount ?? 0), $holdSettings);
+                $vat = \App\Support\VatCalculator::calculate($subTotal, $holdDiscount, $holdSettings);
                 $payable = $vat['payable'];
 
                 // POS mode split: dine-in holds live on a table, counter holds never touch tables.
@@ -666,7 +672,7 @@ $saleData = [
                     'order_id' => $cart->order_id,
                     'sale_date' => date('Y-m-d'),
                     'subtotal' => $subTotal,
-                    'discount' => 0,
+                    'discount' => $holdDiscount,
                     'vat_mode' => $vat['mode'],
                     'vat_rate' => $vat['rate'],
                     'vat_amount' => $vat['vat'],

@@ -28,6 +28,9 @@ class SettingController extends Controller
             'vat_enabled' => 'nullable|boolean',
             'vat_rate' => 'nullable|numeric|min:0|max:100',
             'vat_mode' => 'nullable|string|in:exclusive,inclusive',
+            'global_discount_enabled' => 'nullable|boolean',
+            'global_discount_type' => 'nullable|string|in:flat,percentage',
+            'global_discount_rate' => 'nullable|numeric|min:0',
             'bank_name' => 'nullable|string',
             'account_holder' => 'nullable|string',
             'account_number' => 'nullable|string',
@@ -64,6 +67,9 @@ class SettingController extends Controller
         $data['vat_enabled'] = $request->boolean('vat_enabled');
         $data['vat_rate'] = $data['vat_rate'] ?? 0;
         $data['vat_mode'] = $data['vat_mode'] ?? 'exclusive';
+        $data['global_discount_enabled'] = $request->boolean('global_discount_enabled');
+        $data['global_discount_type'] = $data['global_discount_type'] ?? 'percentage';
+        $data['global_discount_rate'] = $data['global_discount_rate'] ?? 0;
 
         is_null($business) ? BusinessSetting::create($data) : $business->update($data);
 

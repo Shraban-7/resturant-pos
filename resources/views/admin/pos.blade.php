@@ -256,6 +256,7 @@
                     'saleItems' => $saleItems ?? [],
                     'isMobile' => false,
                     'vatConfig' => $vatConfig ?? ['mode' => 'disabled', 'rate' => 0],
+                    'discountConfig' => $discountConfig ?? ['enabled' => false, 'rate' => 0, 'type' => 'percentage'],
                 ])
             </aside>
         </div>
@@ -308,6 +309,7 @@
                     'saleItems' => $saleItems ?? [],
                     'isMobile' => true,
                     'vatConfig' => $vatConfig ?? ['mode' => 'disabled', 'rate' => 0],
+                    'discountConfig' => $discountConfig ?? ['enabled' => false, 'rate' => 0, 'type' => 'percentage'],
                     ])
                 </div>
             </aside>
@@ -414,6 +416,7 @@
                 const $totalPrice = document.getElementById('totalPrice');
                 const $due = document.getElementById('due');
                 const $discountInput = document.getElementById('discountInput');
+                const $discountTypeSelect = document.getElementById('discountTypeSelect');
                 const $paidInput = document.getElementById('paidInput');
                 const $customerSelect = document.getElementById('customerSelect');
                 const $tableSelect = document.getElementById('tableSelect');
@@ -484,9 +487,10 @@
                         (sum, item) => sum + Math.max(0, item.unit_price_snapshot * item.quantity - item.discount),
                         0
                     );
-                    const discount = Number($discountInput.value || 0);
-                    const offlineVat = vatFor(subtotal, discount);
-                    const offlineNet = Math.max(0, subtotal - discount);
+                    const discount = manualDiscountValue();
+                    const totalDiscount = totalDiscountFor(subtotal, discount);
+                    const offlineVat = vatFor(subtotal, totalDiscount);
+                    const offlineNet = Math.max(0, subtotal - totalDiscount);
                     const payable = offlineVat.mode === 'exclusive' ? offlineNet + offlineVat.vat : offlineNet;
                     const paid = Number($paidInput.value || 0);
                     const isDineMode = window.posOrderMode === 'dine_in';
@@ -634,13 +638,23 @@
 
                 function updateCheckoutPrice() {
                     let subtotal = parseFloat($subtotal.textContent) || 0;
-                    let discount = parseFloat($discountInput.value) || 0;
+                    let manual = manualDiscountValue();
                     let paid = parseFloat($paidInput.value) || 0;
+                    const global = globalDiscountFor(subtotal);
+                    // Manual POS discount overrides the settings discount when entered.
+                    const applied = manual > 0 ? 0 : global;
+                    const discount = totalDiscountFor(subtotal, manual);
                     const calc = vatFor(subtotal, discount);
                     const net = Math.max(0, subtotal - discount);
                     const total = calc.mode === 'exclusive' ? net + calc.vat : net;
                     // The ticket panel renders twice (desktop + mobile drawer):
-                    // update every copy so the VAT calculation shows on both.
+                    // update every copy so the calculations show on both.
+                    document.querySelectorAll('#globalDiscountAmount').forEach(el => {
+                        el.textContent = applied.toFixed(2);
+                    });
+                    document.querySelectorAll('#globalDiscountRow').forEach(el => {
+                        el.style.display = (posDiscount.enabled && applied > 0) ? '' : 'none';
+                    });
                     document.querySelectorAll('#vatAmount').forEach(vatAmount => {
                         vatAmount.textContent = calc.vat.toFixed(2);
                     });
@@ -746,9 +760,64 @@
                 const productExtrasMap = @json($productExtrasMap ?? []);
                 const allAdditions = @json($allAdditions ?? []);
                 const posVat = @json($vatConfig ?? ['mode' => 'disabled', 'rate' => 0]);
+                const posDiscount = @json($discountConfig ?? ['enabled' => false, 'rate' => 0, 'type' => 'percentage']);
 
                 function round2(n) {
                     return Math.round((Number(n) || 0) * 100) / 100;
+                }
+
+                // Mirrors App\Support\GlobalDiscount: flat (৳) or percentage off subtotal.
+                // Manual POS discount overrides the settings discount when entered.
+                function globalDiscountFor(subtotal) {
+                    const sub = Math.max(0, Number(subtotal) || 0);
+                    const rate = Number(posDiscount.rate || 0);
+                    if (!posDiscount.enabled || !(rate > 0) || !(sub > 0)) return 0;
+                    if ((posDiscount.type || 'percentage') === 'flat') {
+                        return round2(Math.min(sub, rate));
+                    }
+                    return round2(sub * Math.min(100, rate) / 100);
+                }
+
+                function totalDiscountFor(subtotal, manual) {
+                    const sub = Math.max(0, Number(subtotal) || 0);
+                    const man = Math.max(0, Number(manual) || 0);
+                    if (man > 0) return Math.min(sub, man);
+                    return Math.min(sub, globalDiscountFor(sub));
+                }
+
+                // POS manual discount: flat (৳) or percentage, converted to a flat
+                // amount before totals/payloads. Overrides settings discount when > 0.
+                function manualDiscountValue() {
+                    const sub = Math.max(0, parseFloat($subtotal?.textContent) || 0);
+                    const raw = Math.max(0, parseFloat($discountInput?.value) || 0);
+                    if (raw <= 0 || sub <= 0) return 0;
+                    const t = ($discountTypeSelect?.value || 'flat');
+                    if (t === 'percentage') {
+                        return round2(Math.min(sub, sub * Math.min(100, raw) / 100));
+                    }
+                    return round2(Math.min(sub, raw));
+                }
+
+                function updateDiscountPrefix() {
+                    const t = ($discountTypeSelect?.value || 'flat');
+                    document.querySelectorAll('.discountPrefix').forEach(el => {
+                        el.textContent = t === 'percentage' ? '%' : '৳';
+                    });
+                }
+
+                function syncDiscountFields(source) {
+                    if (source && source.id === 'discountInput') {
+                        document.querySelectorAll('#discountInput').forEach(el => {
+                            if (el !== source) el.value = source.value;
+                        });
+                    }
+                    if (source && source.classList?.contains('discountTypeSelect')) {
+                        document.querySelectorAll('.discountTypeSelect').forEach(el => {
+                            if (el !== source) el.value = source.value;
+                        });
+                    }
+                    updateDiscountPrefix();
+                    updateCheckoutPrice();
                 }
 
                 // Mirrors App\Support\VatCalculator: exclusive adds VAT on top,
@@ -1225,8 +1294,14 @@
                         });
                 }
 
-                // --- Discount / Paid ---
-                $discountInput.addEventListener('input', updateCheckoutPrice);
+                // --- Discount / Paid (both ticket copies stay in sync) ---
+                document.querySelectorAll('#discountInput').forEach(el => {
+                    el.addEventListener('input', () => syncDiscountFields(el));
+                });
+                document.querySelectorAll('.discountTypeSelect').forEach(el => {
+                    el.addEventListener('change', () => syncDiscountFields(el));
+                });
+                updateDiscountPrefix();
                 $paidInput.addEventListener('input', updateCheckoutPrice);
 
                 // --- Quick lookup: matches product code, exact name, then partial name ---
@@ -1318,7 +1393,7 @@
                         order_type: window.posOrderMode,
                         table_id: window.posOrderMode === 'dine_in' ? ($tableSelect?.value || null) : null,
                         employee_id: $employeeSelect?.value,
-                        discount_amount: $discountInput.value,
+                        discount_amount: manualDiscountValue(),
                         paid_amount: $paidInput.value,
                         note: null,
                         payment_type: 'cash',
@@ -1415,7 +1490,7 @@
                                 order_type: window.posOrderMode,
                                 table_id: window.posOrderMode === 'dine_in' ? ($tableSelect?.value || null) : null,
                                 employee_id: $employeeSelect?.value,
-                                discount_amount: $discountInput.value,
+                                discount_amount: manualDiscountValue(),
                                 paid_amount: $paidInput.value,
                                 note: null,
                             })
@@ -1464,7 +1539,7 @@
                                 customer_phone: $customerPhone?.value,
                                 table_id: $tableSelect?.value,
                                 employee_id: $employeeSelect?.value,
-                                discount_amount: $discountInput.value,
+                                discount_amount: manualDiscountValue(),
                                 paid_amount: $paidInput.value,
                                 note: null,
                             })

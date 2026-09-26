@@ -9,6 +9,7 @@
     'saleItems' => [],
     'isMobile' => false,
     'vatConfig' => ['mode' => 'disabled', 'rate' => 0],
+    'discountConfig' => ['enabled' => false, 'rate' => 0, 'type' => 'percentage'],
 ])
 @php $isSale = request('sale'); @endphp
 
@@ -123,6 +124,22 @@
             </div>
         </div>
 
+        {{-- Discount (auto-applied from Settings; values by live totals JS) --}}
+        @php
+            $discountType = ($discountConfig['type'] ?? 'percentage') === 'flat' ? 'flat' : 'percentage';
+            $discountRate = (float) ($discountConfig['rate'] ?? 0);
+            $discountRateLabel = rtrim(rtrim(number_format($discountRate, 2), '0'), '.');
+        @endphp
+        <div class="flex items-center justify-between text-xs font-semibold text-emerald-700" id="globalDiscountRow"
+            data-discount-type="{{ $discountType }}"
+            @if(empty($discountConfig['enabled']) || $discountRate <= 0) style="display:none" @endif>
+            <span id="globalDiscountLabel">{{ $discountType === 'flat' ? "Discount (৳{$discountRateLabel})" : "Discount ({$discountRateLabel}%)" }}</span>
+            <div class="flex items-baseline gap-1 font-bold text-sm">
+                <span class="text-xs font-normal">-</span>
+                <span id="globalDiscountAmount">0</span>
+            </div>
+        </div>
+
         {{-- VAT calculation (mode/rate driven by Settings; values by live totals JS) --}}
         <div class="flex items-center justify-between text-xs font-semibold text-slate-600" id="vatRow">
             <span id="vatLabel" data-exclusive="{{ __('admin.pos.vat_added') }}" data-inclusive="{{ __('admin.pos.vat_included') }}" data-disabled="{{ __('admin.pos.vat_off') }}">{{ __('admin.pos.vat_off') }}</span>
@@ -135,9 +152,17 @@
         {{-- Discount & Paid Row --}}
         <div class="grid grid-cols-2 gap-2">
             <div>
-                <label class="block text-[11px] font-bold text-slate-500 mb-0.5">{{ __('admin.pos.discount_label') }}</label>
+                <div class="flex items-center justify-between mb-0.5">
+                    <label class="text-[11px] font-bold text-slate-500">{{ __('admin.pos.discount') }}</label>
+                    <select id="discountTypeSelect"
+                        class="discountTypeSelect text-[10px] font-extrabold text-slate-600 bg-white border border-slate-200 rounded-md px-1 py-px focus:outline-none focus:ring-1 focus:ring-orange-500 cursor-pointer"
+                        title="Discount type">
+                        <option value="flat">৳ Flat</option>
+                        <option value="percentage">% Pct</option>
+                    </select>
+                </div>
                 <div class="relative">
-                    <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">-</span>
+                    <span class="discountPrefix absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">৳</span>
                     <input type="number" id="discountInput"
                         class="w-full bg-white border border-slate-200 rounded-lg pl-6 pr-2 py-1 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
                         value="0" min="0" step="0.01">

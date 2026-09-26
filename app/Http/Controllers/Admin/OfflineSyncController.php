@@ -223,8 +223,9 @@ class OfflineSyncController extends Controller
                 }
             }
 
-            $discount = (float) ($order['amounts']['discount'] ?? 0);
-            $vat = \App\Support\VatCalculator::calculate($subtotal, $discount, \App\Support\VatCalculator::settingsFor($ownerId));
+            $syncSettings = \App\Support\VatCalculator::settingsFor($ownerId);
+            $discount = \App\Support\GlobalDiscount::totalDiscount($subtotal, (float) ($order['amounts']['discount'] ?? 0), $syncSettings);
+            $vat = \App\Support\VatCalculator::calculate($subtotal, $discount, $syncSettings);
             $payable = $vat['payable'];
             $paid = min((float) $order['amounts']['paid'], $payable);
 

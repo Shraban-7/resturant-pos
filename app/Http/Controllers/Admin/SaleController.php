@@ -333,9 +333,10 @@ class SaleController extends Controller
                 return errorResponse('Cart is empty.');
             }
 
-            $discount = $request->discount_amount ?? 0;
+            $settings = \App\Support\VatCalculator::settingsFor((int) $sale->admin_id);
+            $discount = \App\Support\GlobalDiscount::totalDiscount((float) $sale->subtotal, (float) ($request->discount_amount ?? 0), $settings);
             $paid = $request->paid_amount ?? 0;
-            $vat = \App\Support\VatCalculator::calculate((float) $sale->subtotal, (float) $discount, \App\Support\VatCalculator::settingsFor((int) $sale->admin_id));
+            $vat = \App\Support\VatCalculator::calculate((float) $sale->subtotal, (float) $discount, $settings);
             $payable = $vat['payable'];
 
             $saleData = [
