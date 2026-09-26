@@ -28,10 +28,9 @@
         .table-borderless td { padding: 5px !important; }
         footer {
             margin-top: 3rem;
-            display: flex;
-            justify-content: flex-end;
+            text-align: center;
         }
-        #signature { margin-bottom: -20px !important; }
+        .receipt-note { white-space: pre-line; }
         @media print {
             body { background: #fff; }
             .invoice-container { box-shadow: none; max-width: 100%; }
@@ -53,6 +52,10 @@
                 </div>
             </div>
             <hr class="my-4 border-gray-200">
+            @if(! empty(trim((string) ($settings->receipt_header ?? ''))))
+                <p class="receipt-note text-sm text-center text-gray-600 m-0">{{ $settings->receipt_header }}</p>
+                <hr class="my-4 border-gray-200">
+            @endif
         </header>
 
         <main>
@@ -149,13 +152,7 @@
         </main>
 
         <footer>
-            <div class="text-center">
-                @isset($settings->signature)
-                    <img id="signature" src="{{ storage_url($settings->signature) }}" height="100" alt="signature" />
-                @endisset
-                <div class="border-t border-gray-800 mb-1" style="width: 200px; margin-left: auto;"></div>
-                <p class="text-sm m-0">Signature</p>
-            </div>
+            <p class="receipt-note text-sm m-0">{{ $settings->receipt_footer ?: 'THANK YOU!' }}</p>
         </footer>
     </div>
 </body>

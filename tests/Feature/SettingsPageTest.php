@@ -18,10 +18,16 @@ class SettingsPageTest extends TestCase
 
         $this->actingAs($admin)->get(route('admin.settings.index'))
             ->assertOk()
-            ->assertSee('Business Settings')
-            ->assertSee('Profile Settings')
-            ->assertSee('POS Settings')
-            ->assertSee('Receipt Settings');
+            ->assertSee('Business')
+            ->assertSee('Profile')
+            ->assertSee('POS')
+            ->assertSee('Receipt')
+            ->assertSee('Receipt header')
+            ->assertSee('Receipt footer')
+            ->assertDontSee('Bank information')
+            ->assertDontSee('Bank name')
+            ->assertDontSee('Draw Signature')
+            ->assertDontSee('Print signature');
     }
 
     public function test_business_settings_can_be_saved(): void
@@ -80,14 +86,14 @@ class SettingsPageTest extends TestCase
 
         $this->actingAs($admin)->post(route('admin.settings.receipt'), [
             'tab' => 'receipt',
+            'receipt_header' => "VAT: 123\nwww.example.com",
             'receipt_footer' => 'See you again!',
-            'receipt_show_signature' => '1',
         ])->assertRedirect(route('admin.settings.index', ['tab' => 'receipt']));
 
         $this->assertDatabaseHas('business_settings', [
             'user_id' => $admin->ownerId(),
+            'receipt_header' => "VAT: 123\nwww.example.com",
             'receipt_footer' => 'See you again!',
-            'receipt_show_signature' => true,
         ]);
     }
 
@@ -147,9 +153,10 @@ class SettingsPageTest extends TestCase
 
         $this->actingAs($admin)->post(route('admin.settings.receipt'), [
             'tab' => 'receipt',
-            'receipt_footer' => str_repeat('x', 300), // exceeds max:255
+            'receipt_header' => str_repeat('h', 501),
+            'receipt_footer' => str_repeat('x', 300),
         ])->assertRedirect(route('admin.settings.index', ['tab' => 'receipt']))
-            ->assertSessionHasErrors('receipt_footer');
+            ->assertSessionHasErrors(['receipt_header', 'receipt_footer']);
     }
 
     public function test_legacy_settings_url_redirects_to_index(): void

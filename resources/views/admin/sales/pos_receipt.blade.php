@@ -103,11 +103,19 @@
             margin: 2mm 0;
         }
 
+        .receipt-note {
+            text-align: center;
+            font-size: 12px;
+            white-space: pre-line;
+            margin: 1mm 0;
+        }
+
         .thank-you {
             margin: 3mm 0;
             text-align: center;
             font-weight: bold;
             font-size: 14px;
+            white-space: pre-line;
         }
     </style>
 </head>
@@ -117,6 +125,9 @@
         <div class="restaurant-name">{{ $settings->name ?? 'Restaurant Name' }}</div>
         <div class="restaurant-info">{{ $settings->address ?? '' }}</div>
         <div class="restaurant-info">Tel: {{ $settings->phone ?? '' }}</div>
+        @if(! empty(trim((string) ($settings->receipt_header ?? ''))))
+            <div class="receipt-note">{{ $settings->receipt_header }}</div>
+        @endif
     </div>
 
     <div class="dashed-line"></div>
@@ -172,12 +183,6 @@
             <div class="total-label">{{ money($sale->payable) }}</div>
         </div>
     </div>
-
-    @if(($settings->receipt_show_signature ?? false) && ! empty($settings->signature))
-        <div style="text-align: center; margin: 2mm 0;">
-            <img src="{{ storage_url($settings->signature) }}" alt="signature" style="max-height: 22mm; max-width: 60mm;">
-        </div>
-        @endif
 
     <div class="thank-you">{{ $settings->receipt_footer ?: 'THANK YOU!' }}</div>
 </body>

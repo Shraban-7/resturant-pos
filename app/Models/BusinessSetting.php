@@ -11,4 +11,9 @@ class BusinessSetting extends Model
     
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'receipt_show_signature' => 'boolean',
+        'vat_enabled' => 'boolean',
+        'global_discount_enabled' => 'boolean',
+    ];
 }

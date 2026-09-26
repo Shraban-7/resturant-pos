@@ -7,7 +7,6 @@ use App\Models\BusinessSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class SettingController extends Controller
@@ -117,31 +116,12 @@ class SettingController extends Controller
     public function updateReceipt(Request $request)
     {
         $data = $this->validateTab($request, [
-            'signature' => 'nullable|string',
+            'receipt_header' => 'nullable|string|max:500',
             'receipt_footer' => 'nullable|string|max:255',
-            'receipt_show_signature' => 'nullable|boolean',
         ]);
 
-        $business = $this->business();
-
-        if ($request->signature != null) {
-            $signatureData = str_replace('data:image/png;base64,', '', $request->signature);
-            $signatureData = str_replace(' ', '+', $signatureData);
-            $signatureImage = base64_decode($signatureData);
-
-            $fileName = 'signature_' . time() . '.png';
-            $signaturePath = "signatures/{$fileName}";
-
-            Storage::disk('public')->put($signaturePath, $signatureImage);
-
-            if ($business?->signature) {
-                delete_file($business->signature);
-            }
-
-            $data['signature'] = $signaturePath;
-        }
-
-        $data['receipt_show_signature'] = $request->boolean('receipt_show_signature');
+        $data['receipt_header'] = trim((string) ($data['receipt_header'] ?? '')) ?: null;
+        $data['receipt_footer'] = trim((string) ($data['receipt_footer'] ?? '')) ?: null;
 
         $this->saveBusiness($data);
 
