@@ -7,6 +7,7 @@ use App\Enums\TableStatus;
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
 use App\Actions\ResolveProductAdditionsAction;
+use App\Actions\ResolveProductAddonsAction;
 use App\Actions\ResolveProductModifiersAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CheckoutPosRequest;
@@ -36,7 +37,36 @@ class PosController extends Controller
         protected CreateKitchenTicketAction $createKitchenTicket,
         protected ResolveProductModifiersAction $resolveModifiers,
         protected ResolveProductAdditionsAction $resolveAdditions,
+        protected ResolveProductAddonsAction $resolveProductAddons,
     ) {}
+
+    /**
+     * Add-on products attached to a resolved addons_json payload,
+     * locked for stock movement inside the surrounding transaction.
+     *
+     * @return \Illuminate\Support\Collection<int, Product>
+     */
+    private function lockedAddonProducts(array $addons): \Illuminate\Support\Collection
+    {
+        $ids = collect($addons)
+            ->pluck('id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($ids)) {
+            return collect();
+        }
+
+        return Product::query()
+            ->where('admin_id', panel_owner_id())
+            ->whereKey($ids)
+            ->with('recipe.ingredients.ingredientProduct')
+            ->lockForUpdate()
+            ->get();
+    }
 
     public function index(Request $request)
     {
@@ -184,6 +214,17 @@ class PosController extends Controller
             'phone' => $customer->phone,
         ])->values();
 
+        $vatSettings = \App\Support\VatCalculator::settingsFor((int) panel_owner_id());
+        $vatConfig = [
+            'mode' => (bool) ($vatSettings?->vat_enabled ?? false) && (float) ($vatSettings?->vat_rate ?? 0) > 0
+                ? (string) ($vatSettings->vat_mode ?: \App\Support\VatCalculator::MODE_EXCLUSIVE)
+                : \App\Support\VatCalculator::MODE_DISABLED,
+            'rate' => (float) ($vatSettings?->vat_rate ?? 0),
+        ];
+        if (! in_array($vatConfig['mode'], [\App\Support\VatCalculator::MODE_EXCLUSIVE, \App\Support\VatCalculator::MODE_INCLUSIVE], true)) {
+            $vatConfig['mode'] = \App\Support\VatCalculator::MODE_DISABLED;
+        }
+
         return view('admin.pos', compact(
             'products',
             'cart',
@@ -205,7 +246,8 @@ class PosController extends Controller
             'offlineCategories',
             'offlineTables',
             'offlineFloors',
-            'offlineCustomers'
+            'offlineCustomers',
+            'vatConfig'
         ));
     }
 
@@ -236,6 +278,12 @@ class PosController extends Controller
                 );
                 $lineUnit += $additionsTotal;
 
+                [$productAddons, $productAddonsTotal] = $this->resolveProductAddons->execute(
+                    $product,
+                    $request->input('addons', [])
+                );
+                $lineUnit += $productAddonsTotal;
+
                 $qty = (float) $request->quantity;
                 $discount = (float) $request->discount;
                 $totalPrice = ($qty * $lineUnit) - $discount;
@@ -256,9 +304,13 @@ class PosController extends Controller
                     'total_price' => $totalPrice,
                     'modifiers_json' => $modifiers ?: null,
                     'additions_json' => $additions ?: null,
+                    'addons_json' => $productAddons ?: null,
                 ]);
 
                 $this->deductRecipeStock->execute($product, $qty);
+                foreach ($this->lockedAddonProducts($productAddons) as $addonProduct) {
+                    $this->deductRecipeStock->execute($addonProduct, $qty);
+                }
 
                 $cart_items = CartItem::where('cart_id', $cart->id)->with('item')->get();
                 $itemHtml = '';
@@ -295,6 +347,9 @@ class PosController extends Controller
 
                 $item = $cart_item->item;
                 $this->deductRecipeStock->restore($item, $cart_item->quantity);
+                foreach ($this->lockedAddonProducts($cart_item->addons_json ?? []) as $addonProduct) {
+                    $this->deductRecipeStock->restore($addonProduct, $cart_item->quantity);
+                }
                 $item->loadMissing(['recipe.ingredients.ingredientProduct']);
                 $servings = $this->deductRecipeStock->availableServings($item->fresh());
 
@@ -326,12 +381,20 @@ class PosController extends Controller
                 $item = $cart_item->item;
                 $quantity = (float) $request->quantity;
 
+                $addonProducts = $this->lockedAddonProducts($cart_item->addons_json ?? []);
+
                 if ($quantity > $cart_item->quantity) {
                     $diff = $quantity - $cart_item->quantity;
                     $this->deductRecipeStock->execute($item, $diff);
+                    foreach ($addonProducts as $addonProduct) {
+                        $this->deductRecipeStock->execute($addonProduct, $diff);
+                    }
                 } elseif ($quantity < $cart_item->quantity) {
                     $diff = $cart_item->quantity - $quantity;
                     $this->deductRecipeStock->restore($item, $diff);
+                    foreach ($addonProducts as $addonProduct) {
+                        $this->deductRecipeStock->restore($addonProduct, $diff);
+                    }
                 }
 
                 $cart_item->quantity = $quantity;
@@ -395,13 +458,15 @@ class PosController extends Controller
                         'quantity' => $item->quantity,
                         'total_price' => $item->total_price,
                         'modifiers_json' => $item->modifiers_json,
-                        'additions_json' => $item->additions_json,
+                    'additions_json' => $item->additions_json,
+                    'addons_json' => $item->addons_json,
                     ];
                 }
 
                 $discount = $request->discount_amount ?? 0;
                 $paid = (float) ($request->paid_amount ?? 0);
-                $payable = ($subTotal - $discount);
+                $vat = \App\Support\VatCalculator::calculate($subTotal, (float) $discount, \App\Support\VatCalculator::settingsFor((int) panel_owner_id()));
+                $payable = $vat['payable'];
 
                 $giftCard = null;
                 $giftCardPaid = 0.0;
@@ -472,6 +537,9 @@ $saleData = [
                     'sale_date' => date('Y-m-d'),
                     'subtotal' => $subTotal,
                     'discount' => $discount,
+                    'vat_mode' => $vat['mode'],
+                    'vat_rate' => $vat['rate'],
+                    'vat_amount' => $vat['vat'],
                     'payable' => $payable,
                     'paid' => $paid,
                     'due' => ($payable - $paid),
@@ -561,13 +629,15 @@ $saleData = [
                         'quantity' => $item->quantity,
                         'total_price' => $item->total_price,
                         'modifiers_json' => $item->modifiers_json,
-                        'additions_json' => $item->additions_json,
+                    'additions_json' => $item->additions_json,
+                    'addons_json' => $item->addons_json,
                     ];
                 }
 
                 $tableId = $request->dining_table_id ?? $request->table_id;
                 $employeeId = $request->employee_id ?? $request->employee_id;
-                $payable = $subTotal;
+                $vat = \App\Support\VatCalculator::calculate($subTotal, 0, \App\Support\VatCalculator::settingsFor((int) panel_owner_id()));
+                $payable = $vat['payable'];
 
                 // POS mode split: dine-in holds live on a table, counter holds never touch tables.
                 $mode = in_array($request->order_type, \App\Enums\OrderType::posModes(), true)
@@ -591,6 +661,9 @@ $saleData = [
                     'sale_date' => date('Y-m-d'),
                     'subtotal' => $subTotal,
                     'discount' => 0,
+                    'vat_mode' => $vat['mode'],
+                    'vat_rate' => $vat['rate'],
+                    'vat_amount' => $vat['vat'],
                     'payable' => $payable,
                     'paid' => 0,
                     'due' => $payable,

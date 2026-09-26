@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\CartItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\CreatesPosData;
 use Tests\TestCase;
@@ -100,5 +101,42 @@ class ProductAddonTest extends TestCase
 
         $response->assertOk()->assertJson(['status' => true]);
         $this->assertDatabaseHas('cart_items', ['cart_id' => $cart->id, 'item_id' => $coke->id]);
+    }
+
+    public function test_multiselected_addons_fold_into_item_price(): void
+    {
+        $admin = $this->createAdmin();
+        $this->actingAs($admin);
+        $burger = $this->createProduct($admin, ['name' => 'Burger', 'type' => 'dish', 'selling_price' => 100]);
+        $coke = $this->createProduct($admin, ['name' => 'Coke', 'type' => 'dish', 'selling_price' => 50]);
+        $fries = $this->createProduct($admin, ['name' => 'Fries', 'type' => 'dish', 'selling_price' => 30]);
+        $stranger = $this->createProduct($admin, ['name' => 'Stranger', 'type' => 'dish', 'selling_price' => 999]);
+        $burger->addons()->attach([$coke->id, $fries->id]);
+        $cart = $this->createCart($admin);
+
+        $response = $this->postJson(route('admin.pos.addItem'), [
+            'order_id' => $cart->order_id,
+            'product_id' => $burger->id,
+            'quantity' => 2,
+            'unit_price' => 100,
+            'discount' => 0,
+            'addons' => [['id' => $coke->id], ['id' => $fries->id], ['id' => $stranger->id]],
+        ]);
+
+        $response->assertOk()->assertJson(['status' => true]);
+
+        // Item price (100) + attached add-ons (50 + 30); unattached item ignored.
+        $this->assertDatabaseHas('cart_items', [
+            'cart_id' => $cart->id,
+            'item_id' => $burger->id,
+            'unit_price' => 180,
+            'total_price' => 360,
+        ]);
+
+        $item = CartItem::where('cart_id', $cart->id)->firstOrFail();
+        $this->assertSame(
+            [$coke->id, $fries->id],
+            collect($item->addons_json)->pluck('id')->sort()->values()->all()
+        );
     }
 }

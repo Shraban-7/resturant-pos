@@ -12,6 +12,9 @@
 
     {{-- Product Image & Floating Price --}}
     <div class="h-24 sm:h-28 w-full bg-slate-100 overflow-hidden relative shrink-0">
+        <div class="absolute top-1.5 right-1.5 flex items-center gap-1">
+            <div class="ticket-qty-tag" style="display:none" data-qty-badge="{{ $item->id }}" title="Quantity in ticket">×<span>0</span></div>
+        </div>
         <img src="{{ $item->imageUrl() }}" alt="{{ $item->displayName() }}"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
 
@@ -33,15 +36,6 @@
                 class="text-xs font-extrabold tracking-tight">{{ number_format($item->selling_price, $item->selling_price == (int) $item->selling_price ? 0 : 2) }}</span>
         </div>
 
-        {{-- Add-on suggestions marker --}}
-        @if (($addonsCount ?? 0) > 0)
-            <div
-                class="absolute top-1.5 right-1.5 rounded-full bg-orange-600/95 px-1.5 py-0.5 text-white shadow flex items-center gap-0.5"
-                title="{{ $addonsCount }} suggested add-on{{ $addonsCount === 1 ? '' : 's' }}">
-                <i class="ri-add-circle-line text-[11px]"></i>
-                <span class="text-[10px] font-extrabold leading-none">{{ $addonsCount }}</span>
-            </div>
-        @endif
     </div>
 
     {{-- Card Content --}}

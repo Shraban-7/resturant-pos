@@ -122,11 +122,17 @@
                                 <td class="text-right py-1"><strong>Discount (-):</strong></td>
                                 <td class="w-32 text-right py-1">{{ $sale->discount }}</td>
                             </tr>
+                        @endif
+                        @if(($sale->vat_amount ?? 0) > 0)
                             <tr>
-                                <td class="text-right py-1"><strong>Total:</strong></td>
-                                <td class="w-32 text-right py-1 font-bold">{{ $sale->payable }}</td>
+                                <td class="text-right py-1"><strong>{{ ($sale->vat_mode ?? '') === 'inclusive' ? 'VAT incl. (' . ($sale->vat_rate ?? 0) . '%)' : 'VAT (' . ($sale->vat_rate ?? 0) . '%)' }}:</strong></td>
+                                <td class="w-32 text-right py-1">{{ $sale->vat_amount }}</td>
                             </tr>
                         @endif
+                        <tr>
+                            <td class="text-right py-1"><strong>Total:</strong></td>
+                            <td class="w-32 text-right py-1 font-bold">{{ $sale->payable }}</td>
+                        </tr>
                         @if($sale->due > 0)
                             <tr>
                                 <td class="text-right py-1"><strong>Paid:</strong></td>

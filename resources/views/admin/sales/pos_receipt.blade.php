@@ -161,6 +161,12 @@
             <div>Subtotal:</div>
             <div>{{ money($sale->subtotal) }}</div>
         </div>
+        @if(($sale->vat_amount ?? 0) > 0)
+        <div class="total-row">
+            <div>{{ ($sale->vat_mode ?? '') === 'inclusive' ? 'VAT incl. (' . ($sale->vat_rate ?? 0) . '%)' : 'VAT (' . ($sale->vat_rate ?? 0) . '%)' }}:</div>
+            <div>{{ money($sale->vat_amount) }}</div>
+        </div>
+        @endif
         <div class="total-row">
             <div class="total-label">TOTAL:</div>
             <div class="total-label">{{ money($sale->payable) }}</div>

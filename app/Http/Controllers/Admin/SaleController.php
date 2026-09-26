@@ -7,6 +7,7 @@ use App\Enums\TableStatus;
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
 use App\Actions\ResolveProductAdditionsAction;
+use App\Actions\ResolveProductAddonsAction;
 use App\Actions\ResolveProductModifiersAction;
 use App\Http\Controllers\Controller;
 use App\Models\BusinessSetting;
@@ -31,7 +32,33 @@ class SaleController extends Controller
         protected CreateKitchenTicketAction $createKitchenTicket,
         protected ResolveProductModifiersAction $resolveModifiers,
         protected ResolveProductAdditionsAction $resolveAdditions,
+        protected ResolveProductAddonsAction $resolveProductAddons,
     ) {
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, Product>
+     */
+    private function lockedAddonProducts(array $addons): \Illuminate\Support\Collection
+    {
+        $ids = collect($addons)
+            ->pluck('id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($ids)) {
+            return collect();
+        }
+
+        return Product::query()
+            ->where('admin_id', panel_owner_id())
+            ->whereKey($ids)
+            ->with('recipe.ingredients.ingredientProduct')
+            ->lockForUpdate()
+            ->get();
     }
 
     public function index(Request $request)
@@ -90,6 +117,8 @@ class SaleController extends Controller
                     'modifiers.*.id' => 'required_with:modifiers|integer',
                     'additions' => 'nullable|array',
                     'additions.*.id' => 'required_with:additions|integer',
+                    'addons' => 'nullable|array',
+                    'addons.*.id' => 'required_with:addons|integer',
                 ]);
 
                 $sale = Sale::self()
@@ -124,6 +153,12 @@ class SaleController extends Controller
                 );
                 $lineUnit += $additionsTotal;
 
+                [$productAddons, $productAddonsTotal] = $this->resolveProductAddons->execute(
+                    $product,
+                    $request->input('addons', [])
+                );
+                $lineUnit += $productAddonsTotal;
+
                 $saleItem = SaleItem::create([
                     'sale_id' => $sale->id,
                     'admin_id' => $sale->admin_id,
@@ -136,13 +171,16 @@ class SaleController extends Controller
                     'total_price' => ($qty * $lineUnit) - $discount,
                     'modifiers_json' => $modifiers ?: null,
                     'additions_json' => $additions ?: null,
+                    'addons_json' => $productAddons ?: null,
                 ]);
 
                 $this->deductRecipeStock->execute($product, $qty);
+                foreach ($this->lockedAddonProducts($productAddons) as $addonProduct) {
+                    $this->deductRecipeStock->execute($addonProduct, $qty);
+                }
 
-                $sale->due += $saleItem->total_price;
                 $sale->subtotal += $saleItem->total_price;
-                $sale->payable += $saleItem->total_price;
+                \App\Support\VatCalculator::refreshSale($sale);
                 $sale->save();
 
                 $this->createKitchenTicket->fireAdditionalItems($sale, [$saleItem]);
@@ -180,6 +218,9 @@ class SaleController extends Controller
 
             $item = $saleItem->product;
             $this->deductRecipeStock->restore($item, (float) $saleItem->quantity);
+            foreach ($this->lockedAddonProducts($saleItem->addons_json ?? []) as $addonProduct) {
+                $this->deductRecipeStock->restore($addonProduct, (float) $saleItem->quantity);
+            }
             $item->loadMissing(['recipe.ingredients.ingredientProduct']);
             $servings = $this->deductRecipeStock->availableServings($item->fresh());
 
@@ -192,9 +233,8 @@ class SaleController extends Controller
             ];
 
             $sale = Sale::self()->whereKey($saleItem->sale_id)->lockForUpdate()->firstOrFail();
-            $sale->due -= $saleItem->total_price;
             $sale->subtotal -= $saleItem->total_price;
-            $sale->payable -= $saleItem->total_price;
+            \App\Support\VatCalculator::refreshSale($sale);
             $sale->save();
 
             $saleItem->delete();
@@ -216,23 +256,25 @@ class SaleController extends Controller
                 $item = $saleItem->product;
                 $quantity = (float) $request->quantity;
 
+                $addonProducts = $this->lockedAddonProducts($saleItem->addons_json ?? []);
+
                 if ($quantity > $saleItem->quantity) {
                     $diff = $quantity - $saleItem->quantity;
                     $this->deductRecipeStock->execute($item, $diff);
-                    $deltaPrice = $saleItem->unit_price * $diff;
-                    $sale->due += $deltaPrice;
-                    $sale->subtotal += $deltaPrice;
-                    $sale->payable += $deltaPrice;
-                    $sale->save();
+                    foreach ($addonProducts as $addonProduct) {
+                        $this->deductRecipeStock->execute($addonProduct, $diff);
+                    }
+                    $sale->subtotal += $saleItem->unit_price * $diff;
                 } elseif ($quantity < $saleItem->quantity) {
                     $diff = $saleItem->quantity - $quantity;
                     $this->deductRecipeStock->restore($item, $diff);
-                    $deltaPrice = $saleItem->unit_price * $diff;
-                    $sale->due -= $deltaPrice;
-                    $sale->subtotal -= $deltaPrice;
-                    $sale->payable -= $deltaPrice;
-                    $sale->save();
+                    foreach ($addonProducts as $addonProduct) {
+                        $this->deductRecipeStock->restore($addonProduct, $diff);
+                    }
+                    $sale->subtotal -= $saleItem->unit_price * $diff;
                 }
+                \App\Support\VatCalculator::refreshSale($sale);
+                $sale->save();
 
                 $saleItem->quantity = $quantity;
                 $saleItem->total_price = $saleItem->unit_price * $quantity;
@@ -293,7 +335,8 @@ class SaleController extends Controller
 
             $discount = $request->discount_amount ?? 0;
             $paid = $request->paid_amount ?? 0;
-            $payable = ($sale->subtotal - $discount);
+            $vat = \App\Support\VatCalculator::calculate((float) $sale->subtotal, (float) $discount, \App\Support\VatCalculator::settingsFor((int) $sale->admin_id));
+            $payable = $vat['payable'];
 
             $saleData = [
                 'is_hold' => 0,
@@ -301,6 +344,9 @@ class SaleController extends Controller
                 'sale_date' => date('Y-m-d'),
                 'subtotal' => $sale->subtotal,
                 'discount' => $discount,
+                'vat_mode' => $vat['mode'],
+                'vat_rate' => $vat['rate'],
+                'vat_amount' => $vat['vat'],
                 'payable' => $payable,
                 'paid' => $paid,
                 'due' => ($payable - $paid),

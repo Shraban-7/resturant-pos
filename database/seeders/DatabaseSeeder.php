@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             StaffSeeder::class,
             CatalogExtrasSeeder::class,
             IngredientSeeder::class,
+            AddonSeeder::class,
         ]);
     }
 }

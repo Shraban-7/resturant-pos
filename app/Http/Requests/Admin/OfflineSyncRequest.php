@@ -36,6 +36,8 @@ class OfflineSyncRequest extends FormRequest
             'orders.*.items.*.modifiers.*.price' => 'nullable|numeric|min:0',
             'orders.*.items.*.additions' => 'nullable|array',
             'orders.*.items.*.additions.*.id' => 'required_with:orders.*.items.*.additions|integer|exists:additions,id',
+            'orders.*.items.*.addons' => 'nullable|array',
+            'orders.*.items.*.addons.*.id' => 'required_with:orders.*.items.*.addons|integer|exists:products,id',
             'orders.*.amounts' => 'required|array',
             'orders.*.amounts.subtotal' => 'required|numeric|min:0',
             'orders.*.amounts.discount' => 'nullable|numeric|min:0',

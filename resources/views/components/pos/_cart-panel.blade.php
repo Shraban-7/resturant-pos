@@ -8,6 +8,7 @@
     'sale' => null,
     'saleItems' => [],
     'isMobile' => false,
+    'vatConfig' => ['mode' => 'disabled', 'rate' => 0],
 ])
 @php $isSale = request('sale'); @endphp
 
@@ -185,6 +186,15 @@
             <div class="flex items-baseline gap-1 text-slate-900 font-bold text-sm">
                 <span class="text-xs font-normal text-slate-400">৳</span>
                 <span id="subtotal">{{ $subtotal }}</span>
+            </div>
+        </div>
+
+        {{-- VAT calculation (mode/rate driven by Settings; values by live totals JS) --}}
+        <div class="flex items-center justify-between text-xs font-semibold text-slate-600" id="vatRow">
+            <span id="vatLabel" data-exclusive="{{ __('admin.pos.vat_added') }}" data-inclusive="{{ __('admin.pos.vat_included') }}" data-disabled="{{ __('admin.pos.vat_off') }}">{{ __('admin.pos.vat_off') }}</span>
+            <div class="flex items-baseline gap-1 text-slate-900 font-bold text-sm">
+                <span class="text-xs font-normal text-slate-400" id="vatSign">+</span>
+                <span id="vatAmount">0</span>
             </div>
         </div>
 

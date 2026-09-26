@@ -124,6 +124,7 @@ class KdsController extends Controller
                 'quantity' => (float) $item->quantity,
                 'modifiers' => collect($item->modifiers_json ?? [])->pluck('name')->filter()->values()->all(),
                 'additions' => collect($item->additions_json ?? [])->pluck('name')->filter()->values()->all(),
+                'addons' => collect($item->addons_json ?? [])->pluck('name')->filter()->values()->all(),
                 'special_instructions' => $item->special_instructions,
                 'status' => $item->status,
             ])->values()->all(),

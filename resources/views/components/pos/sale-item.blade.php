@@ -14,6 +14,12 @@
                 + {{ collect($item->additions_json)->pluck('name')->filter()->implode(', ') }}
             </div>
         @endif
+        @if (!empty($item->addons_json))
+            <div
+                class="text-[10px] text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded inline-block truncate max-w-full mt-0.5 font-medium">
+                ⊕ {{ collect($item->addons_json)->pluck('name')->filter()->implode(', ') }}
+            </div>
+        @endif
 
         <div class="flex items-center gap-1 mt-1.5">
             <button type="button"

@@ -25,6 +25,9 @@ class SettingController extends Controller
             'phone' => 'required|string',
             'address' => 'required|string',
             'vat_number' => 'nullable|string',
+            'vat_enabled' => 'nullable|boolean',
+            'vat_rate' => 'nullable|numeric|min:0|max:100',
+            'vat_mode' => 'nullable|string|in:exclusive,inclusive',
             'bank_name' => 'nullable|string',
             'account_holder' => 'nullable|string',
             'account_number' => 'nullable|string',
@@ -58,6 +61,9 @@ class SettingController extends Controller
         $data['signature'] = $signature;
         $data['image'] = $image;
         $data['user_id'] = panel_owner_id();
+        $data['vat_enabled'] = $request->boolean('vat_enabled');
+        $data['vat_rate'] = $data['vat_rate'] ?? 0;
+        $data['vat_mode'] = $data['vat_mode'] ?? 'exclusive';
 
         is_null($business) ? BusinessSetting::create($data) : $business->update($data);
 

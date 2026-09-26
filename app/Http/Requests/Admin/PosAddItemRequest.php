@@ -26,6 +26,8 @@ class PosAddItemRequest extends FormRequest
             'modifiers.*.group_name' => 'nullable|string|max:100',
             'additions' => 'nullable|array',
             'additions.*.id' => 'required_with:additions|integer|exists:additions,id',
+            'addons' => 'nullable|array',
+            'addons.*.id' => 'required_with:addons|integer|exists:products,id',
         ];
     }
 }

@@ -150,6 +150,34 @@
         </div>
     </div>
 
+    <div class="card mt-4">
+        <div class="card-header">
+            <h6 class="card-title">VAT / Tax</h6>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                    <input type="checkbox" name="vat_enabled" value="1" class="rounded border-slate-300"
+                           @checked((bool) ($business->vat_enabled ?? false))>
+                    Enable VAT on POS orders
+                </label>
+                <div>
+                    <label class="form-label">VAT Rate (%)</label>
+                    <input type="number" name="vat_rate" class="form-control" min="0" max="100" step="0.01"
+                           value="{{ $business->vat_rate ?? 0 }}">
+                </div>
+                <div>
+                    <label class="form-label">VAT Mode</label>
+                    <select name="vat_mode" class="form-control">
+                        <option value="exclusive" @selected(($business->vat_mode ?? 'exclusive') === 'exclusive')>Without product price (added on top)</option>
+                        <option value="inclusive" @selected(($business->vat_mode ?? '') === 'inclusive')>With product price (included)</option>
+                    </select>
+                    <p class="form-hint">Exclusive adds VAT above the bill; inclusive treats prices as VAT-included and shows the VAT portion.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="mt-4 flex justify-end gap-2">
         <button type="submit" class="btn btn-primary">
             <i class="ri-save-line"></i> {{ is_null($business) ? 'Save Settings' : 'Update Settings' }}

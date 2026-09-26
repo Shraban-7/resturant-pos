@@ -7,6 +7,7 @@ use App\Enums\TableStatus;
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
 use App\Actions\ResolveProductAdditionsAction;
+use App\Actions\ResolveProductAddonsAction;
 use App\Actions\ResolveProductModifiersAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\OfflineSyncRequest;
@@ -31,6 +32,7 @@ class OfflineSyncController extends Controller
         private CreateKitchenTicketAction $createKitchenTicket,
         private ResolveProductModifiersAction $resolveModifiers,
         private ResolveProductAdditionsAction $resolveAdditions,
+        private ResolveProductAddonsAction $resolveProductAddons,
     ) {}
 
     public function store(OfflineSyncRequest $request)
@@ -160,6 +162,12 @@ class OfflineSyncController extends Controller
                 );
                 $unitPrice += $additionsTotal;
 
+                [$productAddons, $productAddonsTotal] = $this->resolveProductAddons->execute(
+                    $product,
+                    $line['addons'] ?? []
+                );
+                $unitPrice += $productAddonsTotal;
+
                 $discount = (float) ($line['discount'] ?? 0);
                 $total = max(0, ($unitPrice * $quantity) - $discount);
                 $subtotal += $total;
@@ -175,7 +183,21 @@ class OfflineSyncController extends Controller
                     'total_price' => $total,
                     'modifiers_json' => $modifiers ?: null,
                     'additions_json' => $additions ?: null,
+                    'addons_json' => $productAddons ?: null,
                 ];
+
+                $addonIds = collect($productAddons)->pluck('id')->filter()->map(fn ($id) => (int) $id)->unique()->values()->all();
+                if (! empty($addonIds)) {
+                    $addonProducts = Product::query()
+                        ->where('admin_id', $ownerId)
+                        ->whereKey($addonIds)
+                        ->with('recipe.ingredients.ingredientProduct')
+                        ->lockForUpdate()
+                        ->get();
+                    foreach ($addonProducts as $addonProduct) {
+                        $this->deductRecipeStock->execute($addonProduct, $quantity);
+                    }
+                }
             }
 
             // Items removed from a previously server-backed cart while offline
@@ -187,11 +209,23 @@ class OfflineSyncController extends Controller
 
                 foreach ($cart->items->whereNotIn('item_id', $submittedProductIds) as $removedItem) {
                     $this->deductRecipeStock->restore($removedItem->item, (float) $removedItem->quantity);
+                    $removedAddonIds = collect($removedItem->addons_json ?? [])->pluck('id')->filter()->map(fn ($id) => (int) $id)->unique()->values()->all();
+                    if (! empty($removedAddonIds)) {
+                        $removedAddonProducts = Product::query()
+                            ->where('admin_id', $ownerId)
+                            ->whereKey($removedAddonIds)
+                            ->with('recipe.ingredients.ingredientProduct')
+                            ->get();
+                        foreach ($removedAddonProducts as $removedAddonProduct) {
+                            $this->deductRecipeStock->restore($removedAddonProduct, (float) $removedItem->quantity);
+                        }
+                    }
                 }
             }
 
             $discount = (float) ($order['amounts']['discount'] ?? 0);
-            $payable = max(0, $subtotal - $discount);
+            $vat = \App\Support\VatCalculator::calculate($subtotal, $discount, \App\Support\VatCalculator::settingsFor($ownerId));
+            $payable = $vat['payable'];
             $paid = min((float) $order['amounts']['paid'], $payable);
 
             $branchId = null;
@@ -219,6 +253,9 @@ class OfflineSyncController extends Controller
                 'sale_date' => now()->toDateString(),
                 'subtotal' => $subtotal,
                 'discount' => $discount,
+                'vat_mode' => $vat['mode'],
+                'vat_rate' => $vat['rate'],
+                'vat_amount' => $vat['vat'],
                 'payable' => $payable,
                 'paid' => $paid,
                 'due' => $payable - $paid,

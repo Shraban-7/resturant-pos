@@ -1,3 +1,33 @@
+<style>
+    /* Multiselect pills (plain CSS so selection state works without a frontend rebuild) */
+    .addition-pill, .addon-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #475569;
+        font-size: 0.75rem;
+        font-weight: 700;
+        transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .addition-pill:hover { border-color: #6ee7b7; }
+    .addon-pill:hover { border-color: #7dd3fc; }
+    .addition-check:checked + .addition-pill {
+        background: #059669;
+        color: #fff;
+        border-color: #059669;
+        box-shadow: 0 4px 10px -2px rgb(5 150 105 / 0.35);
+    }
+    .addon-check:checked + .addon-pill {
+        background: #0284c7;
+        color: #fff;
+        border-color: #0284c7;
+        box-shadow: 0 4px 10px -2px rgb(2 132 199 / 0.35);
+    }
+</style>
 <div x-data="{ open: false }" @keydown.escape.window="open = false" @open-item-modal.window="open = true"
     @close-item-modal.window="open = false">
     <template x-teleport="body">
@@ -79,7 +109,7 @@
                                 class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
                                 <span>Additions</span>
                                 <span class="flex items-center gap-2">
-                                    <span class="text-[11px] font-normal text-slate-400">Included — untick to remove</span>
+                                    <span class="text-[11px] font-normal text-slate-400">Tick to add</span>
                                     @can('products')
                                         <button type="button" onclick="window.toggleQuickAddition(event)"
                                             class="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-700 hover:text-emerald-800"
@@ -109,6 +139,16 @@
                                     </div>
                                 </div>
                             @endcan
+                        </div>
+
+                        {{-- Suggested add-ons (multiselect, priced) --}}
+                        <div class="col-span-2" id="addonsSection" style="display:none">
+                            <label
+                                class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                                <span>Suggested Add-ons</span>
+                                <span class="text-[11px] font-normal text-slate-400">Tick to add — price folds into this item</span>
+                            </label>
+                            <div id="addonsList" class="flex flex-wrap gap-2"></div>
                         </div>
                     </div>
                 </div>

@@ -257,6 +257,7 @@
                     'sale' => $sale ?? null,
                     'saleItems' => $saleItems ?? [],
                     'isMobile' => false,
+                    'vatConfig' => $vatConfig ?? ['mode' => 'disabled', 'rate' => 0],
                 ])
             </aside>
         </div>
@@ -305,9 +306,10 @@
                         'diningTables' => $diningTables,
                         'employees' => $employees,
                         'cart' => $cart,
-                        'sale' => $sale ?? null,
-                        'saleItems' => $saleItems ?? [],
-                        'isMobile' => true,
+                    'sale' => $sale ?? null,
+                    'saleItems' => $saleItems ?? [],
+                    'isMobile' => true,
+                    'vatConfig' => $vatConfig ?? ['mode' => 'disabled', 'rate' => 0],
                     ])
                 </div>
             </aside>
@@ -350,6 +352,25 @@
         <x-pos.recent-sales-modal :sales="$recentSales" />
 
     </div>
+
+    @push('styles')
+        <style>
+            /* In-ticket quantity pill on product cards (plain CSS: no frontend rebuild needed) */
+            .ticket-qty-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 2px;
+                border-radius: 9999px;
+                background: #059669;
+                color: #fff;
+                font-size: 10px;
+                font-weight: 800;
+                line-height: 1;
+                padding: 4px 7px;
+                box-shadow: 0 2px 6px rgb(5 150 105 / 0.4);
+            }
+        </style>
+    @endpush
 
     @push('footer')
         <script>
@@ -459,6 +480,7 @@
                         unit_price_snapshot: Number(el.dataset.unitPrice || 0),
                         discount: Number(el.dataset.discount || 0),
                         modifiers: parseJsonAttribute(el.dataset.modifiers),
+                        addons: parseJsonAttribute(el.dataset.addons),
                     })).filter(item => item.product_id && item.quantity > 0);
                 }
 
@@ -468,7 +490,9 @@
                         0
                     );
                     const discount = Number($discountInput.value || 0);
-                    const payable = Math.max(0, subtotal - discount);
+                    const offlineVat = vatFor(subtotal, discount);
+                    const offlineNet = Math.max(0, subtotal - discount);
+                    const payable = offlineVat.mode === 'exclusive' ? offlineNet + offlineVat.vat : offlineNet;
                     const paid = Number($paidInput.value || 0);
                     const isDineMode = window.posOrderMode === 'dine_in';
                     const tableId = isDineMode ? (Number($tableSelect?.value || 0) || null) : null;
@@ -512,6 +536,7 @@
                         unitPrice: String(line.unitPrice),
                         discount: String(line.discount),
                         modifiers: JSON.stringify(line.modifiers || []),
+                        addons: JSON.stringify(line.addons || []),
                         source: 'offline',
                     });
 
@@ -527,6 +552,13 @@
                             'text-[10px] text-orange-700 bg-orange-50 px-1.5 py-0.5 rounded inline-block truncate max-w-full mt-0.5 font-medium';
                         modifiers.textContent = line.modifiers.map(item => item.name).join(', ');
                         details.appendChild(modifiers);
+                    }
+                    if (line.addons?.length) {
+                        const addons = document.createElement('div');
+                        addons.className =
+                            'text-[10px] text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded inline-block truncate max-w-full mt-0.5 font-medium';
+                        addons.textContent = '⊕ ' + line.addons.map(item => item.name).join(', ');
+                        details.appendChild(addons);
                     }
                     const controls = document.createElement('div');
                     controls.className = 'flex items-center gap-1 mt-1.5';
@@ -563,6 +595,30 @@
                     updateCartTotals();
                 }
 
+                function refreshCardQtyBadges() {
+                    // The ticket renders twice (desktop panel + mobile drawer):
+                    // count each line once by element id so quantities stay accurate.
+                    const seen = new Set();
+                    const qtyByProduct = {};
+                    document.querySelectorAll('#cart .cart-item, #cart .sale-item').forEach(el => {
+                        const key = el.id || ((el.classList.contains('sale-item') ? 'sale-' : 'cart-') + (el.dataset.id || ''));
+                        if (seen.has(key)) return;
+                        seen.add(key);
+                        const pid = el.dataset.itemid;
+                        if (!pid) return;
+                        const qtyEl = el.querySelector('.quantityInput, .saleQuantityInput');
+                        qtyByProduct[pid] = (qtyByProduct[pid] || 0) + (parseInt(qtyEl?.value) || 0);
+                    });
+                    document.querySelectorAll('.item-card').forEach(card => {
+                        const badge = card.querySelector('[data-qty-badge]');
+                        if (!badge) return;
+                        const q = qtyByProduct[card.dataset.id] || 0;
+                        badge.style.display = q > 0 ? '' : 'none';
+                        const n = badge.querySelector('span');
+                        if (n) n.textContent = q;
+                    });
+                }
+
                 function updateCartTotals() {
                     let total = 0;
                     let count = 0;
@@ -572,6 +628,7 @@
                         const qtyEl = el.querySelector('.quantityInput, .saleQuantityInput');
                         if (qtyEl) count += parseInt(qtyEl.value) || 0;
                     });
+                    refreshCardQtyBadges();
                     if ($subtotal) $subtotal.textContent = total;
                     if ($totalPrice) $totalPrice.textContent = total;
                     if ($mobileCartCount) $mobileCartCount.textContent = count;
@@ -582,14 +639,27 @@
 
                 function updateCheckoutPrice() {
                     let subtotal = parseFloat($subtotal.textContent) || 0;
-                    let total = subtotal;
                     let discount = parseFloat($discountInput.value) || 0;
                     let paid = parseFloat($paidInput.value) || 0;
-                    let due = total;
-                    if (discount) total = subtotal - discount;
-                    if (paid) due = (total - paid);
-                    $totalPrice.textContent = total;
-                    $due.textContent = due;
+                    const calc = vatFor(subtotal, discount);
+                    const net = Math.max(0, subtotal - discount);
+                    const total = calc.mode === 'exclusive' ? net + calc.vat : net;
+                    // The ticket panel renders twice (desktop + mobile drawer):
+                    // update every copy so the VAT calculation shows on both.
+                    document.querySelectorAll('#vatAmount').forEach(vatAmount => {
+                        vatAmount.textContent = calc.vat.toFixed(2);
+                    });
+                    document.querySelectorAll('#vatLabel').forEach(vatLabel => {
+                        const tpl = calc.mode === 'inclusive'
+                            ? vatLabel.dataset.inclusive
+                            : (calc.mode === 'exclusive' ? vatLabel.dataset.exclusive : vatLabel.dataset.disabled);
+                        vatLabel.textContent = (tpl || 'VAT').replace(':rate', calc.rate);
+                    });
+                    document.querySelectorAll('#vatSign').forEach(vatSign => {
+                        vatSign.textContent = calc.mode === 'inclusive' ? '⊂' : (calc.mode === 'exclusive' ? '+' : '–');
+                    });
+                    $totalPrice.textContent = round2(total).toFixed(2);
+                    $due.textContent = round2(total - paid).toFixed(2);
                 }
 
                 function setItemToCart(item, cartHtml) {
@@ -670,6 +740,7 @@
                         if (title) title.textContent = name;
                         renderModifiers(id);
                         renderExtras(id);
+                        renderItemAddons(id);
                         recalcModalTotal();
                     }
                 });
@@ -678,6 +749,25 @@
                 const productModifiersMap = @json($productModifiersMap ?? []);
                 const productAddonsMap = @json($productAddonsMap ?? []);
                 const productExtrasMap = @json($productExtrasMap ?? []);
+                const posVat = @json($vatConfig ?? ['mode' => 'disabled', 'rate' => 0]);
+
+                function round2(n) {
+                    return Math.round((Number(n) || 0) * 100) / 100;
+                }
+
+                // Mirrors App\Support\VatCalculator: exclusive adds VAT on top,
+                // inclusive extracts the VAT portion already inside prices.
+                function vatFor(subtotal, discount) {
+                    const rate = Number(posVat.rate || 0);
+                    const net = Math.max(0, (Number(subtotal) || 0) - (Number(discount) || 0));
+                    if (posVat.mode === 'exclusive' && rate > 0) {
+                        return { mode: 'exclusive', rate, vat: round2(net * rate / 100) };
+                    }
+                    if (posVat.mode === 'inclusive' && rate > 0) {
+                        return { mode: 'inclusive', rate, vat: round2(net * rate / (100 + rate)) };
+                    }
+                    return { mode: 'disabled', rate: 0, vat: 0 };
+                }
                 const canManageAdditions = @json(auth()->user()->can('products'));
 
                 function selectedModifiers() {
@@ -707,6 +797,20 @@
 
                 function additionsExtra() {
                     return selectedAdditions().reduce((sum, a) => sum + (a.price || 0), 0);
+                }
+
+                function selectedItemAddons() {
+                    const modal = document.getElementById('itemModal');
+                    if (!modal) return [];
+                    return Array.from(modal.querySelectorAll('input[name="addon_ids[]"]:checked')).map(el => ({
+                        id: parseInt(el.value, 10),
+                        name: el.dataset.name,
+                        price: parseFloat(el.dataset.price) || 0,
+                    }));
+                }
+
+                function itemAddonsExtra() {
+                    return selectedItemAddons().reduce((sum, a) => sum + (a.price || 0), 0);
                 }
 
                 window.toggleQuickAddition = function(e, hide) {
@@ -776,15 +880,35 @@
                     section.style.display = '';
                     list.innerHTML = extras.map(a => `
                     <label class="cursor-pointer inline-block">
-                        <input type="checkbox" class="hidden peer" name="addition_ids[]" value="${a.id}" checked
+                        <input type="checkbox" class="hidden peer addition-check" name="addition_ids[]" value="${a.id}"
                                data-name="${String(a.name).replace(/"/g, '&quot;')}"
                                data-price="${a.price}">
-                        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-xs font-bold transition
-                                     bg-white border-slate-200 text-slate-600
-                                     peer-checked:bg-emerald-600 peer-checked:text-white peer-checked:border-emerald-600 peer-checked:shadow-md peer-checked:shadow-emerald-600/25
-                                     hover:border-emerald-400">+ ${a.name} · ৳${Number(a.price).toFixed(2)}</span>
+                        <span class="addition-pill">+ ${a.name} · ৳${Number(a.price).toFixed(2)}</span>
                     </label>`).join('');
                     list.querySelectorAll('.addition-check').forEach(el => {
+                        el.addEventListener('change', recalcModalTotal);
+                    });
+                }
+
+                function renderItemAddons(productId) {
+                    const section = document.getElementById('addonsSection');
+                    const list = document.getElementById('addonsList');
+                    if (!section || !list) return;
+                    const addons = (productAddonsMap[productId] || []).filter(a => a && a.id);
+                    if (!addons.length) {
+                        section.style.display = 'none';
+                        list.innerHTML = '';
+                        return;
+                    }
+                    section.style.display = '';
+                    list.innerHTML = addons.map(a => `
+                    <label class="cursor-pointer inline-block">
+                        <input type="checkbox" class="hidden peer addon-check" name="addon_ids[]" value="${a.id}"
+                               data-name="${String(a.name).replace(/"/g, '&quot;')}"
+                               data-price="${a.price}">
+                        <span class="addon-pill">⊕ ${a.name} · ৳${Number(a.price).toFixed(2)}</span>
+                    </label>`).join('');
+                    list.querySelectorAll('.addon-check').forEach(el => {
                         el.addEventListener('change', recalcModalTotal);
                     });
                 }
@@ -834,7 +958,7 @@
                     const p = parseFloat(modal.querySelector('input[name="price"]').value) || 0;
                     const dtype = modal.querySelector('select[name="discount_type"]').value;
                     const damount = parseFloat(modal.querySelector('input[name="discount_amount"]').value) || 0;
-                    const extra = modifiersExtra() + additionsExtra();
+                    const extra = modifiersExtra() + additionsExtra() + itemAddonsExtra();
                     let discount = dtype === 'amount' ? damount : ((p + extra) * damount / 100);
                     const total = (q * (p + extra)) - (discount || 0);
                     const t = modal.querySelector('#product-total-price');
@@ -864,7 +988,8 @@
                     const damount = parseFloat(modal.querySelector('input[name="discount_amount"]').value) || 0;
                     const mods = selectedModifiers();
                     const adds = selectedAdditions();
-                    const extra = mods.reduce((s, m) => s + (m.price || 0), 0) + adds.reduce((s, a) => s + (a.price || 0), 0);
+                    const paddons = selectedItemAddons();
+                    const extra = mods.reduce((s, m) => s + (m.price || 0), 0) + adds.reduce((s, a) => s + (a.price || 0), 0) + paddons.reduce((s, a) => s + (a.price || 0), 0);
                     const lineUnit = (parseFloat(price) || 0) + extra;
                     const discount = dtype === 'amount' ? damount : (lineUnit * damount / 100);
 
@@ -900,6 +1025,7 @@
                                 discount,
                                 modifiers: mods,
                                 additions: adds,
+                                addons: paddons,
                             })
                         })
                         .then(r => r.json().then(d => ({
@@ -931,6 +1057,7 @@
                                     unitPrice: lineUnit,
                                     discount,
                                     modifiers: mods,
+                                    addons: paddons,
                                 };
                                 const empty = $cart.querySelector('.empty-state');
                                 if (empty) empty.remove();

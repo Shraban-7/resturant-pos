@@ -2,7 +2,8 @@
     data-id="{{ $item->id }}" id="cart-item-{{ $item->id }}" data-itemid="{{ $item->item_id }}"
     data-name="{{ $item->item->name }}" data-unit-price="{{ $item->unit_price }}"
     data-discount="{{ $item->discount ?? 0 }}"
-    data-modifiers="{{ json_encode($item->modifiers_json ?? []) }}" data-source="server_cart">
+    data-modifiers="{{ json_encode($item->modifiers_json ?? []) }}"
+    data-addons="{{ json_encode($item->addons_json ?? []) }}" data-source="server_cart">
 
     <img src="{{ $item->item->imageUrl() }}" alt=""
         class="h-12 w-12 object-cover rounded-lg shrink-0 bg-slate-100 border border-slate-100">
@@ -21,6 +22,13 @@
             <div
                 class="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded inline-block truncate max-w-full mt-0.5 font-medium">
                 + {{ collect($item->additions_json)->pluck('name')->filter()->implode(', ') }}
+            </div>
+        @endif
+
+        @if (!empty($item->addons_json))
+            <div
+                class="text-[10px] text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded inline-block truncate max-w-full mt-0.5 font-medium">
+                ⊕ {{ collect($item->addons_json)->pluck('name')->filter()->implode(', ') }}
             </div>
         @endif
 
