@@ -6,6 +6,7 @@ enum OrderType: string
 {
     case RETAIL = 'retail';
     case DINE_IN = 'dine_in';
+    case COUNTER = 'counter';
     case TAKEAWAY = 'takeaway';
     case DELIVERY = 'delivery';
 
@@ -19,8 +20,14 @@ enum OrderType: string
         return match ($this) {
             self::RETAIL => 'Retail',
             self::DINE_IN => 'Dine in',
+            self::COUNTER => 'Counter',
             self::TAKEAWAY => 'Takeaway',
             self::DELIVERY => 'Delivery',
         };
+    }
+
+    public static function posModes(): array
+    {
+        return [self::DINE_IN->value, self::COUNTER->value];
     }
 }

@@ -6,6 +6,7 @@ use App\Enums\TableStatus;
 
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
+use App\Actions\ResolveProductAdditionsAction;
 use App\Actions\ResolveProductModifiersAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\OfflineSyncRequest;
@@ -29,6 +30,7 @@ class OfflineSyncController extends Controller
         private DeductRecipeStockAction $deductRecipeStock,
         private CreateKitchenTicketAction $createKitchenTicket,
         private ResolveProductModifiersAction $resolveModifiers,
+        private ResolveProductAdditionsAction $resolveAdditions,
     ) {}
 
     public function store(OfflineSyncRequest $request)
@@ -152,6 +154,12 @@ class OfflineSyncController extends Controller
                     $line['modifiers'] ?? []
                 );
 
+                [$additions, $additionsTotal] = $this->resolveAdditions->execute(
+                    $product,
+                    $line['additions'] ?? []
+                );
+                $unitPrice += $additionsTotal;
+
                 $discount = (float) ($line['discount'] ?? 0);
                 $total = max(0, ($unitPrice * $quantity) - $discount);
                 $subtotal += $total;
@@ -165,8 +173,8 @@ class OfflineSyncController extends Controller
                     'unit' => $product->unit?->short_name ?? 'pcs',
                     'quantity' => $quantity,
                     'total_price' => $total,
-                    'note' => $line['notes'] ?? null,
                     'modifiers_json' => $modifiers ?: null,
+                    'additions_json' => $additions ?: null,
                 ];
             }
 
@@ -200,6 +208,7 @@ class OfflineSyncController extends Controller
                 'customer_id' => $customerId,
                 'dining_table_id' => $tableId,
                 'employee_id' => $employeeId,
+                'order_type' => ($order['channel'] ?? null) === 'dine_in' ? 'dine_in' : 'counter',
                 'order_id' => generateOrderId(),
                 'client_order_id' => $order['client_order_id'],
                 'device_id' => $order['device_id'],

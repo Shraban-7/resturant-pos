@@ -29,6 +29,7 @@
             <ul class="sidebar-list">
                 <x-sidebar-list-item :title="__('admin.sidebar.menu_products')" :icon="'ri-restaurant-2-line'" :route="'admin.products.index'" />
                 <x-sidebar-list-item :title="__('admin.sidebar.categories')" :icon="'ri-list-ordered'" :route="'admin.categories.index'" />
+                <x-sidebar-list-item :title="__('admin.sidebar.additions')" :icon="'ri-add-circle-line'" :route="'admin.additions.index'" />
             </ul>
         @endcan
 

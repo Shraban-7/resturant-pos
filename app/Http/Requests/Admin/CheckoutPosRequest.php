@@ -24,7 +24,7 @@ public function rules(): array
             'client_order_id' => 'nullable|uuid',
             'device_id' => 'nullable|uuid',
             'created_at_client' => 'nullable|date',
-            'order_type' => 'nullable|string|in:dine_in,takeaway,delivery',
+            'order_type' => 'nullable|string|in:dine_in,counter',
             'gift_card_code' => 'nullable|string|max:64',
         ];
     }

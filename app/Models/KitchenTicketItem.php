@@ -15,6 +15,7 @@ class KitchenTicketItem extends Model
 
     protected $casts = [
         'modifiers_json' => 'array',
+        'additions_json' => 'array',
         'quantity' => 'decimal:2',
         'status' => KitchenStatus::class,
     ];

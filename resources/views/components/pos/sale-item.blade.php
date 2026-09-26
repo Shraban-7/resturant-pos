@@ -8,6 +8,12 @@
     <div class="flex-1 min-w-0">
         <div class="text-xs sm:text-sm font-bold text-slate-800 truncate leading-snug">{{ $item->product->name }}</div>
         <div class="text-[10px] text-amber-700 font-medium mt-0.5">Editing Existing Item</div>
+        @if (!empty($item->additions_json))
+            <div
+                class="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded inline-block truncate max-w-full mt-0.5 font-medium">
+                + {{ collect($item->additions_json)->pluck('name')->filter()->implode(', ') }}
+            </div>
+        @endif
 
         <div class="flex items-center gap-1 mt-1.5">
             <button type="button"

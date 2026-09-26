@@ -80,25 +80,35 @@
             </div>
         </div>
 
-        {{-- Order Type, Table & Staff Row --}}
-        <div class="grid grid-cols-3 gap-2">
-            <div>
-                <select id="orderTypeSelect"
-                    class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    onchange="window.toggleOrderType()">
-                    @php
-                        $saleOrderType =
-                            $sale?->order_type instanceof \App\Enums\OrderType
-                                ? $sale->order_type->value
-                                : $sale?->order_type ?? 'dine_in';
-                    @endphp
-                    <option value="dine_in"{{ $saleOrderType === 'dine_in' ? ' selected' : '' }}>{{ __('admin.pos.dine_in') }}</option>
-                    <option value="takeaway"{{ $saleOrderType === 'takeaway' ? ' selected' : '' }}>{{ __('admin.pos.takeaway') }}</option>
-                    <option value="delivery"{{ $saleOrderType === 'delivery' ? ' selected' : '' }}>{{ __('admin.pos.delivery') }}</option>
-                </select>
+        {{-- Order Mode: Dine-In (table order) vs Counter (normal POS order) --}}
+        @if ($isSale && $sale)
+            @php
+                $saleTypeValue = $sale?->order_type instanceof \App\Enums\OrderType
+                    ? $sale->order_type->value
+                    : ($sale?->order_type ?? 'dine_in');
+                $saleTypeLabel = ($sale?->order_type instanceof \App\Enums\OrderType)
+                    ? $sale->order_type->label()
+                    : ucfirst((string) $saleTypeValue);
+            @endphp
+            <div class="flex items-center justify-center gap-1.5 rounded-xl bg-slate-100 border border-slate-200 px-3 py-1.5 text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                <i class="ri-lock-line text-slate-400"></i> {{ $saleTypeLabel }}
             </div>
+        @else
+            <div class="grid grid-cols-2 gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200" role="tablist" aria-label="Order mode">
+                <button type="button" data-order-mode-btn="dine_in" onclick="window.setOrderMode('dine_in')"
+                    class="inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-extrabold text-slate-500 transition">
+                    <i class="ri-restaurant-line"></i> {{ __('admin.pos.mode_dine_in') }}
+                </button>
+                <button type="button" data-order-mode-btn="counter" onclick="window.setOrderMode('counter')"
+                    class="inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-extrabold text-slate-500 transition">
+                    <i class="ri-store-3-line"></i> {{ __('admin.pos.mode_counter') }}
+                </button>
+            </div>
+        @endif
 
-            <div id="tableRow" class="col-span-2 grid grid-cols-2 gap-2">
+        {{-- Table & Staff Row (table only matters for dine-in) --}}
+        <div class="grid grid-cols-2 gap-2">
+            <div class="js-table-wrap">
                 <select id="tableSelect"
                     class="w-full bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     required>
@@ -114,16 +124,16 @@
                         @endif
                     @endforeach
                 </select>
-
-                <select id="employeeSelect"
-                    class="w-full bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    required>
-                    <option value="">{{ __('admin.pos.server') }}</option>
-                    @foreach ($employees as $employee)
-                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
-                    @endforeach
-                </select>
             </div>
+
+            <select id="employeeSelect"
+                class="w-full bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                required>
+                <option value="">{{ __('admin.pos.server') }}</option>
+                @foreach ($employees as $employee)
+                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                @endforeach
+            </select>
         </div>
     </div>
 

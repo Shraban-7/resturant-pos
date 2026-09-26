@@ -14,6 +14,7 @@ class CartItem extends Model
 
     protected $casts = [
         'modifiers_json' => 'array',
+        'additions_json' => 'array',
         'unit_price' => 'decimal:2',
         'discount' => 'decimal:2',
         'total_price' => 'decimal:2',

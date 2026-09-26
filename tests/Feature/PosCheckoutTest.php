@@ -97,9 +97,12 @@ class PosCheckoutTest extends TestCase
 
         $cart = $this->createCart($admin);
         $this->addCartItem($cart, $product, 1, ['unit_price' => 100]);
+        $table = $this->createTable($admin);
 
         $response = $this->actingAs($admin)->postJson(route('admin.pos.checkout'), [
             'order_id' => $cart->order_id,
+            'order_type' => 'dine_in',
+            'dining_table_id' => $table->id,
             'payment_type' => 'cash',
             'paid_amount' => 100,
             'client_order_id' => $clientOrderId,

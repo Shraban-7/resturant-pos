@@ -211,6 +211,16 @@ class Product extends Model
             ->withTimestamps();
     }
 
+    /**
+     * Priced extras selectable for this dish in the POS modal
+     * (e.g. Cheese, Extra Tomato on Burger).
+     */
+    public function extras(): BelongsToMany
+    {
+        return $this->belongsToMany(\App\Models\Addition::class, 'addition_product', 'product_id', 'addition_id')
+            ->withTimestamps();
+    }
+
     public function availableStock(): Attribute
     {
         return Attribute::make(

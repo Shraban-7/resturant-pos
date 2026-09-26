@@ -21,6 +21,7 @@
             'name' => $i->product_name,
             'quantity' => (float) $i->quantity,
             'modifiers' => collect($i->modifiers_json ?? [])->pluck('name')->filter()->values()->all(),
+            'additions' => collect($i->additions_json ?? [])->pluck('name')->filter()->values()->all(),
             'special_instructions' => $i->special_instructions,
             'status' => $i->status,
         ])->values()->all(),
@@ -100,6 +101,9 @@
                                 </div>
                                 <template x-if="item.modifiers && item.modifiers.length">
                                     <div class="text-xs text-slate-500 mt-0.5 pl-6" x-text="item.modifiers.join(', ')"></div>
+                                </template>
+                                <template x-if="item.additions && item.additions.length">
+                                    <div class="text-xs text-emerald-700 mt-0.5 pl-6 font-medium" x-text="'+ ' + item.additions.join(', ')"></div>
                                 </template>
                                 <template x-if="item.special_instructions">
                                     <div class="text-xs text-amber-700 mt-0.5 pl-6 italic" x-text="item.special_instructions"></div>

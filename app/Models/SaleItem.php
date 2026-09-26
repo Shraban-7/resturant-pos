@@ -13,6 +13,7 @@ class SaleItem extends Model
 
     protected $casts = [
         'modifiers_json' => 'array',
+        'additions_json' => 'array',
     ];
 
     public function sale()

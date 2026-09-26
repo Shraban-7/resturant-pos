@@ -6,6 +6,7 @@ use App\Enums\TableStatus;
 
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
+use App\Actions\ResolveProductAdditionsAction;
 use App\Actions\ResolveProductModifiersAction;
 use App\Http\Controllers\Controller;
 use App\Models\BusinessSetting;
@@ -29,6 +30,7 @@ class SaleController extends Controller
         protected DeductRecipeStockAction $deductRecipeStock,
         protected CreateKitchenTicketAction $createKitchenTicket,
         protected ResolveProductModifiersAction $resolveModifiers,
+        protected ResolveProductAdditionsAction $resolveAdditions,
     ) {
     }
 
@@ -84,9 +86,10 @@ class SaleController extends Controller
                     'product_id' => 'required|exists:products,id',
                     'quantity' => 'required|numeric|min:0.01',
                     'discount' => 'required|numeric|min:0',
-                    'note' => 'nullable|string|max:500',
                     'modifiers' => 'nullable|array',
                     'modifiers.*.id' => 'required_with:modifiers|integer',
+                    'additions' => 'nullable|array',
+                    'additions.*.id' => 'required_with:additions|integer',
                 ]);
 
                 $sale = Sale::self()
@@ -115,6 +118,12 @@ class SaleController extends Controller
                     $request->input('modifiers', [])
                 );
 
+                [$additions, $additionsTotal] = $this->resolveAdditions->execute(
+                    $product,
+                    $request->input('additions', [])
+                );
+                $lineUnit += $additionsTotal;
+
                 $saleItem = SaleItem::create([
                     'sale_id' => $sale->id,
                     'admin_id' => $sale->admin_id,
@@ -125,8 +134,8 @@ class SaleController extends Controller
                     'unit' => $product->unit?->short_name ?? 'pcs',
                     'quantity' => $qty,
                     'total_price' => ($qty * $lineUnit) - $discount,
-                    'note' => $request->input('note'),
                     'modifiers_json' => $modifiers ?: null,
+                    'additions_json' => $additions ?: null,
                 ]);
 
                 $this->deductRecipeStock->execute($product, $qty);

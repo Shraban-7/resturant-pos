@@ -22,7 +22,7 @@ class ProductController extends Controller
         $products = Product::self()
             ->sellable()
             ->with(['category', 'recipe.ingredients'])
-            ->withCount('addons')
+            ->withCount(['addons', 'extras'])
             ->active()
             ->latest('id')
             ->paginate(20)

@@ -36,6 +36,7 @@ class CreateKitchenTicketAction
                 'product_name' => $saleItem->item_name,
                 'quantity' => $saleItem->quantity,
                 'modifiers_json' => $saleItem->modifiers_json,
+                'additions_json' => $saleItem->additions_json,
                 'special_instructions' => $saleItem->note,
                 'status' => KitchenStatus::PENDING,
             ]);
@@ -77,6 +78,7 @@ class CreateKitchenTicketAction
                 'product_name' => $saleItem->item_name,
                 'quantity' => $saleItem->quantity,
                 'modifiers_json' => $saleItem->modifiers_json,
+                'additions_json' => $saleItem->additions_json,
                 'special_instructions' => $saleItem->note,
                 'status' => KitchenStatus::PENDING,
             ]);

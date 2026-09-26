@@ -1,7 +1,7 @@
 <div class="cart-item bg-white border border-slate-200/80 rounded-xl p-2.5 flex items-center gap-3 hover:border-slate-300 hover:shadow-sm transition-all"
     data-id="{{ $item->id }}" id="cart-item-{{ $item->id }}" data-itemid="{{ $item->item_id }}"
     data-name="{{ $item->item->name }}" data-unit-price="{{ $item->unit_price }}"
-    data-discount="{{ $item->discount ?? 0 }}" data-note="{{ $item->note }}"
+    data-discount="{{ $item->discount ?? 0 }}"
     data-modifiers="{{ json_encode($item->modifiers_json ?? []) }}" data-source="server_cart">
 
     <img src="{{ $item->item->imageUrl() }}" alt=""
@@ -17,9 +17,10 @@
             </div>
         @endif
 
-        @if (!empty($item->note))
-            <div class="text-[10px] text-slate-500 italic truncate flex items-center gap-1 mt-0.5">
-                <i class="ri-chat-1-line text-[11px]"></i> {{ $item->note }}
+        @if (!empty($item->additions_json))
+            <div
+                class="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded inline-block truncate max-w-full mt-0.5 font-medium">
+                + {{ collect($item->additions_json)->pluck('name')->filter()->implode(', ') }}
             </div>
         @endif
 

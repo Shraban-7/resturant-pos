@@ -93,6 +93,12 @@
                                         <span class="text-[10px] font-bold">{{ $product->addons_count }}</span>
                                     @endif
                                 </a>
+                                <a href="{{ route('admin.products.extras.index', $product) }}" class="btn {{ ($product->extras_count ?? 0) ? 'btn-success' : 'btn-secondary' }} btn-sm" title="Extras (priced additions)">
+                                    <i class="ri-coins-line"></i>
+                                    @if (($product->extras_count ?? 0))
+                                        <span class="text-[10px] font-bold">{{ $product->extras_count }}</span>
+                                    @endif
+                                </a>
                                 <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-primary btn-sm" title="Edit">
                                     <i class="ri-edit-box-line"></i>
                                 </a>

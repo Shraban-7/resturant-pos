@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdditionController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ProductAddonController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductExtraController;
 use App\Http\Controllers\Admin\ProductModifierController;
 use App\Http\Controllers\Admin\PurchaseController;
 use App\Http\Controllers\Admin\RecipeController;
@@ -123,6 +125,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
             Route::delete('/{addon}', [ProductAddonController::class, 'destroy'])->name('destroy');
         });
 
+        Route::prefix('{product}/extras')->as('extras.')->group(function () {
+            Route::get('/', [ProductExtraController::class, 'index'])->name('index');
+            Route::post('/', [ProductExtraController::class, 'store'])->name('store');
+            Route::delete('/{extra}', [ProductExtraController::class, 'destroy'])->name('destroy');
+        });
+
         Route::prefix('{product}/recipe')->as('recipe.')->group(function () {
             Route::get('/', [RecipeController::class, 'edit'])->name('edit');
             Route::put('/', [RecipeController::class, 'update'])->name('update');
@@ -144,6 +152,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
         Route::post('/', [CategoryController::class, 'store'])->name('store');
         Route::put('/{category}', [CategoryController::class, 'update'])->name('update');
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('additions')->as('additions.')->middleware('permission:products')->group(function () {
+        Route::get('/', [AdditionController::class, 'index'])->name('index');
+        Route::post('/', [AdditionController::class, 'store'])->name('store');
+        Route::post('/quick', [AdditionController::class, 'quickStore'])->name('quick');
+        Route::put('/{addition}', [AdditionController::class, 'update'])->name('update');
+        Route::delete('/{addition}', [AdditionController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('floors')->as('floors.')->group(function () {

@@ -6,6 +6,7 @@ use App\Enums\TableStatus;
 
 use App\Actions\CreateKitchenTicketAction;
 use App\Actions\DeductRecipeStockAction;
+use App\Actions\ResolveProductAdditionsAction;
 use App\Actions\ResolveProductModifiersAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CheckoutPosRequest;
@@ -34,6 +35,7 @@ class PosController extends Controller
         protected DeductRecipeStockAction $deductRecipeStock,
         protected CreateKitchenTicketAction $createKitchenTicket,
         protected ResolveProductModifiersAction $resolveModifiers,
+        protected ResolveProductAdditionsAction $resolveAdditions,
     ) {}
 
     public function index(Request $request)
@@ -45,6 +47,7 @@ class PosController extends Controller
                 'unit',
                 'recipe.ingredients.ingredientProduct',
                 'addons:id,name,selling_price,is_active',
+                'extras:id,name,price,is_active',
                 'modifiers' => fn ($q) => $q->where('modifiers.is_active', true)->orderBy('group_name')->orderBy('sort_order'),
             ])
             ->latest('id')
@@ -108,8 +111,7 @@ class PosController extends Controller
             ];
         });
 
-        $productAddonsMap = $products->mapWithKeys(function (Product $product) {
-            return [
+        $productAddonsMap = $products->mapWithKeys(function (Product $product) {            return [
                 $product->id => $product->addons
                     ->filter(fn ($a) => (bool) $a->is_active)
                     ->map(fn ($a) => [
@@ -130,6 +132,19 @@ class PosController extends Controller
             $product->setAttribute('pos_unlimited', $servings === null);
             $product->setAttribute('pos_available', $servings ?? 0);
         }
+
+        // Per-dish extras map for badge-select in the modal.
+        $productExtrasMap = $products->mapWithKeys(function (Product $product) {
+            return [
+                $product->id => $product->extras
+                    ->filter(fn ($a) => (bool) $a->is_active)
+                    ->map(fn ($a) => [
+                        'id' => $a->id,
+                        'name' => $a->name,
+                        'price' => (float) $a->price,
+                    ])->values(),
+            ];
+        });
 
         $offlineProducts = $products->map(fn ($product) => [
             'product_id' => $product->id,
@@ -184,6 +199,7 @@ class PosController extends Controller
             'saleItems',
             'productModifiersMap',
             'productAddonsMap',
+            'productExtrasMap',
             'recipeProductIds',
             'offlineProducts',
             'offlineCategories',
@@ -214,6 +230,12 @@ class PosController extends Controller
                     $modifiers->all()
                 );
 
+                [$additions, $additionsTotal] = $this->resolveAdditions->execute(
+                    $product,
+                    $request->input('additions', [])
+                );
+                $lineUnit += $additionsTotal;
+
                 $qty = (float) $request->quantity;
                 $discount = (float) $request->discount;
                 $totalPrice = ($qty * $lineUnit) - $discount;
@@ -232,8 +254,8 @@ class PosController extends Controller
                     'discount' => $discount,
                     'quantity' => $qty,
                     'total_price' => $totalPrice,
-                    'note' => $request->input('note'),
                     'modifiers_json' => $modifiers ?: null,
+                    'additions_json' => $additions ?: null,
                 ]);
 
                 $this->deductRecipeStock->execute($product, $qty);
@@ -372,8 +394,8 @@ class PosController extends Controller
                         'unit' => $item->item->unit->short_name,
                         'quantity' => $item->quantity,
                         'total_price' => $item->total_price,
-                        'note' => $item->note,
                         'modifiers_json' => $item->modifiers_json,
+                        'additions_json' => $item->additions_json,
                     ];
                 }
 
@@ -402,9 +424,26 @@ class PosController extends Controller
                     $paymentOption = 'gift_card';
                 }
 
+                // POS mode split: dine-in orders live on a table, counter orders never touch tables.
+                $mode = in_array($request->order_type, \App\Enums\OrderType::posModes(), true)
+                    ? $request->order_type
+                    : \App\Enums\OrderType::DINE_IN->value;
+
                 // Prefer request aliases used by POS UI (table_id / employee_id) with dining_* fallbacks.
                 $tableId = $request->dining_table_id ?? $request->table_id;
                 $employeeId = $request->employee_id ?? $request->employee_id;
+
+                if ($mode === \App\Enums\OrderType::COUNTER->value) {
+                    $tableId = null;
+                } else {
+                    $tableForOwner = $tableId
+                        ? DiningTable::self()->whereKey($tableId)->first()
+                        : null;
+
+                    if (! $tableForOwner) {
+                        throw new RuntimeException('Select a table for dine-in order.');
+                    }
+                }
 
                 if ($request->client_order_id) {
                     $existingSale = Sale::query()
@@ -422,7 +461,7 @@ $saleData = [
                     'customer_id' => $customer_id,
                     'customer_name' => $customer_name !== '' ? $customer_name : null,
                     'customer_phone' => $customer_phone !== '' ? $customer_phone : null,
-                    'order_type' => $request->order_type ?? 'dine_in',
+                    'order_type' => $mode,
                     'order_id' => $cart->order_id,
                     'client_order_id' => $request->client_order_id,
                     'device_id' => $request->device_id,
@@ -521,8 +560,8 @@ $saleData = [
                         'unit' => $item->item->unit->short_name,
                         'quantity' => $item->quantity,
                         'total_price' => $item->total_price,
-                        'note' => $item->note,
                         'modifiers_json' => $item->modifiers_json,
+                        'additions_json' => $item->additions_json,
                     ];
                 }
 
@@ -530,12 +569,23 @@ $saleData = [
                 $employeeId = $request->employee_id ?? $request->employee_id;
                 $payable = $subTotal;
 
+                // POS mode split: dine-in holds live on a table, counter holds never touch tables.
+                $mode = in_array($request->order_type, \App\Enums\OrderType::posModes(), true)
+                    ? $request->order_type
+                    : \App\Enums\OrderType::DINE_IN->value;
+
+                if ($mode === \App\Enums\OrderType::COUNTER->value) {
+                    $tableId = null;
+                } elseif ($tableId && ! DiningTable::self()->whereKey($tableId)->exists()) {
+                    throw new RuntimeException('Select a table for dine-in order.');
+                }
+
 $saleData = [
                     'admin_id' => $cart->admin_id,
                     'customer_id' => $customer_id,
                     'customer_name' => $customer_name !== '' ? $customer_name : null,
                     'customer_phone' => $customer_phone !== '' ? $customer_phone : null,
-                    'order_type' => $request->order_type ?? 'dine_in',
+                    'order_type' => $mode,
                     'is_hold' => 1,
                     'order_id' => $cart->order_id,
                     'sale_date' => date('Y-m-d'),

@@ -73,25 +73,42 @@
                             </div>
                         </div>
 
-                        {{-- Suggested add-ons (pairs well with) --}}
-                        <div class="col-span-2" id="addonsSection" style="display:none">
+                        {{-- Additions (extra options, priced) --}}
+                        <div class="col-span-2" id="extrasSection" style="display:none">
                             <label
                                 class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
-                                <span>Pairs well with</span>
-                                <span class="text-[11px] font-normal text-slate-400">One-tap add</span>
+                                <span>Additions</span>
+                                <span class="flex items-center gap-2">
+                                    <span class="text-[11px] font-normal text-slate-400">Included — untick to remove</span>
+                                    @can('products')
+                                        <button type="button" onclick="window.toggleQuickAddition(event)"
+                                            class="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-700 hover:text-emerald-800"
+                                            title="Create a new addition on the fly">
+                                            <i class="ri-add-circle-line text-sm"></i> New
+                                        </button>
+                                    @endcan
+                                </span>
                             </label>
-                            <div id="addonsList" class="space-y-2"></div>
-                        </div>
-
-                        {{-- Special Note --}}
-                        <div class="col-span-2">
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Special Instructions</label>
-                            <div class="relative">
-                                <i class="ri-edit-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                <input type="text"
-                                    class="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                    name="note" placeholder="e.g. Less spicy, extra sauce, allergy note...">
-                            </div>
+                            <div id="extrasList" class="flex flex-wrap gap-2"></div>
+                            @can('products')
+                                <div id="quickAdditionForm" class="hidden mt-2 p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-2">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="text" id="quickAdditionName" placeholder="Name, e.g. Cheese"
+                                            class="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                                        <div class="relative">
+                                            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">৳</span>
+                                            <input type="number" id="quickAdditionPrice" placeholder="Price" min="0" step="0.01" value="0"
+                                                class="w-full border border-slate-200 rounded-xl pl-7 pr-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-end gap-2">
+                                        <button type="button" onclick="window.toggleQuickAddition(event, true)"
+                                            class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">Cancel</button>
+                                        <button type="button" onclick="window.saveQuickAddition()"
+                                            class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white">Save Addition</button>
+                                    </div>
+                                </div>
+                            @endcan
                         </div>
                     </div>
                 </div>

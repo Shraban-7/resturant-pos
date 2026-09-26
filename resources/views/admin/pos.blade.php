@@ -238,7 +238,7 @@
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4"
                         id="productsGrid">
                         @foreach ($products as $product)
-                            <x-pos.item :item="$product" :available="$product->pos_available" :unlimited="$product->pos_unlimited" />
+                            <x-pos.item :item="$product" :available="$product->pos_available" :unlimited="$product->pos_unlimited" :addons-count="count($productAddonsMap[$product->id] ?? [])" />
                         @endforeach
                     </div>
                 </div>
@@ -399,8 +399,6 @@
                 const $customerSelect = document.getElementById('customerSelect');
                 const $tableSelect = document.getElementById('tableSelect');
                 const $employeeSelect = document.getElementById('employeeSelect');
-                const $orderTypeSelect = document.getElementById('orderTypeSelect');
-                const $tableRow = document.getElementById('tableRow');
                 const $giftCardCode = document.getElementById('giftCardCodeInput');
                 const $giftCardStatus = document.getElementById('giftCardStatus');
                 const $customerName = document.getElementById('customer_name');
@@ -413,6 +411,37 @@
                         detail: msg
                     }));
                 }
+
+                // --- POS order mode: dine-in (table order) vs counter (normal POS order) ---
+                @php
+                    $posSaleType = $sale?->order_type instanceof \App\Enums\OrderType
+                        ? $sale->order_type->value
+                        : ($sale?->order_type ?? null);
+                @endphp
+                window.posOrderMode = localStorage.getItem('pos_order_mode') || @json($posSaleType === 'counter' ? 'counter' : 'dine_in');
+                if (window.posOrderMode !== 'dine_in' && window.posOrderMode !== 'counter') {
+                    window.posOrderMode = 'dine_in';
+                }
+
+                window.setOrderMode = function(mode) {
+                    if (mode !== 'dine_in' && mode !== 'counter') return;
+                    window.posOrderMode = mode;
+                    try {
+                        localStorage.setItem('pos_order_mode', mode);
+                    } catch (_) {}
+                    document.querySelectorAll('[data-order-mode-btn]').forEach(btn => {
+                        const active = btn.dataset.orderModeBtn === mode;
+                        btn.classList.toggle('bg-slate-900', active);
+                        btn.classList.toggle('text-white', active);
+                        btn.classList.toggle('shadow', active);
+                        btn.classList.toggle('text-slate-500', !active);
+                    });
+                    const isDine = mode === 'dine_in';
+                    document.querySelectorAll('.js-table-wrap').forEach(el => {
+                        el.style.display = isDine ? '' : 'none';
+                    });
+                };
+                window.setOrderMode(window.posOrderMode);
 
                 function parseJsonAttribute(value, fallback = []) {
                     if (!value) return fallback;
@@ -430,7 +459,6 @@
                         unit_price_snapshot: Number(el.dataset.unitPrice || 0),
                         discount: Number(el.dataset.discount || 0),
                         modifiers: parseJsonAttribute(el.dataset.modifiers),
-                        notes: el.dataset.note || null,
                     })).filter(item => item.product_id && item.quantity > 0);
                 }
 
@@ -442,14 +470,15 @@
                     const discount = Number($discountInput.value || 0);
                     const payable = Math.max(0, subtotal - discount);
                     const paid = Number($paidInput.value || 0);
-                    const tableId = Number($tableSelect?.value || 0) || null;
+                    const isDineMode = window.posOrderMode === 'dine_in';
+                    const tableId = isDineMode ? (Number($tableSelect?.value || 0) || null) : null;
 
                     return {
                         client_order_id: clientOrderId,
                         device_id: deviceId,
                         admin_id: {{ (int) auth()->id() }},
                         source_order_id: orderId,
-                        channel: tableId ? 'dine_in' : 'retail',
+                        channel: isDineMode ? 'dine_in' : 'counter',
                         dining_table_id: tableId,
                         customer_id: Number($customerSelect?.value || 0) || null,
                         customer_name: $customerName?.value || null,
@@ -482,7 +511,6 @@
                         name: line.name,
                         unitPrice: String(line.unitPrice),
                         discount: String(line.discount),
-                        note: line.note || '',
                         modifiers: JSON.stringify(line.modifiers || []),
                         source: 'offline',
                     });
@@ -631,17 +659,17 @@
                     const modal = document.getElementById('itemModal');
                     if (modal) {
                         modal.querySelector('input[name="id"]').value = id;
+                        window.modalProductId = id;
                         modal.querySelector('input[name="stock"]').value = stock;
                         modal.querySelector('input[name="quantity"]').value = 1;
                         modal.querySelector('input[name="price"]').value = price;
                         const basePrice = modal.querySelector('input[name="base_price"]');
                         if (basePrice) basePrice.value = price;
                         modal.querySelector('input[name="discount_amount"]').value = 0;
-                        modal.querySelector('input[name="note"]').value = '';
                         const title = document.getElementById('productModalLabel');
                         if (title) title.textContent = name;
                         renderModifiers(id);
-                        renderAddons(id);
+                        renderExtras(id);
                         recalcModalTotal();
                     }
                 });
@@ -649,6 +677,8 @@
                 window.recipeProductIds = @json(($recipeProductIds ?? collect())->values());
                 const productModifiersMap = @json($productModifiersMap ?? []);
                 const productAddonsMap = @json($productAddonsMap ?? []);
+                const productExtrasMap = @json($productExtrasMap ?? []);
+                const canManageAdditions = @json(auth()->user()->can('products'));
 
                 function selectedModifiers() {
                     const modal = document.getElementById('itemModal');
@@ -663,6 +693,100 @@
 
                 function modifiersExtra() {
                     return selectedModifiers().reduce((sum, m) => sum + (m.price || 0), 0);
+                }
+
+                function selectedAdditions() {
+                    const modal = document.getElementById('itemModal');
+                    if (!modal) return [];
+                    return Array.from(modal.querySelectorAll('input[name="addition_ids[]"]:checked')).map(el => ({
+                        id: parseInt(el.value, 10),
+                        name: el.dataset.name,
+                        price: parseFloat(el.dataset.price) || 0,
+                    }));
+                }
+
+                function additionsExtra() {
+                    return selectedAdditions().reduce((sum, a) => sum + (a.price || 0), 0);
+                }
+
+                window.toggleQuickAddition = function(e, hide) {
+                    if (e) e.stopPropagation();
+                    const form = document.getElementById('quickAdditionForm');
+                    if (!form) return;
+                    form.classList.toggle('hidden', hide === true ? true : !form.classList.contains('hidden'));
+                    if (!form.classList.contains('hidden')) {
+                        document.getElementById('quickAdditionName')?.focus();
+                    }
+                };
+
+                window.saveQuickAddition = function() {
+                    const nameEl = document.getElementById('quickAdditionName');
+                    const priceEl = document.getElementById('quickAdditionPrice');
+                    const name = (nameEl?.value || '').trim();
+                    const price = parseFloat(priceEl?.value || '0') || 0;
+                    if (!name) {
+                        showError('Enter an addition name.');
+                        return;
+                    }
+                    fetch("{{ route('admin.additions.quick') }}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrf,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ name, price, product_id: Number(window.modalProductId || 0) || null })
+                        })
+                        .then(r => r.json().then(d => ({ ok: r.ok, d })))
+                        .then(({ ok, d }) => {
+                            if (!ok || !d.data?.addition) {
+                                showError(d.message || 'Could not save addition.');
+                                return;
+                            }
+                            const addition = d.data.addition;
+                            const pid = String(window.modalProductId || '');
+                            if (pid) {
+                                if (!productExtrasMap[pid]) productExtrasMap[pid] = [];
+                                productExtrasMap[pid].push(addition);
+                            }
+                            if (nameEl) nameEl.value = '';
+                            if (priceEl) priceEl.value = 0;
+                            window.toggleQuickAddition(null, true);
+                            renderExtras(pid);
+                            // Pre-tick the fresh addition.
+                            const list = document.getElementById('extrasList');
+                            const box = list?.querySelector(`input[name="addition_ids[]"][value="${addition.id}"]`);
+                            if (box) box.checked = true;
+                            recalcModalTotal();
+                            window.toast?.success(addition.name + ' added to this item.');
+                        })
+                        .catch(err => showError(err.message || 'Network error'));
+                };
+
+                function renderExtras(productId) {
+                    const section = document.getElementById('extrasSection');
+                    const list = document.getElementById('extrasList');
+                    if (!section || !list) return;
+                    const extras = (productExtrasMap[productId] || []).filter(a => a && a.id);
+                    if (!extras.length && !canManageAdditions) {
+                        section.style.display = 'none';
+                        list.innerHTML = '';
+                        return;
+                    }
+                    section.style.display = '';
+                    list.innerHTML = extras.map(a => `
+                    <label class="cursor-pointer inline-block">
+                        <input type="checkbox" class="hidden peer" name="addition_ids[]" value="${a.id}" checked
+                               data-name="${String(a.name).replace(/"/g, '&quot;')}"
+                               data-price="${a.price}">
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border text-xs font-bold transition
+                                     bg-white border-slate-200 text-slate-600
+                                     peer-checked:bg-emerald-600 peer-checked:text-white peer-checked:border-emerald-600 peer-checked:shadow-md peer-checked:shadow-emerald-600/25
+                                     hover:border-emerald-400">+ ${a.name} · ৳${Number(a.price).toFixed(2)}</span>
+                    </label>`).join('');
+                    list.querySelectorAll('.addition-check').forEach(el => {
+                        el.addEventListener('change', recalcModalTotal);
+                    });
                 }
 
                 function renderModifiers(productId) {
@@ -704,81 +828,13 @@
                     });
                 }
 
-                // --- Suggested add-ons (e.g. Coke with Burger): one-tap add ---
-                function renderAddons(productId) {
-                    const section = document.getElementById('addonsSection');
-                    const list = document.getElementById('addonsList');
-                    if (!section || !list) return;
-                    const addons = (productAddonsMap[productId] || []).filter(a => a && a.id);
-                    if (!addons.length) {
-                        section.style.display = 'none';
-                        list.innerHTML = '';
-                        return;
-                    }
-                    section.style.display = '';
-                    list.innerHTML = addons.map(a => `
-                    <button type="button" onclick="window.quickAddAddon(${a.id})"
-                        class="w-full flex items-center justify-between gap-2 p-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 cursor-pointer hover:border-orange-400 hover:bg-orange-50/50 transition">
-                        <span class="font-semibold text-slate-800 flex items-center gap-1.5">
-                            <i class="ri-add-circle-line text-orange-600 text-sm"></i>${a.name}
-                        </span>
-                        <span class="text-orange-600 font-bold">+৳${a.price}</span>
-                    </button>`).join('');
-                }
-
-                window.quickAddAddon = function(addonId) {
-                    if (!navigator.onLine) {
-                        window.toast?.warning('You are offline. Add-ons can be added after reconnect.');
-                        return;
-                    }
-                    let addon = null;
-                    Object.values(productAddonsMap || {}).forEach(list => {
-                        (list || []).forEach(a => { if (parseInt(a.id, 10) === parseInt(addonId, 10)) addon = a; });
-                    });
-                    if (!addon) {
-                        showError('Add-on not found.');
-                        return;
-                    }
-                    const url = isSale ?
-                        "{{ route('admin.pos.saleItem.add') }}" :
-                        "{{ route('admin.pos.addItem') }}";
-                    const oid = isSale ? saleOrderId : orderId;
-                    fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': csrf,
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                order_id: oid,
-                                product_id: addon.id,
-                                quantity: 1,
-                                unit_price: addon.price,
-                                discount: 0,
-                                note: '',
-                                modifiers: [],
-                            })
-                        })
-                        .then(r => r.json().then(d => ({ ok: r.ok, d })))
-                        .then(({ ok, d }) => {
-                            if (!ok) {
-                                showError(d.message || 'Could not add add-on.');
-                                return;
-                            }
-                            setItemToCart(d.data.item, d.data.cart_item_html);
-                            window.toast?.success(addon.name + ' added.');
-                        })
-                        .catch(err => showError(err.message || 'Network error'));
-                };
-
                 function recalcModalTotal() {                    const modal = document.getElementById('itemModal');
                     if (!modal) return;
                     const q = parseFloat(modal.querySelector('input[name="quantity"]').value) || 0;
                     const p = parseFloat(modal.querySelector('input[name="price"]').value) || 0;
                     const dtype = modal.querySelector('select[name="discount_type"]').value;
                     const damount = parseFloat(modal.querySelector('input[name="discount_amount"]').value) || 0;
-                    const extra = modifiersExtra();
+                    const extra = modifiersExtra() + additionsExtra();
                     let discount = dtype === 'amount' ? damount : ((p + extra) * damount / 100);
                     const total = (q * (p + extra)) - (discount || 0);
                     const t = modal.querySelector('#product-total-price');
@@ -806,9 +862,9 @@
                     const price = modal.querySelector('input[name="price"]').value;
                     const dtype = modal.querySelector('select[name="discount_type"]').value;
                     const damount = parseFloat(modal.querySelector('input[name="discount_amount"]').value) || 0;
-                    const note = modal.querySelector('input[name="note"]').value || '';
                     const mods = selectedModifiers();
-                    const extra = mods.reduce((s, m) => s + (m.price || 0), 0);
+                    const adds = selectedAdditions();
+                    const extra = mods.reduce((s, m) => s + (m.price || 0), 0) + adds.reduce((s, a) => s + (a.price || 0), 0);
                     const lineUnit = (parseFloat(price) || 0) + extra;
                     const discount = dtype === 'amount' ? damount : (lineUnit * damount / 100);
 
@@ -842,8 +898,8 @@
                                 quantity,
                                 unit_price: price,
                                 discount,
-                                note,
                                 modifiers: mods,
+                                additions: adds,
                             })
                         })
                         .then(r => r.json().then(d => ({
@@ -874,12 +930,12 @@
                                     quantity: Number(quantity),
                                     unitPrice: lineUnit,
                                     discount,
-                                    note,
                                     modifiers: mods,
                                 };
                                 const empty = $cart.querySelector('.empty-state');
                                 if (empty) empty.remove();
-                                $cart.appendChild(offlineCartElement(line));
+                                const mainEl = offlineCartElement(line);
+                                $cart.appendChild(mainEl);
                                 updateCartTotals();
                                 window.dispatchEvent(new CustomEvent('close-item-modal'));
                                 window.toast?.warning(
@@ -1123,12 +1179,19 @@
                     const clientOrderId = window.PosOffline.uuid();
                     const deviceId = await window.PosOffline.deviceId();
                     const createdAtClient = new Date().toISOString();
+                    if (window.posOrderMode === 'dine_in' && !($tableSelect?.value)) {
+                        btn.innerHTML = original;
+                        btn.disabled = false;
+                        showError('Select a table for dine-in order.');
+                        return;
+                    }
                     const requestPayload = {
                         order_id: orderId,
                         customer_id: $customerSelect?.value,
                         customer_name: $customerName?.value,
                         customer_phone: $customerPhone?.value,
-                        table_id: $tableSelect?.value,
+                        order_type: window.posOrderMode,
+                        table_id: window.posOrderMode === 'dine_in' ? ($tableSelect?.value || null) : null,
                         employee_id: $employeeSelect?.value,
                         discount_amount: $discountInput.value,
                         paid_amount: $paidInput.value,
@@ -1224,7 +1287,8 @@
                                 customer_id: $customerSelect?.value,
                                 customer_name: $customerName?.value,
                                 customer_phone: $customerPhone?.value,
-                                table_id: $tableSelect?.value,
+                                order_type: window.posOrderMode,
+                                table_id: window.posOrderMode === 'dine_in' ? ($tableSelect?.value || null) : null,
                                 employee_id: $employeeSelect?.value,
                                 discount_amount: $discountInput.value,
                                 paid_amount: $paidInput.value,
