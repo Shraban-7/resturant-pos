@@ -18,6 +18,21 @@ class Admin
      */
     public function handle(Request $request, Closure $next)
     {
+        $user = $request->user() ?? Auth::user();
+
+        // Disabled employee accounts lose panel access immediately.
+        if ($user && method_exists($user, 'isActive') && ! $user->isActive()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return errorResponse('Account is disabled.', 403);
+            }
+
+            return redirect()->route('login')->with('error', 'Account is disabled.');
+        }
+
         // Single panel: admin + employee both allowed; fine-grained checks via `permission` middleware.
         if (! is_admin() && ! is_employee()) {
             // Offline sync / fetch clients must receive JSON, not a login redirect.

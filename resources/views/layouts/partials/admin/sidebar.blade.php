@@ -78,6 +78,7 @@
                 @endcan
                 @can('employees')
                     <x-sidebar-list-item :title="__('admin.sidebar.employees')" :icon="'ri-user-star-line'" :route="'admin.employees.index'" />
+                    <x-sidebar-list-item :title="__('admin.sidebar.roles')" :icon="'ri-shield-user-line'" :route="'admin.roles.index'" />
                 @endcan
             </ul>
         @endcanany

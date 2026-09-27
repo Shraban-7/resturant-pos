@@ -39,6 +39,7 @@ return [
         'people' => 'ব্যবহারকারী',
         'customers' => 'গ্রাহক',
         'employees' => 'কর্মচারী',
+        'roles' => 'ভূমিকা ও অনুমতি',
         'reports_section' => 'রিপোর্ট',
         'report' => 'রিপোর্ট',
         'system' => 'সিস্টেম',

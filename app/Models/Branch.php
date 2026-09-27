@@ -38,6 +38,11 @@ class Branch extends Model
         return $this->hasMany(Employee::class);
     }
 
+    public function loginUsers(): HasMany
+    {
+        return $this->hasMany(User::class, 'branch_id');
+    }
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

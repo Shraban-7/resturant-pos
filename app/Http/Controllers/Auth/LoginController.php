@@ -27,6 +27,10 @@ class LoginController extends Controller
 
         $user = User::where('email', $credentials['email'])->first();
 
+        if ($user && method_exists($user, 'isActive') && ! $user->isActive()) {
+            return redirect()->back()->with('error', 'Account is disabled. Contact admin.');
+        }
+
         Auth::login($user);
 
         return redirect()->route('admin.dashboard');

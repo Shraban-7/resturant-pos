@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\KdsController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PosController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ProductAddonController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductExtraController;
@@ -229,6 +230,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
         Route::get('/', [EmployeeController::class, 'index'])->name('index');
         Route::post('/store', [EmployeeController::class, 'store'])->name('store');
         Route::post('/{employee}/update', [EmployeeController::class, 'update'])->name('update');
+        Route::delete('/{employee}', [EmployeeController::class, 'destroy'])->name('destroy');
+        Route::patch('/{employee}/toggle-status', [EmployeeController::class, 'toggleStatus'])->name('toggleStatus');
+    });
+
+    Route::prefix('roles')->as('roles.')->middleware('permission:employees')->group(function () {
+        Route::get('/', [RoleController::class, 'index'])->name('index');
+        Route::post('/', [RoleController::class, 'store'])->name('store');
+        Route::put('/{role}', [RoleController::class, 'update'])->name('update');
+        Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
+        Route::patch('/{role}/toggle-status', [RoleController::class, 'toggleStatus'])->name('toggleStatus');
+        Route::post('/seed-defaults', [RoleController::class, 'seedDefaults'])->name('seedDefaults');
     });
 
 });

@@ -39,6 +39,7 @@ return [
         'people' => 'People',
         'customers' => 'Customers',
         'employees' => 'Employees',
+        'roles' => 'Roles & Permissions',
         'reports_section' => 'Reports',
         'report' => 'Report',
         'system' => 'System',

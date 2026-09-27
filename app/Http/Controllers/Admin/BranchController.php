@@ -120,6 +120,7 @@ class BranchController extends Controller
             DiningTable::self()->where('branch_id', $branch->id)->update(['branch_id' => null]);
             Floor::self()->where('branch_id', $branch->id)->update(['branch_id' => null]);
             Employee::self()->where('branch_id', $branch->id)->update(['branch_id' => null]);
+            \App\Models\User::where('parent_id', panel_owner_id())->where('branch_id', $branch->id)->update(['branch_id' => null]);
             Reservation::self()->where('branch_id', $branch->id)->update(['branch_id' => null]);
             // Keep historical sales.branch_id for reporting; do not null them.
 
