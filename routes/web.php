@@ -3,7 +3,6 @@
 use App\Http\Controllers\Admin\AdditionController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DiningTableController;
 use App\Http\Controllers\Admin\EmployeeController;
@@ -198,11 +197,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
     });
 
     Route::get('/report', [ReportController::class, 'index'])->name('report.index')->middleware('permission:reports');
-
-    Route::prefix('customers')->as('customers.')->middleware('permission:customers')->group(function () {
-        Route::get('/', [CustomerController::class, 'index'])->name('index');
-        Route::post('/store', [CustomerController::class, 'store'])->name('store');
-    });
 
     Route::prefix('settings')->as('settings.')->middleware('permission:settings')->group(function () {
         Route::get('/', [SettingController::class, 'index'])->name('index');

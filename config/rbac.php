@@ -21,7 +21,6 @@ return [
             'gift-cards' => 'Gift cards',
         ],
         'People' => [
-            'customers' => 'Manage customers',
             'employees' => 'Manage employees & roles',
         ],
         'Insights & System' => [
@@ -40,8 +39,8 @@ return [
     ],
 
     'default_roles' => [
-        'Manager' => ['dashboard', 'pos', 'products', 'stocks', 'sales', 'kds', 'floors', 'branches', 'reservations', 'gift-cards', 'customers', 'employees', 'reports', 'settings'],
-        'Cashier' => ['dashboard', 'pos', 'sales', 'customers', 'gift-cards', 'reservations'],
+        'Manager' => ['dashboard', 'pos', 'products', 'stocks', 'sales', 'kds', 'floors', 'branches', 'reservations', 'gift-cards', 'employees', 'reports', 'settings'],
+        'Cashier' => ['dashboard', 'pos', 'sales', 'gift-cards', 'reservations'],
         'Waiter' => ['pos', 'kds', 'floors', 'reservations', 'sales'],
         'Chef' => ['kds', 'dashboard'],
     ],

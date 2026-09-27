@@ -79,14 +79,7 @@
                 </div>
                 <div class="order-2 sm:order-1">
                     <strong>Invoiced To:</strong>
-                    @if(is_null($sale->customer_id))
-                        <p class="mt-1 mb-0">Walk-in Customer</p>
-                    @else
-                        <address class="not-italic mt-1">
-                            {{ $sale->customer->name }} <br>
-                            {{ $sale->customer->email }}
-                        </address>
-                    @endif
+                    <p class="mt-1 mb-0">Walk-in Customer</p>
                 </div>
             </div>
 

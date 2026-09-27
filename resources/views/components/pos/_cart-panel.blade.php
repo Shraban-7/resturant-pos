@@ -1,7 +1,6 @@
 @props([
     'subtotal' => 0,
     'totalPrice' => 0,
-    'customers',
     'diningTables',
     'employees',
     'cart',

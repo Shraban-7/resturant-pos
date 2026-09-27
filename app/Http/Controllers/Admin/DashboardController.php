@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
@@ -28,7 +27,6 @@ class DashboardController extends Controller
         $totalProducts = Product::self()->count();
         $totalOrders = $sales->count();
         $totalSales = $sales->sum('payable');
-        $totalCustomers = Customer::self()->count();
 
         $recentOrders = $sales->sortByDesc('id')->take(5);
         $popularItems = $this->popularItems();
@@ -39,7 +37,7 @@ class DashboardController extends Controller
         $due = $sales->sum('due');
 
 
-        return view('admin.dashboard', compact('totalProducts', 'totalOrders', 'totalSales', 'totalCustomers', 'recentOrders', 'popularItems', 'dailySales', 'totalRevenue', 'cashInHand', 'due'));
+        return view('admin.dashboard', compact('totalProducts', 'totalOrders', 'totalSales', 'recentOrders', 'popularItems', 'dailySales', 'totalRevenue', 'cashInHand', 'due'));
     }
 
     private function totalRevenue($sales)

@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -31,8 +30,8 @@ class UserSeeder extends Seeder
         );
 
         $staff = [
-            ['name' => 'Cashier', 'email' => 'cashier@gmail.com', 'permissions' => ['dashboard', 'pos', 'sales', 'customers']],
-            ['name' => 'Manager', 'email' => 'manager@gmail.com', 'permissions' => ['dashboard', 'pos', 'products', 'stocks', 'sales', 'customers', 'reports', 'reservations', 'floors']],
+            ['name' => 'Cashier', 'email' => 'cashier@gmail.com', 'permissions' => ['dashboard', 'pos', 'sales']],
+            ['name' => 'Manager', 'email' => 'manager@gmail.com', 'permissions' => ['dashboard', 'pos', 'products', 'stocks', 'sales', 'reports', 'reservations', 'floors']],
             ['name' => 'Chef', 'email' => 'chef@gmail.com', 'permissions' => ['kds']],
         ];
 
@@ -46,18 +45,6 @@ class UserSeeder extends Seeder
                     'password' => Hash::make('password'),
                     'permissions' => $data['permissions'],
                 ]
-            );
-        }
-
-        $customers = [
-            ['name' => 'Customer', 'phone' => '01234567890', 'address' => 'Dhaka, Bangladesh'],
-            ['name' => 'Rahim Uddin', 'phone' => '01811111111', 'address' => 'Mirpur 10, Dhaka'],
-        ];
-
-        foreach ($customers as $data) {
-            Customer::firstOrCreate(
-                ['admin_id' => $admin->id, 'phone' => $data['phone']],
-                $data + ['admin_id' => $admin->id]
             );
         }
     }

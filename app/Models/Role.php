@@ -53,8 +53,8 @@ class Role extends Model
     public static function defaultTemplates(): array
     {
         return config('rbac.default_roles', [
-            'Manager' => ['dashboard', 'pos', 'products', 'stocks', 'sales', 'kds', 'floors', 'branches', 'reservations', 'gift-cards', 'customers', 'employees', 'reports', 'settings'],
-            'Cashier' => ['dashboard', 'pos', 'sales', 'customers', 'gift-cards', 'reservations'],
+            'Manager' => ['dashboard', 'pos', 'products', 'stocks', 'sales', 'kds', 'floors', 'branches', 'reservations', 'gift-cards', 'employees', 'reports', 'settings'],
+            'Cashier' => ['dashboard', 'pos', 'sales', 'gift-cards', 'reservations'],
             'Waiter' => ['pos', 'kds', 'floors', 'reservations', 'sales'],
             'Chef' => ['kds', 'dashboard'],
         ]);

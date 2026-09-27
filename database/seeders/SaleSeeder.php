@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Cart;
 use App\Models\CartItem;
-use App\Models\Customer;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\Sale;
@@ -23,13 +22,6 @@ class SaleSeeder extends Seeder
 
         for ($i = 0; $i < 10; $i++) {
             $admin = $admins->random();
-            $customer = Customer::where('admin_id', $admin->id)->inRandomOrder()->first()
-                ?? Customer::create([
-                    'admin_id' => $admin->id,
-                    'name' => 'Walk-in Customer',
-                    'phone' => '0180000000' . rand(10, 99),
-                    'address' => 'Dhaka, Bangladesh',
-                ]);
             $orderId = generateOrderId();
 
             $subtotal = 0;
@@ -80,7 +72,7 @@ class SaleSeeder extends Seeder
 
             $sale = Sale::create([
                 'admin_id' => $admin->id,
-                'customer_id' => $customer->id,
+                'customer_id' => null,
                 'order_id' => $orderId,
                 'sale_date' => now()->subDays(rand(0, 30)),
                 'subtotal' => $subtotal,
@@ -89,7 +81,7 @@ class SaleSeeder extends Seeder
                 'paid' => $paid,
                 'due' => $due,
 
-                'note' => 'Seeded sale for ' . $customer->name,
+                'note' => 'Seeded sale',
                 'payment_option' => 'cash',
             ]);
 

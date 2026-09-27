@@ -20,7 +20,7 @@ class OfflineSyncRequest extends FormRequest
             'orders.*.source_order_id' => 'nullable|string|max:100',
             'orders.*.channel' => 'required|string|in:retail,dine_in,takeaway,counter',
             'orders.*.dining_table_id' => 'nullable|integer|exists:dining_tables,id',
-            'orders.*.customer_id' => 'nullable|integer|exists:customers,id',
+            'orders.*.customer_id' => 'nullable|integer',
             'orders.*.customer_name' => 'nullable|string|max:255',
             'orders.*.customer_phone' => 'nullable|string|max:50',
             'orders.*.employee_id' => 'nullable|integer|exists:employees,id',

@@ -12,7 +12,6 @@ use App\Actions\ResolveProductModifiersAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\OfflineSyncRequest;
 use App\Models\Cart;
-use App\Models\Customer;
 use App\Models\DiningTable;
 use App\Models\Product;
 use App\Models\Sale;
@@ -108,20 +107,7 @@ class OfflineSyncController extends Controller
                     ->first();
             }
 
-            $customerId = $order['customer_id'] ?? null;
-            if ($customerId && ! Customer::query()->where('admin_id', $ownerId)->whereKey($customerId)->exists()) {
-                throw ValidationException::withMessages([
-                    'customer_id' => 'Invalid customer.',
-                ]);
-            }
-
-            if (! $customerId && ! empty($order['customer_name']) && ! empty($order['customer_phone'])) {
-                $customerId = Customer::create([
-                    'admin_id' => $ownerId,
-                    'name' => $order['customer_name'],
-                    'phone' => $order['customer_phone'],
-                ])->id;
-            }
+            $customerId = null;
 
             $employeeId = $order['employee_id'] ?? null;
             if ($employeeId && ! Employee::query()->where('admin_id', $ownerId)->whereKey($employeeId)->exists()) {

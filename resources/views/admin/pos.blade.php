@@ -248,7 +248,6 @@
                 @include('components.pos._cart-panel', [
                     'subtotal' => $subtotal,
                     'totalPrice' => $totalPrice,
-                    'customers' => $customers,
                     'diningTables' => $diningTables,
                     'employees' => $employees,
                     'cart' => $cart,
@@ -301,7 +300,6 @@
                     @include('components.pos._cart-panel', [
                         'subtotal' => $subtotal,
                         'totalPrice' => $totalPrice,
-                        'customers' => $customers,
                         'diningTables' => $diningTables,
                         'employees' => $employees,
                         'cart' => $cart,
@@ -381,7 +379,6 @@
                 categories: {!! json_encode($offlineCategories ?? []) !!},
                 tables: {!! json_encode($offlineTables ?? []) !!},
                 floors: {!! json_encode($offlineFloors ?? []) !!},
-                customers: {!! json_encode($offlineCustomers ?? []) !!},
             };
 
             function posApp() {
@@ -418,11 +415,8 @@
                 const $discountInput = document.getElementById('discountInput');
                 const $discountTypeSelect = document.getElementById('discountTypeSelect');
                 const $paidInput = document.getElementById('paidInput');
-                const $customerSelect = document.getElementById('customerSelect');
                 const $tableSelect = document.getElementById('tableSelect');
                 const $employeeSelect = document.getElementById('employeeSelect');
-                const $customerName = document.getElementById('customer_name');
-                const $customerPhone = document.getElementById('customer_phone');
                 const $mobileCartCount = document.getElementById('mobileCartCount');
 
                 function showError(msg) {
@@ -503,9 +497,9 @@
                         source_order_id: orderId,
                         channel: isDineMode ? 'dine_in' : 'counter',
                         dining_table_id: tableId,
-                        customer_id: Number($customerSelect?.value || 0) || null,
-                        customer_name: $customerName?.value || null,
-                        customer_phone: $customerPhone?.value || null,
+                        customer_id: null,
+                        customer_name: null,
+                        customer_phone: null,
                         employee_id: Number($employeeSelect?.value || 0) || null,
                         items: offlineCartItems(),
                         amounts: {
@@ -1332,11 +1326,6 @@
                     e.target.value = '';
                 });
 
-                // --- Customer form toggle ---
-                window.toggleCustomerForm = function() {
-                    document.getElementById('customerForm')?.classList.toggle('hidden');
-                };
-
                 // --- Product name search ---
                 document.getElementById('productNameSearch')?.addEventListener('keyup', function(e) {
                     const q = e.target.value.toLowerCase();
@@ -1387,9 +1376,9 @@
                     }
                     const requestPayload = {
                         order_id: orderId,
-                        customer_id: $customerSelect?.value,
-                        customer_name: $customerName?.value,
-                        customer_phone: $customerPhone?.value,
+                        customer_id: null,
+                        customer_name: null,
+                        customer_phone: null,
                         order_type: window.posOrderMode,
                         table_id: window.posOrderMode === 'dine_in' ? ($tableSelect?.value || null) : null,
                         employee_id: $employeeSelect?.value,
@@ -1484,9 +1473,9 @@
                             },
                             body: JSON.stringify({
                                 order_id: orderId,
-                                customer_id: $customerSelect?.value,
-                                customer_name: $customerName?.value,
-                                customer_phone: $customerPhone?.value,
+                                customer_id: null,
+                                customer_name: null,
+                                customer_phone: null,
                                 order_type: window.posOrderMode,
                                 table_id: window.posOrderMode === 'dine_in' ? ($tableSelect?.value || null) : null,
                                 employee_id: $employeeSelect?.value,
@@ -1534,9 +1523,9 @@
                             },
                             body: JSON.stringify({
                                 order_id: saleOrderId,
-                                customer_id: $customerSelect?.value,
-                                customer_name: $customerName?.value,
-                                customer_phone: $customerPhone?.value,
+                                customer_id: null,
+                                customer_name: null,
+                                customer_phone: null,
                                 table_id: $tableSelect?.value,
                                 employee_id: $employeeSelect?.value,
                                 discount_amount: manualDiscountValue(),

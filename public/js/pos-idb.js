@@ -10,7 +10,6 @@
         modifiers: 'cache_modifiers',
         tables: 'cache_tables',
         floors: 'cache_floors',
-        customers: 'cache_customers',
         settings: 'cache_settings',
         orders: 'offline_orders',
         queue: 'retry_queue',
@@ -57,7 +56,6 @@
                 createStore(db, STORES.modifiers, 'modifier_id');
                 createStore(db, STORES.tables, 'table_id');
                 createStore(db, STORES.floors, 'floor_id');
-                createStore(db, STORES.customers, 'customer_id');
                 createStore(db, STORES.settings, 'seller_id');
 
                 if (!db.objectStoreNames.contains(STORES.orders)) {
@@ -142,7 +140,6 @@
             replaceStore(STORES.modifiers, modifiers),
             replaceStore(STORES.tables, snapshot.tables || []),
             replaceStore(STORES.floors, snapshot.floors || []),
-            replaceStore(STORES.customers, snapshot.customers || []),
             replaceStore(STORES.settings, [{
                 seller_id: snapshot.seller_id,
                 currency: snapshot.currency || 'BDT',

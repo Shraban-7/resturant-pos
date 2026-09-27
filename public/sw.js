@@ -159,7 +159,6 @@ function openDb() {
             ensure('cache_modifiers', 'modifier_id');
             ensure('cache_tables', 'table_id');
             ensure('cache_floors', 'floor_id');
-            ensure('cache_customers', 'customer_id');
             ensure('cache_settings', 'seller_id');
             ensure('offline_orders', 'client_order_id', [
                 ['sync_status', 'sync_status'],

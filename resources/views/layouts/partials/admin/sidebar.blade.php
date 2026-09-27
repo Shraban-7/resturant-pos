@@ -70,18 +70,13 @@
         @endcanany
 
 
-        @canany(['customers', 'employees'])
+        @can('employees')
             <div class="sidebar-section">{{ __('admin.sidebar.people') }}</div>
             <ul class="sidebar-list">
-                @can('customers')
-                    <x-sidebar-list-item :title="__('admin.sidebar.customers')" :icon="'ri-team-line'" :route="'admin.customers.index'" />
-                @endcan
-                @can('employees')
-                    <x-sidebar-list-item :title="__('admin.sidebar.employees')" :icon="'ri-user-star-line'" :route="'admin.employees.index'" />
-                    <x-sidebar-list-item :title="__('admin.sidebar.roles')" :icon="'ri-shield-user-line'" :route="'admin.roles.index'" />
-                @endcan
+                <x-sidebar-list-item :title="__('admin.sidebar.employees')" :icon="'ri-user-star-line'" :route="'admin.employees.index'" />
+                <x-sidebar-list-item :title="__('admin.sidebar.roles')" :icon="'ri-shield-user-line'" :route="'admin.roles.index'" />
             </ul>
-        @endcanany
+        @endcan
 
         @can('reports')
             <div class="sidebar-section">{{ __('admin.sidebar.reports_section') }}</div>

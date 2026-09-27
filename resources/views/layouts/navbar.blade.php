@@ -9,7 +9,6 @@
             </a>
             <ul class="hidden md:flex items-center gap-1">
                 <li><a class="nav-link" href="{{ route('admin.products.index') }}">Products</a></li>
-                <li><a class="nav-link" href="{{ route('admin.customers.index') }}">Customers</a></li>
                 <li><a class="nav-link" href="{{ route('admin.sales.index') }}">Sales</a></li>
                 <li><a class="nav-link" href="{{ route('admin.dashboard') }}">Dashboard</a></li>
             </ul>

@@ -18,7 +18,7 @@ public function rules(): array
             'payment_type' => 'required|string|in:cash,card,mobile_banking,gift_card',
             'paid_amount' => 'required|numeric|min:0',
             'discount_amount' => 'nullable|numeric|min:0',
-            'customer_id' => 'nullable|exists:customers,id',
+            'customer_id' => 'nullable|integer',
             'dining_table_id' => 'nullable|exists:dining_tables,id',
             'employee_id' => 'nullable|exists:employees,id',
             'client_order_id' => 'nullable|uuid',

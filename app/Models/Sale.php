@@ -22,11 +22,6 @@ class Sale extends Model
         'order_type' => OrderType::class,
     ];
 
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class, 'customer_id');
-    }
-
     public function table()
     {
         return $this->diningTable();

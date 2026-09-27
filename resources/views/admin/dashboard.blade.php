@@ -246,16 +246,6 @@
                 'accent' => 'hover:border-amber-300',
                 'badge' => __('admin.dashboard.badge_catalog'),
             ],
-            [
-                'title' => __('admin.dashboard.total_customers'),
-                'value' => $totalCustomers,
-                'subtitle' => __('admin.dashboard.diners'),
-                'route' => route('admin.customers.index'),
-                'icon' => 'ri-user-heart-line',
-                'iconBg' => 'bg-violet-50 text-violet-600 border border-violet-100',
-                'accent' => 'hover:border-violet-300',
-                'badge' => __('admin.dashboard.badge_patrons'),
-            ],
         ];
     @endphp
 

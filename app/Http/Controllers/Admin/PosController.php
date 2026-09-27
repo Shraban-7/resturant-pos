@@ -14,7 +14,6 @@ use App\Http\Requests\Admin\CheckoutPosRequest;
 use App\Http\Requests\Admin\PosAddItemRequest;
 use App\Models\Cart;
 use App\Models\CartItem;
-use App\Models\Customer;
 use App\Models\DiningTable;
 use App\Models\Employee;
 use App\Models\GiftCard;
@@ -82,18 +81,17 @@ class PosController extends Controller
             ])
             ->latest('id')
             ->get();
-        $customers = Customer::self()->get();
 
         $recentSales = Sale::self()
             ->forActiveBranch()
-            ->with(['customer', 'table', 'waiter'])
+            ->with(['table', 'waiter'])
             ->where('is_hold', 0)
             ->latest('id')
             ->limit(5)
             ->get();
         $runningSales = Sale::self()
             ->forActiveBranch()
-            ->with(['customer', 'table', 'waiter'])
+            ->with(['table', 'waiter'])
             ->where('is_hold', 1)
             ->latest('id')
             ->limit(5)
@@ -121,7 +119,7 @@ class PosController extends Controller
             $sale = Sale::query()
                 ->where('order_id', request('sale'))
                 ->where('admin_id', panel_owner_id())
-                ->with(['items.product.unit', 'customer', 'table', 'waiter'])
+                ->with(['items.product.unit', 'table', 'waiter'])
                 ->first();
             if ($sale) {
                 $saleItems = $sale->items;
@@ -217,12 +215,6 @@ class PosController extends Controller
             'name' => $floor->name,
         ])->values();
 
-        $offlineCustomers = $customers->take(100)->map(fn ($customer) => [
-            'customer_id' => $customer->id,
-            'name' => $customer->name,
-            'phone' => $customer->phone,
-        ])->values();
-
         $vatSettings = \App\Support\VatCalculator::settingsFor((int) panel_owner_id());
         $vatConfig = [
             'mode' => (bool) ($vatSettings?->vat_enabled ?? false) && (float) ($vatSettings?->vat_rate ?? 0) > 0
@@ -239,7 +231,6 @@ class PosController extends Controller
         return view('admin.pos', compact(
             'products',
             'cart',
-            'customers',
             'recentSales',
             'runningSales',
             'categories',
@@ -258,7 +249,6 @@ class PosController extends Controller
             'offlineCategories',
             'offlineTables',
             'offlineFloors',
-            'offlineCustomers',
             'vatConfig',
             'discountConfig'
         ));
@@ -429,19 +419,6 @@ class PosController extends Controller
     {
         try {
             return DB::transaction(function () use ($request) {
-                $customer_id = $request->customer_id ?: null;
-                $customer_name = $request->customer_name ?? '';
-                $customer_phone = $request->customer_phone ?? '';
-
-                if ($customer_name != '' && $customer_phone != '') {
-                    $newCustomer = Customer::create([
-                        'admin_id' => panel_owner_id(),
-                        'name' => $customer_name,
-                        'phone' => $customer_phone,
-                    ]);
-                    $customer_id = $newCustomer->id;
-                }
-
                 $cart = Cart::where('order_id', $request->order_id)
                     ->where('admin_id', panel_owner_id())
                     ->with('items.item.unit')
@@ -533,9 +510,9 @@ class PosController extends Controller
 
 $saleData = [
                     'admin_id' => $cart->admin_id,
-                    'customer_id' => $customer_id,
-                    'customer_name' => $customer_name !== '' ? $customer_name : null,
-                    'customer_phone' => $customer_phone !== '' ? $customer_phone : null,
+                    'customer_id' => null,
+                    'customer_name' => null,
+                    'customer_phone' => null,
                     'order_type' => $mode,
                     'order_id' => $cart->order_id,
                     'client_order_id' => $request->client_order_id,
@@ -611,19 +588,6 @@ $saleData = [
                     throw new RuntimeException('Cart is empty.');
                 }
 
-                $customer_id = $request->customer_id ?: null;
-                $customer_name = $request->customer_name ?? '';
-                $customer_phone = $request->customer_phone ?? '';
-
-                if ($customer_name != '' && $customer_phone != '') {
-                    $newCustomer = Customer::create([
-                        'admin_id' => panel_owner_id(),
-                        'name' => $customer_name,
-                        'phone' => $customer_phone,
-                    ]);
-                    $customer_id = $newCustomer->id;
-                }
-
                 $subTotal = 0;
                 $saleItems = [];
 
@@ -664,9 +628,9 @@ $saleData = [
 
 $saleData = [
                     'admin_id' => $cart->admin_id,
-                    'customer_id' => $customer_id,
-                    'customer_name' => $customer_name !== '' ? $customer_name : null,
-                    'customer_phone' => $customer_phone !== '' ? $customer_phone : null,
+                    'customer_id' => null,
+                    'customer_name' => null,
+                    'customer_phone' => null,
                     'order_type' => $mode,
                     'is_hold' => 1,
                     'order_id' => $cart->order_id,

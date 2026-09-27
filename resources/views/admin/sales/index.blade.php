@@ -21,7 +21,7 @@
             <thead>
                 <tr>
                     <th>{{ __('admin.sales.date') }}</th>
-                    <th>{{ __('admin.sales.customer_phone') }}</th>
+                    <th>Order ID</th>
                     <th>{{ __('admin.sales.total') }}</th>
                     <th>{{ __('admin.sales.paid') }}</th>
                     <th>{{ __('admin.sales.table_waiter') }}</th>
@@ -32,15 +32,7 @@
                 @forelse ($sales as $sale)
                     <tr>
                         <td class="text-slate-600">{{ $sale->created_at->format('d M Y, h:i A') }}</td>
-                        <td>
-                            @if ($sale->customer)
-                                <span class="font-medium text-slate-800">{{ $sale->customer->name }}</span>
-                                <span class="text-slate-400 mx-1">|</span>
-                                <span class="text-slate-500">{{ $sale->customer->phone }}</span>
-                            @else
-                                <span class="text-slate-400 italic">{{ __('admin.sales.no_customer') }}</span>
-                            @endif
-                        </td>
+                        <td class="font-mono font-medium text-slate-800">#{{ $sale->order_id }}</td>
                         <td class="font-medium">{{ money($sale->subtotal) }}</td>
                         <td>
                             <div class="flex flex-col gap-0.5">

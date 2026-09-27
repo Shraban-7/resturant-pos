@@ -47,7 +47,7 @@ class AppServiceProvider extends ServiceProvider
         $permissions = array_keys(config('permissions', []));
         if (empty($permissions)) {
             // Fallback when config is cached without permissions.php.
-            $permissions = ['dashboard','pos','products','stocks','sales','kds','floors','branches','reservations','gift-cards','customers','employees','reports','settings'];
+            $permissions = ['dashboard','pos','products','stocks','sales','kds','floors','branches','reservations','gift-cards','employees','reports','settings'];
         }
 
         foreach ($permissions as $permission) {

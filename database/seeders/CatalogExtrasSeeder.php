@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Enums\ProductType;
 
-use App\Models\Customer;
 use App\Models\GiftCard;
 use App\Models\Modifier;
 use App\Models\Product;
@@ -21,19 +20,6 @@ class CatalogExtrasSeeder extends Seeder
     public function run(): void
     {
         $ownerId = User::admin()->first()->id;
-
-        $customers = [
-            ['name' => 'Rahim Uddin', 'phone' => '01811111111', 'address' => 'Mirpur 10, Dhaka'],
-            ['name' => 'Karim Sheikh', 'phone' => '01822222222', 'address' => 'Uttara, Dhaka'],
-            ['name' => 'Fatema Begum', 'phone' => '01833333333', 'address' => 'Dhanmondi, Dhaka'],
-            ['name' => 'Walk-in Customer', 'phone' => '01800000000', 'address' => 'Dhaka, Bangladesh'],
-        ];
-        foreach ($customers as $data) {
-            Customer::firstOrCreate(
-                ['admin_id' => $ownerId, 'phone' => $data['phone']],
-                $data + ['admin_id' => $ownerId]
-            );
-        }
 
         $modifiers = [
             ['group_name' => 'Add-ons', 'name' => 'Extra Cheese', 'price' => 60],

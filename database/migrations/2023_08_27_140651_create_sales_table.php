@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Customer;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +16,7 @@ return new class extends Migration
             $table->foreignId('dining_table_id')->nullable(); #->constrained('dining_tables')->nullOnDelete();
             $table->foreignId('seller_employee_id')->nullable(); #->constrained('seller_employees')->nullOnDelete();
 
-            $table->foreignIdFor(Customer::class)->nullable();
+            $table->foreignId('customer_id')->nullable();
             $table->string('order_id');
 
             // Offline-first sync / idempotency columns.

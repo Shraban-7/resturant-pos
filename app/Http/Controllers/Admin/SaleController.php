@@ -11,7 +11,6 @@ use App\Actions\ResolveProductAddonsAction;
 use App\Actions\ResolveProductModifiersAction;
 use App\Http\Controllers\Controller;
 use App\Models\BusinessSetting;
-use App\Models\Customer;
 use App\Models\DiningTable;
 use App\Models\Product;
 use App\Models\Sale;
@@ -63,7 +62,7 @@ class SaleController extends Controller
 
     public function index(Request $request)
     {
-        $sales = Sale::self()->with(['customer', 'items.product', 'table', 'waiter'])->latest('id')->paginate(20)->withQueryString();
+        $sales = Sale::self()->with(['items.product', 'table', 'waiter'])->latest('id')->paginate(20)->withQueryString();
         $totalSales = Sale::self()->sum('payable');
 
         return view('admin.sales.index', compact('sales', 'totalSales'));
@@ -73,7 +72,7 @@ class SaleController extends Controller
     {
         abort_unless((int) $sale->admin_id === (int) panel_owner_id(), 403);
 
-        $sale->load('items', 'customer');
+        $sale->load('items');
 
         $settings = BusinessSetting::where('user_id', $sale->admin_id)->first();
 
@@ -297,32 +296,14 @@ class SaleController extends Controller
     {
         $request->validate([
             'order_id' => 'required|string|exists:sales,order_id',
-            'customer_id' => 'nullable|numeric',
             'table_id' => 'nullable|numeric',
             'employee_id' => 'nullable|numeric',
-            'customer_name' => 'nullable|string',
-            'customer_phone' => 'nullable|string',
             'discount_amount' => 'nullable|numeric',
             'paid_amount' => 'nullable|numeric',
             'note' => 'nullable|string',
-        ], [
-            'customer_id.required' => 'Please select a customer',
         ]);
 
-        $customer_id = $request->customer_id ?: null;
-        $customer_name = $request->customer_name ?? '';
-        $customer_phone = $request->customer_phone ?? '';
-
-        if ($customer_name != '' && $customer_phone != '') {
-            $newCustomer = Customer::create([
-                'admin_id' => panel_owner_id(),
-                'name' => $customer_name,
-                'phone' => $customer_phone,
-            ]);
-            $customer_id = $newCustomer->id;
-        }
-
-        return DB::transaction(function () use ($request, $customer_id) {
+        return DB::transaction(function () use ($request) {
             $sale = Sale::self()
                 ->where('order_id', $request->order_id)
                 ->with('items.product.unit')
@@ -341,7 +322,7 @@ class SaleController extends Controller
 
             $saleData = [
                 'is_hold' => 0,
-                'customer_id' => $customer_id,
+                'customer_id' => null,
                 'sale_date' => date('Y-m-d'),
                 'subtotal' => $sale->subtotal,
                 'discount' => $discount,

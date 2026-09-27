@@ -11,7 +11,6 @@ return [
     'branches' => 'Manage branches',
     'reservations' => 'Manage reservations',
     'gift-cards' => 'Gift cards',
-    'customers' => 'Manage customers',
     'employees' => 'Manage employees',
     'reports' => 'View reports',
     'settings' => 'Manage settings',
