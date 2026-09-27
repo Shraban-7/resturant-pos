@@ -159,6 +159,12 @@ if(!function_exists('is_employee')) {
         return (bool) Auth::user()?->isEmployee();
     }
 }
+if(!function_exists('is_demo')) {
+    function is_demo() : bool
+    {
+        return (bool) config('app.demo_mode', false);
+    }
+}
 if(!function_exists('can')) {
     function can(string $permission) : bool
     {

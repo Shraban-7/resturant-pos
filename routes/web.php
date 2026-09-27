@@ -54,7 +54,8 @@ Route::middleware('guest')->group(function () {
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Admin panel routes (single panel: admin + employees via RBAC)...
-Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(function () {
+// `demo` blocks state-changing requests when DEMO_MODE=true (except the POS ordering flow).
+Route::middleware(['auth', 'admin', 'demo'])->prefix('admin')->as('admin.')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:dashboard');
 

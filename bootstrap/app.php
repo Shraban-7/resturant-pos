@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\CheckPermission;
 use App\Http\Middleware\Admin;
+use App\Http\Middleware\DemoMode;
 use App\Providers\AppServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'seller' => Admin::class,
             'admin' => Admin::class,
             'permission' => CheckPermission::class,
+            'demo' => DemoMode::class,
         ]);
 
         // Background Sync cannot read the page's CSRF token. The endpoint still

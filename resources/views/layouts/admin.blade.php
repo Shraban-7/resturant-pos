@@ -32,6 +32,12 @@
 
             <main class="flex-1 flex flex-col min-w-0">
                 <div class="app-content">
+                    @if (is_demo())
+                        <div class="mb-4 flex items-center gap-2 rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-2.5 text-xs font-semibold text-amber-800">
+                            <i class="ri-information-line text-base"></i>
+                            <span>Demo mode is on — browsing and taking orders work, but saving changes is disabled.</span>
+                        </div>
+                    @endif
                     <x-flash-message />
                     @yield('content')
                     @yield('full_page')

@@ -24,6 +24,8 @@ return [
 
     'key' => env('APP_KEY'),
 
+    'demo_mode' => (bool) env('DEMO_MODE', false),
+
     'previous_keys' => [
         ...array_filter(
             explode(',', env('APP_PREVIOUS_KEYS', ''))
