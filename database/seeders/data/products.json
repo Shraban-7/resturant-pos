@@ -11,7 +11,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "চিকেন কাচ্চি বিরিয়ানি"
+        "name_bn": "চিকেন কাচ্চি বিরিয়ানি",
+        "image": "images/products/chicken-kacchi-biryani.jpg"
     },
     {
         "name": "Morog Polao",
@@ -25,7 +26,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "মোরগ পোলাও"
+        "name_bn": "মোরগ পোলাও",
+        "image": "images/products/morog-polao.jpg"
     },
     {
         "name": "Shorshe Ilish with Rice",
@@ -39,7 +41,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "সরষে ইলিশ ও ভাত"
+        "name_bn": "সরষে ইলিশ ও ভাত",
+        "image": "images/products/shorshe-ilish-with-rice.jpg"
     },
     {
         "name": "Beef Bhuna with Paratha (3 pcs)",
@@ -53,7 +56,8 @@
             "lunch"
         ],
         "type": "dish",
-        "name_bn": "বিফ ভুনা ও পরোটা (৩ পিস)"
+        "name_bn": "বিফ ভুনা ও পরোটা (৩ পিস)",
+        "image": "images/products/beef-bhuna-with-paratha.jpg"
     },
     {
         "name": "Dal Bhaat Set (Veg)",
@@ -66,7 +70,8 @@
             "lunch"
         ],
         "type": "dish",
-        "name_bn": "ডাল ভাত সেট (ভেজ)"
+        "name_bn": "ডাল ভাত সেট (ভেজ)",
+        "image": "images/products/dal-bhaat-set.jpg"
     },
     {
         "name": "Chingri Malai Curry with Rice",
@@ -80,7 +85,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "চিংড়ি মালাইকারি ও ভাত"
+        "name_bn": "চিংড়ি মালাইকারি ও ভাত",
+        "image": "images/products/chingri-malai-curry.jpg"
     },
     {
         "name": "Chicken Roast with Polao",
@@ -94,7 +100,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "চিকেন রোস্ট ও পোলাও"
+        "name_bn": "চিকেন রোস্ট ও পোলাও",
+        "image": "images/products/chicken-roast-with-polao.jpg"
     },
     {
         "name": "Beef Tehari",
@@ -108,7 +115,8 @@
             "lunch"
         ],
         "type": "dish",
-        "name_bn": "বিফ তেহারি"
+        "name_bn": "বিফ তেহারি",
+        "image": "images/products/beef-tehari.jpg"
     },
     {
         "name": "Butter Chicken with Naan (2 pcs)",
@@ -122,7 +130,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "বাটার চিকেন ও নান (২ পিস)"
+        "name_bn": "বাটার চিকেন ও নান (২ পিস)",
+        "image": "images/products/butter-chicken-with-naan.jpg"
     },
     {
         "name": "Chicken Tikka (6 pcs)",
@@ -136,7 +145,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "চিকেন টিক্কা (৬ পিস)"
+        "name_bn": "চিকেন টিক্কা (৬ পিস)",
+        "image": "images/products/chicken-tikka.jpg"
     },
     {
         "name": "Chicken Dum Biryani",
@@ -150,7 +160,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "চিকেন দম বিরিয়ানি"
+        "name_bn": "চিকেন দম বিরিয়ানি",
+        "image": "images/products/chicken-dum-biryani.jpg"
     },
     {
         "name": "Palak Paneer with Jeera Rice",
@@ -164,7 +175,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "পালং পনির ও জিরা রাইস"
+        "name_bn": "পালং পনির ও জিরা রাইস",
+        "image": "images/products/palak-paneer-with-rice.jpg"
     },
     {
         "name": "Masala Dosa",
@@ -177,7 +189,8 @@
             "breakfast"
         ],
         "type": "dish",
-        "name_bn": "মসলা দোসা"
+        "name_bn": "মসলা দোসা",
+        "image": "images/products/masala-dosa.jpg"
     },
     {
         "name": "Seekh Kebab (4 pcs) with Paratha",
@@ -190,7 +203,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "সিক কাবাব (৪ পিস) ও পরোটা"
+        "name_bn": "সিক কাবাব (৪ পিস) ও পরোটা",
+        "image": "images/products/seekh-kebab-with-paratha.jpg"
     },
     {
         "name": "Garlic Naan Basket (4 pcs)",
@@ -204,7 +218,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "গার্লিক নান বাস্কেট (৪ পিস)"
+        "name_bn": "গার্লিক নান বাস্কেট (৪ পিস)",
+        "image": "images/products/garlic-naan-basket.jpg"
     },
     {
         "name": "Chicken Curry with Steamed Rice",
@@ -218,7 +233,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "চিকেন কারি ও সাদা ভাত"
+        "name_bn": "চিকেন কারি ও সাদা ভাত",
+        "image": "images/products/chicken-curry-with-rice.jpg"
     },
     {
         "name": "Special Fried Rice with Chicken",
@@ -232,7 +248,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "স্পেশাল ফ্রাইড রাইস ও চিকেন"
+        "name_bn": "স্পেশাল ফ্রাইড রাইস ও চিকেন",
+        "image": "images/products/special-fried-rice.jpg"
     },
     {
         "name": "Chicken Chow Mein",
@@ -246,7 +263,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "চিকেন চাউমিন"
+        "name_bn": "চিকেন চাউমিন",
+        "image": "images/products/chicken-chow-mein.jpg"
     },
     {
         "name": "Sweet & Sour Chicken with Rice",
@@ -260,7 +278,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "সুইট অ্যান্ড সাওয়ার চিকেন ও রাইস"
+        "name_bn": "সুইট অ্যান্ড সাওয়ার চিকেন ও রাইস",
+        "image": "images/products/sweet-sour-chicken.jpg"
     },
     {
         "name": "Chicken Spring Rolls (4 pcs)",
@@ -274,7 +293,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "চিকেন স্প্রিং রোল (৪ পিস)"
+        "name_bn": "চিকেন স্প্রিং রোল (৪ পিস)",
+        "image": "images/products/chicken-spring-rolls.jpg"
     },
     {
         "name": "Thai Soup with Chicken",
@@ -287,7 +307,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "থাই স্যুপ চিকেন"
+        "name_bn": "থাই স্যুপ চিকেন",
+        "image": "images/products/thai-soup-with-chicken.jpg"
     },
     {
         "name": "Sizzling Chicken Platter",
@@ -300,7 +321,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "সিজলিং চিকেন প্ল্যাটার"
+        "name_bn": "সিজলিং চিকেন প্ল্যাটার",
+        "image": "images/products/sizzling-chicken-platter.jpg"
     },
     {
         "name": "Vegetable Fried Rice",
@@ -314,7 +336,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "ভেজিটেবল ফ্রাইড রাইস"
+        "name_bn": "ভেজিটেবল ফ্রাইড রাইস",
+        "image": "images/products/vegetable-fried-rice.jpg"
     },
     {
         "name": "Chicken Manchurian with Noodles",
@@ -328,7 +351,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "চিকেন মাঞ্চুরিয়ান ও নুডলস"
+        "name_bn": "চিকেন মাঞ্চুরিয়ান ও নুডলস",
+        "image": "images/products/chicken-manchurian.jpg"
     },
     {
         "name": "Chicken Burger with Fries",
@@ -339,7 +363,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "চিকেন বার্গার ও ফ্রেঞ্চ ফ্রাই"
+        "name_bn": "চিকেন বার্গার ও ফ্রেঞ্চ ফ্রাই",
+        "image": "images/products/chicken-burger-with-fries.jpg"
     },
     {
         "name": "Beef Cheese Burger",
@@ -350,7 +375,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "বিফ চিজ বার্গার"
+        "name_bn": "বিফ চিজ বার্গার",
+        "image": "images/products/beef-cheese-burger.jpg"
     },
     {
         "name": "Chicken Shawarma",
@@ -361,7 +387,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "চিকেন শর্মা"
+        "name_bn": "চিকেন শর্মা",
+        "image": "images/products/chicken-shawarma.jpg"
     },
     {
         "name": "Club Sandwich",
@@ -372,7 +399,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "ক্লাব স্যান্ডউইচ"
+        "name_bn": "ক্লাব স্যান্ডউইচ",
+        "image": "images/products/club-sandwich.jpg"
     },
     {
         "name": "Loaded Nachos",
@@ -383,7 +411,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "লোডেড নাচোস"
+        "name_bn": "লোডেড নাচোস",
+        "image": "images/products/loaded-nachos.jpg"
     },
     {
         "name": "Crispy Fried Chicken (3 pcs)",
@@ -394,7 +423,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "ক্রিসপি ফ্রাইড চিকেন (৩ পিস)"
+        "name_bn": "ক্রিসপি ফ্রাইড চিকেন (৩ পিস)",
+        "image": "images/products/crispy-fried-chicken.jpg"
     },
     {
         "name": "Chicken Pizza (9 inch)",
@@ -405,7 +435,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "চিকেন পিজ্জা (৯ ইঞ্চি)"
+        "name_bn": "চিকেন পিজ্জা (৯ ইঞ্চি)",
+        "image": "images/products/chicken-pizza.jpg"
     },
     {
         "name": "French Fries (Large)",
@@ -416,7 +447,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "ফ্রেঞ্চ ফ্রাই (বড়)"
+        "name_bn": "ফ্রেঞ্চ ফ্রাই (বড়)",
+        "image": "images/products/french-fries-large.jpg"
     },
     {
         "name": "Borhani (Glass)",
@@ -430,7 +462,8 @@
             "dinner"
         ],
         "type": "dish",
-        "name_bn": "বোরহানি (গ্লাস)"
+        "name_bn": "বোরহানি (গ্লাস)",
+        "image": "images/products/borhani-glass.jpg"
     },
     {
         "name": "Sweet Lassi",
@@ -444,7 +477,8 @@
             "lunch"
         ],
         "type": "dish",
-        "name_bn": "মিষ্টি লাচ্ছি"
+        "name_bn": "মিষ্টি লাচ্ছি",
+        "image": "images/products/sweet-lassi.jpg"
     },
     {
         "name": "Fresh Orange Juice",
@@ -458,7 +492,8 @@
             "lunch"
         ],
         "type": "dish",
-        "name_bn": "তাজা কমলার জুস"
+        "name_bn": "তাজা কমলার জুস",
+        "image": "images/products/fresh-orange-juice.jpg"
     },
     {
         "name": "Cold Coffee",
@@ -469,7 +504,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "কোল্ড কফি"
+        "name_bn": "কোল্ড কফি",
+        "image": "images/products/cold-coffee.jpg"
     },
     {
         "name": "Milk Tea (Cha)",
@@ -480,7 +516,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "দুধ চা"
+        "name_bn": "দুধ চা",
+        "image": "images/products/milk-tea-cha.jpg"
     },
     {
         "name": "Soft Drink (Can)",
@@ -491,7 +528,8 @@
         "unit": "CANS",
         "meal": "all",
         "type": "dish",
-        "name_bn": "কোমল পানীয় (ক্যান)"
+        "name_bn": "কোমল পানীয় (ক্যান)",
+        "image": "images/products/soft-drink-can.jpg"
     },
     {
         "name": "Mineral Water (Bottle)",
@@ -502,7 +540,8 @@
         "unit": "BOTTLES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "মিনারেল ওয়াটার (বোতল)"
+        "name_bn": "মিনারেল ওয়াটার (বোতল)",
+        "image": "images/products/mineral-water-bottle.jpg"
     },
     {
         "name": "Mango Smoothie",
@@ -516,7 +555,8 @@
             "lunch"
         ],
         "type": "dish",
-        "name_bn": "ম্যাংগো স্মুদি"
+        "name_bn": "ম্যাংগো স্মুদি",
+        "image": "images/products/mango-smoothie.jpg"
     },
     {
         "name": "Mishti Doi (Cup)",
@@ -527,7 +567,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "মিষ্টি দই (কাপ)"
+        "name_bn": "মিষ্টি দই (কাপ)",
+        "image": "images/products/mishti-doi-cup.jpg"
     },
     {
         "name": "Firni",
@@ -538,7 +579,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "ফিরনি"
+        "name_bn": "ফিরনি",
+        "image": "images/products/firni.jpg"
     },
     {
         "name": "Gulab Jamun (4 pcs)",
@@ -549,7 +591,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "গোলাপ জামুন (৪ পিস)"
+        "name_bn": "গোলাপ জামুন (৪ পিস)",
+        "image": "images/products/gulab-jamun.jpg"
     },
     {
         "name": "Chocolate Brownie with Ice Cream",
@@ -560,7 +603,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "চকলেট ব্রাউনি ও আইসক্রিম"
+        "name_bn": "চকলেট ব্রাউনি ও আইসক্রিম",
+        "image": "images/products/chocolate-brownie.jpg"
     },
     {
         "name": "Roshmalai (4 pcs)",
@@ -571,7 +615,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "রসমালাই (৪ পিস)"
+        "name_bn": "রসমালাই (৪ পিস)",
+        "image": "images/products/roshmalai.jpg"
     },
     {
         "name": "Kheer",
@@ -582,7 +627,8 @@
         "unit": "PIECES",
         "meal": "all",
         "type": "dish",
-        "name_bn": "ক্ষীর"
+        "name_bn": "ক্ষীর",
+        "image": "images/products/kheer.jpg"
     },
     {
         "name": "Lunch Buffet (Per Person)",
@@ -595,7 +641,8 @@
             "lunch"
         ],
         "type": "buffet",
-        "name_bn": "লাঞ্চ বুফে (জনপ্রতি)"
+        "name_bn": "লাঞ্চ বুফে (জনপ্রতি)",
+        "image": "images/products/lunch-buffet.jpg"
     },
     {
         "name": "Dinner Buffet (Per Person)",
@@ -608,7 +655,8 @@
             "dinner"
         ],
         "type": "buffet",
-        "name_bn": "ডিনার বুফে (জনপ্রতি)"
+        "name_bn": "ডিনার বুফে (জনপ্রতি)",
+        "image": "images/products/dinner-buffet.jpg"
     },
     {
         "name": "Miniket Rice",
