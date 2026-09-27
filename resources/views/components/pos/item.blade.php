@@ -11,7 +11,7 @@
      data-stock="{{ $isUnlimited ? 999999 : $stock }}" @if($isUnlimited) data-unlimited="1" @endif>
 
     {{-- Product Image & Floating Price --}}
-    <div class="h-12 w-full bg-slate-100 overflow-hidden relative shrink-0">
+    <div class="h-20 w-full bg-slate-100 overflow-hidden relative shrink-0">
         <div class="absolute top-1 right-1.5 flex items-center gap-0.5">
             <div class="ticket-qty-tag" style="display:none" data-qty-badge="{{ $item->id }}" title="Quantity in ticket">×<span>0</span></div>
         </div>
